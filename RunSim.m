@@ -1,0 +1,113 @@
+%   ----------------------------------------------------------------------
+%   Created by Endrina Rivas
+%       endrina.rivas@uwaterloo.ca
+%       Department of Civil Engineering
+%       University of Waterloo
+%   Last Updated: February 2017
+%   ----------------------------------------------------------------------
+
+%% Clear variables and initialize code
+    clearvars -global
+    clear, clc, close all
+    format compact
+    tic;
+    
+    % Current time and date
+    codeSubmitTime = datetime('now','Format','yyyy-MM-dd''_''HH-mm-ss');
+
+    % Current directory
+    curDir = pwd;
+ 
+%% Input
+    % Folder name where config files are stored
+    DirFolder = 'Config Files';
+    % Config files to run. Choose either 'all' or give the file name.
+    FileList = 'MasterConfigFile';
+    
+    % Directory for VTK Files (end with \)
+    if ispc
+        VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
+    else
+        VTKFolder = '/home/e2rivas/Documents/Matlab Results/';
+    end
+    
+    VTKFolder = fullfile(VTKFolder, DirFolder);
+    
+    % output vtk files
+    plot2vtk = 1;
+
+%% Directories
+    FuncDir = fullfile(curDir, 'Functions');
+    ConfigDir = fullfile(curDir, DirFolder);
+
+%% Add validation folder and function folder to the search path
+    % genpath adds all subfolders as well
+    addpath(genpath(FuncDir));
+    addpath(genpath(ConfigDir));  
+    
+%% Get list of config files
+    % Cell array containing the names of the configuration files to 
+    % run. This option selects all of the files in the folder
+    if strcmp(FileList, 'all')
+        ConfigFiles = dir([ConfigDir,'\*.m']);
+        ConfigFiles = fullfile(ConfigDir,{ConfigFiles.name});
+    else
+        ConfigFiles = {FileList};
+    end
+    VTKDirs = fullfile(VTKFolder,ConfigFiles);
+    numfiles = length(ConfigFiles);
+    
+%% Run
+try                     
+    %% Run config files
+    % Loop through every configuration file 
+    for file = 1:numfiles
+        % clear variables from previous simulation
+        clearvars -except VTKDirs ConfigFiles...
+                  curDir FuncDir  ConfigDir ...
+                  file codeSubmitTime ...
+                  exit_when_done print_log ...
+                  plot2vtk
+
+        clearvars -global
+
+        % filename
+        config_name_full = ConfigFiles{file};
+        [~,config_name] = fileparts(config_name_full);
+
+        Control.config_name = config_name;
+        Control.vtk_dir = VTKDirs{file};
+        Control.config_dir = ConfigDir;
+
+        % post-processing controls
+        if plot2vtk
+            Control.vtk = 1;  
+        else 
+            Control.vtk = 0;
+        end
+        
+        if ~isfolder(VTKDirs{file}) 
+            mkdir(VTKDirs{file})
+        end
+        
+        % run and time the simulation
+        start_time = toc;
+        run('Functions/Main/main');
+        end_time = toc;
+
+        close all
+    end
+
+catch err
+	% save a text file called 'error' to the directory so I 
+	% know it is incomplete.
+    disp(err.message);
+
+    errStack = struct2cell(err.stack);
+    errStackName = errStack(2,:);
+    errStackLine = errStack(3,:);
+
+    disp([errStackName' errStackLine']);
+    disp(err.identifier);
+
+end
