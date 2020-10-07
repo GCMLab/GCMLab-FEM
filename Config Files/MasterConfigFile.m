@@ -4,7 +4,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
     disp([num2str(toc),': Building Mesh...']);
     
     % Mesh format - 'STRUCTURED', 'UNSTRUCTURED'
-    MeshType = 'STRUCTURED';        
+    MeshType = 'UNSTRUCTURED';        
 
     
     switch MeshType
@@ -16,7 +16,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
             % size of domain [m] [Lx;Ly;Lz] 
             Mesh.L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            Mesh.nex = [20;20];
+            Mesh.nex = [2;2]*20;
             % element type ('Q4')
             Mesh.type = 'Q4';
             
@@ -73,7 +73,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof; 
+        BC.fix_disp_dof = [Mesh.left_dof];% Mesh.ydofs']; 
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
@@ -121,7 +121,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
 
         % Nodal averaging for discontinuous variables (stress/strain)
         % 'none', 'nodal'
-        Control.contour = 'none';
+        Control.contour = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
