@@ -1,21 +1,39 @@
 function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
 
 %% Mesh Properties
-
-    % location of initial node [m] [x0;y0;z0] 
-    Mesh.x1 = [0;0;0];
-    % size of domain [m] [Lx;Ly;Lz] 
-    Mesh.L = [1;1];
-    % number of elements in each direction [nex; ney; nez] 
-    Mesh.nex = [2;2];
-    % number of space dimensions 
-    Mesh.nsd = 2;
-    % element type ('Q4')
-    Mesh.type = 'Q4';
-
-%% Build mesh
     disp([num2str(toc),': Building Mesh...']);
-    Mesh = BuildMesh(Mesh);
+    
+    % Mesh format - 'STRUCTURED', 'UNSTRUCTURED'
+    MeshType = 'STRUCTURED';        
+
+    
+    switch MeshType
+        case 'STRUCTURED'
+            % location of initial node [m] [x0;y0;z0] 
+            Mesh.x1 = [0;0;0];
+            % number of space dimensions 
+            Mesh.nsd = 2;
+            % size of domain [m] [Lx;Ly;Lz] 
+            Mesh.L = [1;1];
+            % number of elements in each direction [nex; ney; nez] 
+            Mesh.nex = [20;20];
+            % element type ('Q4')
+            Mesh.type = 'Q4';
+            
+            Mesh = BuildMesh_structured(Mesh);
+        case 'UNSTRUCTURED'
+            % Allows input of files from GMSH
+            % Note: the only currently supported .msh file formatting is
+            % Version 2 ASCII
+            % Ctrl + e to export the mesh, specify extension .msh, specify
+            % format Version 2 ASCII
+            Mesh.MeshFileName = 'Unstructured_sample.msh';
+            % number of space dimensions 
+            Mesh.nsd = 2;
+            
+            Mesh = BuildMesh_unstructured(Mesh, Control);            
+    end    
+    
 
 %% Material Properties (Solid)
 
@@ -74,10 +92,15 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         Fnode = 1/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = [-Fnode/2 0; 
-                                    -Fnode 0;
-                                    -Fnode/2 0];  
-
+        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        
+        % find the nodes in the top right and bottom right corners
+        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
+        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
+        
+        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
+        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
+    
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 

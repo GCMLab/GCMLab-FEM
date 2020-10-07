@@ -26,7 +26,8 @@
     
     % Directory for VTK Files (end with \)
     if ispc
-        VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
+        VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+        %VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
     else
         VTKFolder = '/home/e2rivas/Documents/Matlab Results/';
     end
@@ -58,7 +59,7 @@
     numfiles = length(ConfigFiles);
     
 %% Run
-try                     
+%try                     
     %% Run config files
     % Loop through every configuration file 
     for file = 1:numfiles
@@ -98,16 +99,16 @@ try
         close all
     end
 
-catch err
-	% save a text file called 'error' to the directory so I 
-	% know it is incomplete.
-    disp(err.message);
+% catch err
+% 	% save a text file called 'error' to the directory so I 
+% 	% know it is incomplete.
+%     disp(err.message);
+% 
+%     errStack = struct2cell(err.stack);
+%     errStackName = errStack(2,:);
+%     errStackLine = errStack(3,:);
+% 
+%     disp([errStackName' errStackLine']);
+%     disp(err.identifier);
 
-    errStack = struct2cell(err.stack);
-    errStackName = errStack(2,:);
-    errStackLine = errStack(3,:);
-
-    disp([errStackName' errStackLine']);
-    disp(err.identifier);
-
-end
+%end
