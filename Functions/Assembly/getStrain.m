@@ -18,7 +18,7 @@ function [strain, stress] = getStrain(d, Mesh, Control, Material)
 %       Department of Civil Engineering
 %       University of Waterloo
 %       January 2016
-%   Last updated June 2016
+%   Last updated October 2020
 %   ----------------------------------------------------------------------
 
 % Specify dimension of the strain/stress matrix
@@ -81,10 +81,11 @@ for e = 1:Mesh.ne
            
             % derivative of shape function in physical coordinates 
             % (tensor form)
-            B = dNdxi/Je;
+            dNdxi = dNdxi';
+            B = Je\dNdxi;
 
             % convert B matrix to Voigt form
-            Bv = getBv(B, Mesh.nsd);
+            Bv = getBv(B', Mesh.nsd);
 
             D = getD(Xi, Mesh.nsd, Material);
             

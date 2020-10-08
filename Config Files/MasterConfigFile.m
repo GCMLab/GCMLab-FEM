@@ -73,7 +73,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [Mesh.left_dof];% Mesh.ydofs']; 
+        BC.fix_disp_dof = [Mesh.left_dof];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  

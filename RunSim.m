@@ -59,7 +59,7 @@
     numfiles = length(ConfigFiles);
     
 %% Run
-%try                     
+try                     
     %% Run config files
     % Loop through every configuration file 
     for file = 1:numfiles
@@ -99,16 +99,16 @@
         close all
     end
 
-% catch err
-% 	% save a text file called 'error' to the directory so I 
-% 	% know it is incomplete.
-%     disp(err.message);
-% 
-%     errStack = struct2cell(err.stack);
-%     errStackName = errStack(2,:);
-%     errStackLine = errStack(3,:);
-% 
-%     disp([errStackName' errStackLine']);
-%     disp(err.identifier);
+catch err
+	% save a text file called 'error' to the directory so I 
+	% know it is incomplete.
+    disp(err.message);
 
-%end
+    errStack = struct2cell(err.stack);
+    errStackName = errStack(2,:);
+    errStackLine = errStack(3,:);
+
+    disp([errStackName' errStackLine']);
+    disp(err.identifier);
+
+end
