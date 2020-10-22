@@ -6,17 +6,7 @@ function WriteMesh2VTK(filename,description,nodes,conn,...
 % nodes = array of nodal coordinates (n x nsd)
 % conn = connectivity matrix (ne x nne)
 %
-%   ----------------------------------------------------------------------
-%   Created by Robert Gracie
-%       Last Modified Nov 7, 2012
-%       copyright Robert Gracie, 2012.
-%
-%   Modified by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       Jan 2016
-%   ----------------------------------------------------------------------
+% Acknowledgements: Robert Gracie, Endrina Rivas
 
 min_sig_digs = 5;
 

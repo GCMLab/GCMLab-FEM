@@ -1,13 +1,5 @@
 function nne = NodesPerElement( etype )
 %NODESPERELEMENT 
-%   
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       July 2015
-%   ----------------------------------------------------------------------
 
 switch etype
     case 'pt'

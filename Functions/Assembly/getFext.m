@@ -1,17 +1,6 @@
 function F = getFext(Mesh, BC, Material, Quad, Control)
-%GETF
-%   F = getF(t)
-%
-%   --------------------------------------------------------------------
-%   Created by Chris Ladubec
-%
-%   Modified by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       
-%   Last Updated June 2016
-%   --------------------------------------------------------------------
+% Computes column matrix of external forces
+% Acknowledgements: Chris Ladubec, Endrina Rivas
 
 %% initialize values
 

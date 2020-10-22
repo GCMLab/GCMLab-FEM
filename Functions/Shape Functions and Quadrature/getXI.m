@@ -1,12 +1,5 @@
 function xi_node = getXI( x_node,type )
 %GETXI returns the parent coordinates of the nodal position specified.
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       November 2015
-%   ----------------------------------------------------------------------
 
 switch type
     case 'L2'

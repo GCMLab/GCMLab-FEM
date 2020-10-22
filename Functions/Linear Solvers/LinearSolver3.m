@@ -1,14 +1,6 @@
 function [d, fE] = LinearSolver3(K, F, dfixed, free, fixed, beta)
 %SOLVEMETHOD3 Solve for unknown vector using Penalty method
-%   d = LinearSolver3(K,F)
-%
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       October 2015
-%   ----------------------------------------------------------------------
+% Acknowledgements: Endrina Rivas
 
 % Partition stiffness matrix
 KEE = K(fixed, fixed);

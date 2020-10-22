@@ -1,15 +1,6 @@
 function D = getD(x, nsd, Material)
 %GETD 
 
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas & Matin Parchei Esfahani
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       October 2015
-% 	Last Updated: June 2016
-%   ----------------------------------------------------------------------
-
 E = Material.E(x);    
 
 switch nsd

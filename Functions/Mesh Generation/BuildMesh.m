@@ -1,15 +1,7 @@
 function Mesh = BuildMesh(Mesh)
 %BUILDMESH Build a mesh
 %   BuildMesh()
-%
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%   Last Updated: January 2016
 %   Acknowledgments: Chris Ladubec, Matin Parchei Esfahani
-%   ----------------------------------------------------------------------
 
 %% Number of nodes per element
     Mesh.nnex = NodesPerElement(Mesh.type); 

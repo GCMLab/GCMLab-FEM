@@ -1,14 +1,6 @@
 function Quad = GlobalQuad(nsd, elem_type, qo)
 
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       May 2016
-% 	Last updated: June 2016
-%	Acknowledgments: Matin Parchei Esfahani
-%   ----------------------------------------------------------------------
+% Acknowledgments: Matin Parchei Esfahani
 
 %% Quadrature for regular elements
 

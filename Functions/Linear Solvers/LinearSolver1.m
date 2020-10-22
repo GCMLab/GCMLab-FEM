@@ -1,14 +1,6 @@
 function [d,fE] = LinearSolver1(K, F, dfixed, nDOF, free, fixed)
 %SOLVEMTETHOD1 Solves for unknown vector using partition method
-%   d = SolveMethod1(nodes,fixtempnode,fixtempvalue,K,F)
-%
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       November 2015
-%   ----------------------------------------------------------------------
+% Acknowledgements: Endrina Rivas
 
 % Identify extra free nodes for LM method
 if size(K,1) > nDOF

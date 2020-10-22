@@ -1,25 +1,5 @@
 function [strain, stress] = getStrain(d, Mesh, Control, Material)
-%GETSTRAIN 
-%
-%   strain: nodal strain
-%   strainc: nodal strain with averaging for contour plots
-%
-%   if Control.contour = 'none'
-%       strain/stress are cell arrays
-%       strain = {strainx in e1} {strainx in e2} ... {strainx in enn}
-%                {strainy in e1} {strainy in e2} ... {strainy in enn}
-%   if Control.contour = 'nodal'
-%           strain = [strainx_n1  strainx_n2  ... strainx_nn;
-%                     strainy_n1  strainy_n2  ... strainy_nn;
-%                     strainxy_n1 strainxy_n2 ... strainxy_nn];
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       January 2016
-%   Last updated June 2016
-%   ----------------------------------------------------------------------
+% Acknowledgements: Chris Ladubec, Endrina Rivas
 
 % Specify dimension of the strain/stress matrix
 switch Mesh.nsd
@@ -31,9 +11,15 @@ switch Mesh.nsd
         dim = 6;
 end
 
-% TODO: Add least squares stress/strain projection
-
 % Specify type of strain/stress matrix/cell
+%   if Control.contour = 'none'
+%       strain/stress are cell arrays
+%       strain = {strainx in e1} {strainx in e2} ... {strainx in enn}
+%                {strainy in e1} {strainy in e2} ... {strainy in enn}
+%   if Control.contour = 'nodal'
+%           strain = [strainx_n1  strainx_n2  ... strainx_nn;
+%                     strainy_n1  strainy_n2  ... strainy_nn;
+%                     strainxy_n1 strainxy_n2 ... strainxy_nn];
 switch Control.contour
     case 'none'
         strain = cell(dim,Mesh.ne);

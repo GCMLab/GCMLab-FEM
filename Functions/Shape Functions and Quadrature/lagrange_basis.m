@@ -42,19 +42,7 @@ function [N, dNdxi, Nv] = lagrange_basis(type, coord)
 %       Nonlinear Finite Elements for Continua and Structures. John Wiley &
 %       Sons.
 % 
-%   ----------------------------------------------------------------------
-%	written by Jack Chessa
-%       j-chessa@northwestern.edu
-%       Department of Mechanical Engineering
-%       Northwestern University
-%
-%   Modified by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       May 2015
-%   Last Updated May 2016
-%   ----------------------------------------------------------------------
+% Acknowledgements: Jack Chessa
 
 % -------------------------------------------------------------------
 %% Set to one-dimension if dimension has not been specified

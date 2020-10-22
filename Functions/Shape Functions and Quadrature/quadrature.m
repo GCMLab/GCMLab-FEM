@@ -21,17 +21,7 @@ function [W,Q] = quadrature( quadorder, type, dim )
 %       elements. Chichester; Hoboken, NJ: John Wiley & Sons.
 %
 %   ----------------------------------------------------------------------
-%	written by Jack Chessa
-%       j-chessa@northwestern.edu
-%       Department of Mechanical Engineering
-%       Northwestern University
-%
-%   Modified by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       May 2015
-%   ----------------------------------------------------------------------
+%   Acknowledgements: Jack Chessa
 
 % -------------------------------------------------------------------
 % set default type to Gaussian if not specified

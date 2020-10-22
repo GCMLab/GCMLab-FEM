@@ -1,17 +1,8 @@
 function Bv = getBv(B, dim)
 %GETB
 
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       November 2015
-%   Acknowledgements: Matin Parchei Esfahani
-%					  Jack Chessa
-% 	Last Updated: May 2016
-%   ----------------------------------------------------------------------
-%
+%   Acknowledgements: Matin Parchei Esfahani, Jack Chessa
+
 % B = |N1,1 N2,1 ... Nn,1|^T
 %     |N1,2 N2,2 ... Nn,2|
 %

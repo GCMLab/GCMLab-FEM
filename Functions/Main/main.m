@@ -1,13 +1,5 @@
 %% Static solid deformation of linear elastic material
-
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%   Last Updated: June 2016
-%	Acknowledgments: Matin Parchei Esfahani
-%   ----------------------------------------------------------------------
+%	Acknowledgements: Matin Parchei Esfahani, Endrina Rivas
 
 %% Delete past vtk files (so don't overwrite any)
     if Control.vtk

@@ -1,11 +1,3 @@
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%   Last Updated: February 2017
-%   ----------------------------------------------------------------------
-
 %% Clear variables and initialize code
     clearvars -global
     clear, clc, close all

@@ -1,15 +1,5 @@
 function K = getK(Mesh, Quad, Material)
-%GETK 
-%   K = getK()
-%
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%   
-%   Last updated: June 2016
-%   ----------------------------------------------------------------------
+% Acknowledgements: Chris Ladubec, Endrina Rivas
 
 % initialize stiffness matrix
 K = sparse(Mesh.nDOF, Mesh.nDOF); 

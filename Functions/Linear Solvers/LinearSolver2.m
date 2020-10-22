@@ -1,17 +1,7 @@
 function [d,fE] = LinearSolver2(K, F, dfixed, free, fixed)
 %SOLVEMETHOD2 Solve for unknown vector by zero-ing rows and columns in 
 %stiffness matrix that correspond to essential boundaries
-%   d = LinearSolver2(K,F)
-%
-%   ----------------------------------------------------------------------
-%   Created by Chris Ladubec
-% 
-%   Modified by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       October 2015
-%   ----------------------------------------------------------------------
+% Acknowledgements: Endrina Rivas
 
 % Partition stiffness matrix
 KEE = K(fixed,fixed);

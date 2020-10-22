@@ -1,13 +1,5 @@
 function write2vtk_static(Mesh, Control, BC, d, strain, stress, Fint, Fext)
-
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       May 2016
-%   Last updated July 2016
-%   ----------------------------------------------------------------------
+% Acknowledgements: Endrina Rivas
 
 %% Define variables
     description = Control.config_name;
