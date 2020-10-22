@@ -2,7 +2,12 @@ function K = getK(Mesh, Quad, Material)
 % Acknowledgements: Chris Ladubec, Endrina Rivas
 
 % initialize stiffness matrix
-K = sparse(Mesh.nDOF, Mesh.nDOF); 
+vec_size = Mesh.ne*(Mesh.nne * Mesh.nsd)^2; % vector size (solid dofs)
+row = zeros(vec_size, 1);                   % vector of row indices
+col = zeros(vec_size, 1);                   % vector of column indices
+Kvec = zeros(vec_size, 1);                  % vectorized stiffness matrix
+
+count = 1;                                  % DOF counter
 
 % for each element, compute element stiffness matrix and add to global
 for e = 1:Mesh.ne
@@ -71,9 +76,18 @@ for e = 1:Mesh.ne
             % quadrature debug tool
             A = A + W(q)*dJe; 
         end
-    
-    %% Assemble element matrices
-        K(dofE,dofE) = K(dofE,dofE) + Ke;
+   
+    %% Forming the vectorized stiffness matrix
+        for i = 1:ndofE
+            col(count:count + ndofE -1) = dofE(i)*ones(ndofE, 1);    % column index
+            row(count:count + ndofE -1) = dofE;                      % row index
+            count = count + ndofE;                                % component counter
+        end
+        Ke = reshape(Ke, [numel(Ke), 1]);
+        Kvec(count-numel(Ke):count-1) = Ke;
 end
+
+% sparse stiffness matrix
+K = sparse(row, col, Kvec, Mesh.nDOF, Mesh.nDOF);
 
 end
