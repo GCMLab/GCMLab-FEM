@@ -93,5 +93,6 @@ for i = 1:nelem
 end
 
 clear s
+fclose(fileID);
 
 end
