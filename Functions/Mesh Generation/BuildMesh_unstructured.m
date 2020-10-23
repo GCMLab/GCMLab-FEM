@@ -1,4 +1,4 @@
-function Mesh = BuildMesh_unstructured(Mesh, Control)
+function Mesh = BuildMesh_unstructured(meshFileName, nsd, config_dir)
 %BUILDMESH_unstructured Build an unstructured mesh from a GMSH file
 %   BuildMesh()
 %

@@ -29,11 +29,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            Mesh.MeshFileName = 'Unstructured_sample.msh';
+            meshFileName = 'Unstructured_sample.msh';
             % number of space dimensions 
-            Mesh.nsd = 2;
+            nsd = 2;
             
-            Mesh = BuildMesh_unstructured(Mesh, Control);            
+            Mesh = BuildMesh_unstructured(meshFileName, nsd, config_dir);            
     end    
     
 
