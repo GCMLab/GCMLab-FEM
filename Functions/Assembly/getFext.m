@@ -59,6 +59,7 @@ for e = 1:Mesh.ne
                 % Shape functions and derivatives in parent coordinates
                 N = Quad.Nq{q};
                 dNdxi = Quad.dNdxiq{q};
+                Nv = getNv(N, Mesh.nsd);
 
                 % quadrature point in physical coordinates
                 Xi = xI'*N;
@@ -72,7 +73,7 @@ for e = 1:Mesh.ne
 
                 % Applied body force
                 if ~strcmp(func2str(BC.b),'@(x)[]')
-                    Fbe = Fbe + W(q)*Nv*BC.b(Xi,t)*dJe;
+                    Fbe = Fbe + W(q)*Nv*BC.b(Xi)'*dJe;
                 end
 
                 % quadrature debug tool
