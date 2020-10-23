@@ -18,7 +18,8 @@
     
     % Directory for VTK Files (end with \)
     if ispc
-        VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
+        VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+        %VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
     else
         VTKFolder = '/home/e2rivas/Documents/Matlab Results/';
     end

@@ -3,14 +3,12 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
 %% Mesh Properties
     disp([num2str(toc),': Building Mesh...']);
     
-    % Mesh formats: 
-    %   'MANUAL'    - In-house structured meshing
-    % 	'GMSH'      - Import .msh file from GMSH, structured or unstructured
-    MeshType = 'GMSH';        
+    % Mesh format - 'STRUCTURED', 'UNSTRUCTURED'
+    MeshType = 'UNSTRUCTURED';        
 
     
     switch MeshType
-        case 'MANUAL'
+        case 'STRUCTURED'
             % location of initial node [m] [x0;y0;z0] 
             Mesh.x1 = [0;0;0];
             % number of space dimensions 
@@ -23,7 +21,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
             Mesh.type = 'Q4';
             
             Mesh = BuildMesh_structured(Mesh);
-        case 'GMSH'
+        case 'UNSTRUCTURED'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII

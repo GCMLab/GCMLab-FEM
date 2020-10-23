@@ -27,6 +27,7 @@
     disp([num2str(toc),': Assembling Stiffness Matrix...']);
     K = getK(Mesh, Quad, Material);
     
+    
     % Compute external force vector
     disp([num2str(toc),': Compute Force Vector...']);
     Fext = getFext(Mesh, BC, Material, Quad, Control);
@@ -61,5 +62,4 @@
     if Control.vtk
         write2vtk_static(Mesh, Control, BC, d, strain, stress, Fint, Fext);
     end
-    
 disp('done')

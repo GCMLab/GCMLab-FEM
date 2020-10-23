@@ -50,10 +50,11 @@ for e = 1:Mesh.ne
 
             % derivative of shape function in physical coordinates 
             % (tensor form)
-            B = dNdxi/Je;
+            dNdxi = dNdxi';
+            B = Je\dNdxi;
 
             % convert B matrix to Voigt form
-            Bv = getBv(B, Mesh.nsd);
+            Bv = getBv(B', Mesh.nsd);
 
             D = getD(Xi, Mesh.nsd, Material);    
             

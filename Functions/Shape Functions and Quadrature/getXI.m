@@ -41,6 +41,27 @@ switch type
         elseif x_node == 4
             xi_node = [-1 1];
         end
+        
+    case 'Q9'
+        if x_node == 1
+            xi_node = [-1 -1];
+        elseif x_node == 2
+            xi_node = [1 -1];
+        elseif x_node == 3
+            xi_node = [1 1];
+        elseif x_node == 4
+            xi_node = [-1 1];
+        elseif x_node == 5
+            xi_node = [0 -1];
+        elseif x_node == 6
+            xi_node = [1 0];
+        elseif x_node == 7
+            xi_node = [0 1];
+        elseif x_node == 8
+            xi_node = [-1 0];
+        elseif x_node == 9
+            xi_node = [0 0];
+        end
     case 'B8'
         if x_node == 1
             xi_node = [-1 -1 -1];
