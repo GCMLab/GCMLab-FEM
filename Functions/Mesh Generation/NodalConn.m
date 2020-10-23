@@ -1,9 +1,21 @@
 function nodeconn = NodalConn(Mesh)
+% NODALCONN defines nodal connectivity in a mesh
+% Input: 
+%   Mesh: a structure array with the following fields, 
+%       .ne: number of elements
+%       .nne: number of nodes per element
+%       .nn: total number of nodes
+% Output: 
+%   nodeconn: array of nodal connectivity (size nn x 8)
+%               For each node, contains the indices of elements connected to it
+% 
+% Acknowledgements: Chris Ladubec, Matin Parchei-Esfahani, Endrina Rivas
+
     % initialize nodal connectivity (list of elements connected to each node)
-    nodeconn = zeros(Mesh.nn,8); 
+    nodeconn = zeros(Mesh.nn, 8); 
 
     % temp nodal counter
-    temp = zeros(Mesh.nn,1); 
+    temp = zeros(Mesh.nn, 1); 
 
     % loop through all elements
     for e = 1:Mesh.ne
