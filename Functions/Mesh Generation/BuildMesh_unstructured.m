@@ -14,7 +14,7 @@ function Mesh = BuildMesh_unstructured(Mesh, Control)
 
 %% Load GMSH file
     % nodal matrix and member connectivity
-    [Mesh.x, Mesh.conn] = LoadMesh(Mesh.MeshFileName, Mesh.nsd, Mesh.nsd, Control);
+    [Mesh.x, Mesh.conn] = LoadMesh(meshFileName, nsd, nsd, config_dir);
 
 %% Mesh properties
     % total number of elements
