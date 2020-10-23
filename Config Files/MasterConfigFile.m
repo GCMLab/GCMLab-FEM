@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
+function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
 
 %% Mesh Properties
     disp([num2str(toc),': Building Mesh...']);

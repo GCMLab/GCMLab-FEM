@@ -11,7 +11,7 @@
 %% Input problem definition
     fprintf('%.2f: Reading config file...\n', toc);
     [Mesh, Material, BC, Control] = ...
-            feval(Control.config_name, Control);
+            feval(Control.config_name, Control.config_dir);
 
 %% Identify free and fixed dofs
     BC = FreeFixed(BC, Mesh.DOF);
