@@ -23,6 +23,8 @@ function Mesh = BuildMesh_unstructured(meshFileName, nsd, config_dir)
     Mesh.nne = size(Mesh.conn,2);
     % total number of nodes
     Mesh.nn = size(Mesh.x,1);
+    % number of spatial dimensions
+    Mesh.nsd = nsd;
 
     switch Mesh.nne
         case 3
