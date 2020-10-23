@@ -57,49 +57,6 @@ function Mesh = BuildMesh_structured(Mesh)
         end
     end
 
-%% Nodal matrix
-
-    switch Mesh.nsd
-        case 1
-            % [nodex1 nodex2 ... nodexnn]
-            Mesh.nodes = 1:nnx;
-        case 2
-            % Matrix of nodes in the x- and y-direction
-            % [nodex1y1     nodex2y1    ... nodex_nnxy1;
-            % [nodex1y2     nodex2y2    ... nodex_nnxy2;
-            % [...;
-            % [nodex1y_nny  nodex2y_nny ... nodex_nnx y_nny];
-            Mesh.nodes = zeros(nnx(2),nnx(1));
-            % for nx = 1:nnx(1)
-            %     Mesh.nodes(:,nx) = (nnx(2)*(nx-1)+1):(nnx(2)*nx);
-            % end
-            
-            node_count = 1;
-            for nx = 1:nnx(1)
-                for ny = 1:nnx(2)
-                    Mesh.nodes(ny,nx) = node_count;
-                    node_count = node_count + 1;
-                end
-            end
-            
-        case 3
-            % 3D Array of nodes in the x-, y- and z-directions
-            % [nodex1y1z1     nodex2y1z1    ... nodex_nnxy1z1;
-            % [nodex1y2z1     nodex2y2z1    ... nodex_nnxy2z1;
-            % [...;
-            % [nodex1y_nnyz1  nodex2y_nnyz1 ... nodex_nnx y_nnyz1];
-            % ... extended in the third dimension by z2, z3...
-            Mesh.nodes = zeros(nnx(2),nnx(1),nnx(3));
-            node_count = 1;
-            for nx = 1:nnx(1)
-                for ny = 1:nnx(2)
-                    for nz = 1:nnx(3)
-                        Mesh.nodes(ny,nx,nz) = node_count;
-                        node_count = node_count + 1;
-                    end
-                end
-            end
-    end   
 
 %% Element connectivity and neighbours
 
