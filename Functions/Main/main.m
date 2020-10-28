@@ -14,7 +14,8 @@
             feval(Control.config_name, Control.config_dir);
 
 %% Identify free and fixed dofs
-    BC = FreeFixed(BC, Mesh.DOF);
+    BC.fixed = BC.fix_disp_dof;
+    BC.free = setdiff(Mesh.DOF, BC.fixed)';
 
 %% Quadrature calculation
     % (Done at beginning of code - this assumes all elements are the 
