@@ -80,16 +80,19 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
         BC.VV = @(x) -0.0006*x(:,2);
         
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof1 = Mesh.left_dof;
-        BC.fix_disp_dof2 = Mesh.right_dof;
-        BC.fix_disp_dof3 = Mesh.bottom_dof;
-        BC.fix_disp_dof4 = Mesh.top_dof;
-        BC.fix_disp_dof = unique([BC.fix_disp_dof1;BC.fix_disp_dof2;BC.fix_disp_dof3;BC.fix_disp_dof4]);
+        topleftnode = Mesh.left_nodes(find(Mesh.x(Mesh.left_nodes,2) == max(Mesh.x(:,2))));
+        botleftnode = Mesh.left_nodes(find(Mesh.x(Mesh.left_nodes,2) == min(Mesh.x(:,2))));
+        
+        BC.fix_disp_dof1 = [Mesh.left_nodes*2-1];
+        BC.fix_disp_dof2 = botleftnode*2;
+        
+        BC.fix_disp_dof = [BC.fix_disp_dof1;BC.fix_disp_dof2];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
-        BC.fix_disp_value(1:2:end) = BC.UU([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
-        BC.fix_disp_value(2:2:end) = BC.VV([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);  
+        BC.fix_disp_value1 = BC.UU([Mesh.x(Mesh.left_nodes,1),Mesh.x(Mesh.left_nodes,2)]);
+        BC.fix_disp_value2 = BC.VV([Mesh.x(botleftnode,1),Mesh.x(botleftnode,2)]);
+        BC.fix_disp_value = [BC.fix_disp_value1;BC.fix_disp_value2];  
 
     %% Neumann BC
     % -----------------------------------------------------------------
