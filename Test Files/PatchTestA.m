@@ -48,16 +48,16 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
         % otherwise, quadrature order must be increased significantly
 
     % Young's modulus [Pa]
-    Material.E = @(x) 4;  
+    Material.E = @(x) 1000;  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
+    Material.Dtype = 'PlaneStress'; 
 
     % Thickness (set as default to 1)
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) 0;
+    Material.nu = @(x) 0.3;
 
     % Alternatively, import a material file
     % Material = Material_shale();
