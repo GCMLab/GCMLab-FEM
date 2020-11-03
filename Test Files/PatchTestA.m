@@ -72,13 +72,20 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
 
-    % Dirichlet boundary conditions (essential)
+    % Dirichlet boundary conditions (essential) according to exact solution
+    % ux = 0.002x
+    % uy = -0.0006y
     % -----------------------------------------------------------------
+        BC.UU = @(x) 0.002*x(:,1);
+        BC.VV = @(x) -0.0006*x(:,2);
+        
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [Mesh.left_dof];
+        BC.fix_disp_dof = 1:Mesh.nDOF;
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value(1:2:end) = BC.UU(Mesh.x);
+        BC.fix_disp_value(2:2:end) = BC.VV(Mesh.x);  
 
     %% Neumann BC
     % -----------------------------------------------------------------
