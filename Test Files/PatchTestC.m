@@ -107,8 +107,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
         BC.traction_force_node = Mesh.right_nodes;  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        Fnode = 2/(length(BC.traction_force_node) - 1);
+        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
         
         % find the nodes in the top right and bottom right corners
         toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
