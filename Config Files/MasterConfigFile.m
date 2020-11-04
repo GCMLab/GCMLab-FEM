@@ -139,10 +139,9 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_unstructured(meshFileName, nsd, config_dir);            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir);            
     end    
     
-
 %% Material Properties (Solid)
 
     % NOTES-------------------------------------------------------------
