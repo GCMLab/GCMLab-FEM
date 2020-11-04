@@ -77,7 +77,7 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir)
 
 %% Load GMSH file
     % nodal matrix and member connectivity
-    [Mesh.x, Mesh.conn] = LoadMesh(meshFileName, nsd, nsd, config_dir);
+    [Mesh.x, Mesh.conn] = LoadMesh(meshFileName, nsd, config_dir);
 
 %% Mesh properties
     % total number of elements
