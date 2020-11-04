@@ -62,7 +62,7 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         || ~isfield(Mesh, 'right_dof') ...
         || ~isfield(Mesh, 'xdofs') ...
         || ~isfield(Mesh, 'ydofs') ...
-        || ~isfield(Mesh, 'zdofs') ...
+        || ~isfield(Mesh, 'zdofs')
         Mesh = NodeSets(Mesh);
     end
 
@@ -87,7 +87,7 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
    
 %% Boundary conditions
 
-	if ~isfield(BC, 'fix_disp_dof')
+    if ~isfield(BC, 'fix_disp_dof')
 	    BC.fix_disp_dof = [];
         BC.fix_disp_value = [];  
     end
@@ -100,15 +100,15 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     if ~isfield(BC, 'traction_force_node')
         BC.traction_force_node = [];  
         BC.traction_force_value = [];
-	end
+    end
 
-	if ~isfield(BC, 'b')        
+    if ~isfield(BC, 'b')        
         BC.b = @(x)[];  
     end  
 
 %% Control parameters
 
-	if ~isfield(Control, 'qo')
+    if ~isfield(Control, 'qo')
         Control.qo = 2;
     end
 
