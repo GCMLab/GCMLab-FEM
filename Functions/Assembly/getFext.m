@@ -138,7 +138,7 @@ for e = 1:Mesh.ne
 	            % parent coordinates of traction location
 	            xi = getXI(t_node,Mesh.type);
 	            % Shape function at traction location
-                [N,dNdxi] = lagrange_basis(Mesh.type, xi);
+                [N,dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
                 Nv = getNv(N, Mesh.nsd);
 
 	            Fte = Fte + Nv*traction_value(i,:)';

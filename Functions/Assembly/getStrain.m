@@ -92,7 +92,7 @@ for e = 1:Mesh.ne
             xi = getXI(n, Mesh.type);  
 
             % Shape function and derivatives in parent coordinates
-            [N, dNdxi] = lagrange_basis(Mesh.type, xi);
+            [N, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
 
             % quadrature point in physical coordinates
             Xi = xI'*N;
