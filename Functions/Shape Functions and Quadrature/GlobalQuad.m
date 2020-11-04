@@ -53,7 +53,7 @@ for q = 1:Quad.nq
     % N: shape function evaluated at quadrature point
     % dNdxi: derivative of shape function wrt parent coordinate, 
     %          xi, evaluated at quadrature point
-    [Quad.Nq{q}, Quad.dNdxiq{q}] = lagrange_basis(elem_type, xi, Mesh.nsd);  
+    [Quad.Nq{q}, Quad.dNdxiq{q}] = lagrange_basis(elem_type, xi, nsd);  
     Quad.Nv{q} = getNv(Quad.Nq{q}, nsd);
 end
 
