@@ -57,6 +57,46 @@ function Mesh = BuildMesh_structured(Mesh)
         end
     end
 
+%% Nodal matrix
+
+    switch Mesh.nsd
+        case 1
+            % [nodex1 nodex2 ... nodexnn]
+            nodes = 1:nnx;
+        case 2
+            % Matrix of nodes in the x- and y-direction
+            % [nodex1y1     nodex2y1    ... nodex_nnxy1;
+            % [nodex1y2     nodex2y2    ... nodex_nnxy2;
+            % [...;
+            % [nodex1y_nny  nodex2y_nny ... nodex_nnx y_nny];
+            nodes = zeros(nnx(2),nnx(1));
+            
+            node_count = 1;
+            for nx = 1:nnx(1)
+                for ny = 1:nnx(2)
+                    nodes(ny,nx) = node_count;
+                    node_count = node_count + 1;
+                end
+            end
+            
+        case 3
+            % 3D Array of nodes in the x-, y- and z-directions
+            % [nodex1y1z1     nodex2y1z1    ... nodex_nnxy1z1;
+            % [nodex1y2z1     nodex2y2z1    ... nodex_nnxy2z1;
+            % [...;
+            % [nodex1y_nnyz1  nodex2y_nnyz1 ... nodex_nnx y_nnyz1];
+            % ... extended in the third dimension by z2, z3...
+            nodes = zeros(nnx(2),nnx(1),nnx(3));
+            node_count = 1;
+            for nx = 1:nnx(1)
+                for ny = 1:nnx(2)
+                    for nz = 1:nnx(3)
+                        nodes(ny,nx,nz) = node_count;
+                        node_count = node_count + 1;
+                    end
+                end
+            end
+    end   
 
 %% Element connectivity and neighbours
 
@@ -106,10 +146,10 @@ function Mesh = BuildMesh_structured(Mesh)
                 L3 = L1 + [1,1];
                 L4 = L1 + [1,0];
 
-                Mesh.conn(e,1) = Mesh.nodes(L1(1),L1(2));
-                Mesh.conn(e,2) = Mesh.nodes(L2(1),L2(2));
-                Mesh.conn(e,3) = Mesh.nodes(L3(1),L3(2));
-                Mesh.conn(e,4) = Mesh.nodes(L4(1),L4(2));
+                Mesh.conn(e,1) = nodes(L1(1),L1(2));
+                Mesh.conn(e,2) = nodes(L2(1),L2(2));
+                Mesh.conn(e,3) = nodes(L3(1),L3(2));
+                Mesh.conn(e,4) = nodes(L4(1),L4(2));
                 
                 Mesh.eneighbours(e,1) = e - Mesh.nex(2);
                 Mesh.eneighbours(e,2) = e + 1;
@@ -188,14 +228,14 @@ function Mesh = BuildMesh_structured(Mesh)
                     L7 = L1 + [1,1,1];
                     L8 = L1 + [1,0,1];
                     
-                    Mesh.conn(e,1) = Mesh.nodes(L1(1),L1(2),L1(3));
-                    Mesh.conn(e,2) = Mesh.nodes(L2(1),L2(2),L2(3));
-                    Mesh.conn(e,3) = Mesh.nodes(L3(1),L3(2),L3(3));
-                    Mesh.conn(e,4) = Mesh.nodes(L4(1),L4(2),L4(3));
-                    Mesh.conn(e,5) = Mesh.nodes(L5(1),L5(2),L5(3));
-                    Mesh.conn(e,6) = Mesh.nodes(L6(1),L6(2),L6(3));
-                    Mesh.conn(e,7) = Mesh.nodes(L7(1),L7(2),L7(3));
-                    Mesh.conn(e,8) = Mesh.nodes(L8(1),L8(2),L8(3));
+                    Mesh.conn(e,1) = nodes(L1(1),L1(2),L1(3));
+                    Mesh.conn(e,2) = nodes(L2(1),L2(2),L2(3));
+                    Mesh.conn(e,3) = nodes(L3(1),L3(2),L3(3));
+                    Mesh.conn(e,4) = nodes(L4(1),L4(2),L4(3));
+                    Mesh.conn(e,5) = nodes(L5(1),L5(2),L5(3));
+                    Mesh.conn(e,6) = nodes(L6(1),L6(2),L6(3));
+                    Mesh.conn(e,7) = nodes(L7(1),L7(2),L7(3));
+                    Mesh.conn(e,8) = nodes(L8(1),L8(2),L8(3));
                     
                     e = e + 1;
                 end
