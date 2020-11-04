@@ -105,7 +105,7 @@ for e = 1:Mesh.ne
             % convert B matrix to Voigt form
             Bv = getBv(B', Mesh.nsd);
 
-            D = getD(Xi, Mesh.nsd, Material);
+            D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd);    
             
             % strain_e = [strainx_n1  strainx_n2...;
                          %strainy_n1  strainy_n2...;
