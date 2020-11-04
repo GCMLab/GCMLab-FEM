@@ -1,4 +1,4 @@
-function [strain, stress] = getStrain(d, Mesh, Control, Material)
+function [strain, stress] = getStrain(d, Mesh, Material, contour_type)
 %GETSTRAIN stress and strain at nodes
 %   strain = GETSTRAIN(d, Mesh, Material) is a cell array of  
 %   nodal strains in each element of the mesh. The cell array is of size 
@@ -39,6 +39,10 @@ function [strain, stress] = getStrain(d, Mesh, Control, Material)
 %               .nu:    Poisson's ratio
 %               .Dtype: 2D approximation ('PlaneStrain' or 'PlainStress')
 
+if nargin < 4
+    contour_type = 'none';
+end
+
 % Specify dimension of the strain/stress matrix
 switch Mesh.nsd
     case 1
@@ -52,7 +56,7 @@ end
 % TODO: Add least squares stress/strain projection
 
 % Specify type of strain/stress matrix/cell
-switch Control.contour
+switch contour_type
     case 'none'
         strain = cell(dim,Mesh.ne);
         stress = cell(dim,Mesh.ne);
@@ -85,7 +89,7 @@ for e = 1:Mesh.ne
         for n = 1:Mesh.nne
 
             % node point in parent coordinate
-            xi = getXI(n,Mesh.type);  
+            xi = getXI(n, Mesh.type);  
 
             % Shape function and derivatives in parent coordinates
             [N, dNdxi] = lagrange_basis(Mesh.type, xi);
@@ -116,7 +120,7 @@ for e = 1:Mesh.ne
         end
             
     %% Add to global strains
-        switch Control.contour
+        switch contour_type
             case 'none'
                 for s = 1:size(strain_e,1)
                     strain{s,e} = strain_e(s,:);
@@ -131,7 +135,7 @@ for e = 1:Mesh.ne
 end
 
 %% For nodal strains, divide by count to get the average
-    if strcmp(Control.contour,'nodal')
+    if strcmp(contour_type,'nodal')
        strain = strain./count;
        stress = stress./count;
     end
