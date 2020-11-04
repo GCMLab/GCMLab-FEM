@@ -111,25 +111,24 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
     disp([num2str(toc),': Building Mesh...']);
     
     % Mesh formats: 
-    %   'MANUAL'    - In-house structured meshing
-    % 	'GMSH'      - Import .msh file from GMSH, structured or unstructured
+    %   'MANUAL'- In-house structured meshing
+    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
     MeshType = 'GMSH';        
-
     
     switch MeshType
         case 'MANUAL'
             % location of initial node [m] [x0;y0;z0] 
-            Mesh.x1 = [0;0;0];
+            x1 = [0;0;0];
             % number of space dimensions 
-            Mesh.nsd = 2;
+            nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            Mesh.L = [1;1];
+            L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            Mesh.nex = [2;2]*20;
+            nex = [2;2]*20;
             % element type ('Q4')
-            Mesh.type = 'Q4';
+            type = 'Q4';
             
-            Mesh = BuildMesh_structured(Mesh);
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type);
         case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
@@ -182,7 +181,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [Mesh.left_dof];
+        BC.fix_disp_dof = Mesh.left_dof;
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
@@ -237,9 +236,10 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
         Control.beta = 10^10;
 
         % method used for solving linear problem:
-            % 'LinearSolver1'
-            % 'LinearSolver2'
-            % 'LinearSolver3'
+        % 'LinearSolver1': Partitioning
+        % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
+        %                   corresponding to essential boundaries
+        % 'LinearSolver3': Penalty method
         Control.LinearSolver = 'LinearSolver1';
  
 end

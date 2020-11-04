@@ -1,4 +1,4 @@
-function Mesh = BuildMesh_structured(Mesh)
+function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
 %BUILDMESH_STRUCTURED Structured mesh generator
 %   Mesh = BUILDMESH_STRUCTURED(nsd, x1, L, nex, type) is a structure 
 %   array with the structured mesh description. The mesh is built for a 
@@ -77,36 +77,40 @@ function Mesh = BuildMesh_structured(Mesh)
 %       .right_dofz     DOFs on the right face in the z-direction
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
+
 %   Acknowledgments: Chris Ladubec, Matin Parchei Esfahani
 
-%% Mesh properties
+%% Mesh properties  
+    Mesh.type = type;
     % total number of elements
-    Mesh.ne = prod(Mesh.nex);               
+    Mesh.ne = prod(nex);               
     % number of nodes per element (per direction)
     nnex = NodesPerElement(Mesh.type); 
             % [nnex;nney] nnex: number of nodes per element in the x-direction
             % nney: number of nodes per element in the y-direction
     % number of nodes per element
     Mesh.nne = prod(nnex);
+    % number of spatial dimensions
+    Mesh.nsd = nsd;
 
 %% Nodal spatial locations
 
     if ~isfield(Mesh,'x')
         % compute nodal locations
         disp([num2str(toc),': Computing nodal locations...']);
-        dL = Mesh.L./(Mesh.nex.*(nnex-1));  % node spacing
-        x_temp = cell(1,Mesh.nsd);
-        for i = 1:Mesh.nsd
+        dL = L./(nex.*(nnex-1));  % node spacing
+        x_temp = cell(1,nsd);
+        for i = 1:nsd
             % nodal spatial locations
-            x_temp{i} = Mesh.x1(i):dL(i):(Mesh.x1(i)+Mesh.L(i)); 
+            x_temp{i} = x1(i):dL(i):(x1(i)+L(i)); 
             % total number of nodes per direction
             nnx(i) = length(x_temp{i});   
         end
 
         Mesh.nn = prod(nnx);               % total number of nodes
 
-        Mesh.x = zeros(Mesh.nn,Mesh.nsd);
-        switch Mesh.nsd
+        Mesh.x = zeros(Mesh.nn,nsd);
+        switch nsd
             case 1
                 Mesh.x = x_temp{1}';   % nodal spatial locations
             case 2
@@ -179,16 +183,16 @@ function Mesh = BuildMesh_structured(Mesh)
     disp([num2str(toc),': Defining element connectivity...']);
 
     % initialize member connectivity
-    Mesh.conn = zeros(Mesh.ne,Mesh.nne);
+    Mesh.conn = zeros(Mesh.ne, Mesh.nne);
 
     % number of neighbors
-    if Mesh.nsd == 1
+    if nsd == 1
         nneighbors = 2;
     else
         nneighbors = 4;
     end
 
-    % initialize matrix of neighboring elements
+    % initialize array of neighboring elements
     % [e1 neighbor 1, e1 neighbor 2, e1 neighbor 3, e1 neighbor 4 ...;]
     % [e2 neighbor 1, e2 neighbor 2, e2 neighbor 3, e2 neighbor 4 ...;]
     % [...]
@@ -196,7 +200,7 @@ function Mesh = BuildMesh_structured(Mesh)
 
     Mesh.eneighbours = zeros(Mesh.ne,nneighbors);
 
-    if Mesh.nsd == 1
+    if nsd == 1
         for e = 1:Mesh.ne   % loop through all elements
             % if it is the first element
             if e == 1
@@ -213,9 +217,9 @@ function Mesh = BuildMesh_structured(Mesh)
     elseif strcmp(Mesh.type,'Q4')
         e = 1; % element counter
         % run through the elements in the x direction
-        for nex = 1:Mesh.nex(1)
+        for nex = 1:nex(1)
             % run through the elements in the y direction
-            for ney = 1:Mesh.nex(2)
+            for ney = 1:nex(2)
                 % starting node number for the element
                 L1 = [ney,nex];            
                 L2 = L1 + [0,1];
@@ -227,14 +231,14 @@ function Mesh = BuildMesh_structured(Mesh)
                 Mesh.conn(e,3) = nodes(L3(1),L3(2));
                 Mesh.conn(e,4) = nodes(L4(1),L4(2));
                 
-                Mesh.eneighbours(e,1) = e - Mesh.nex(2);
+                Mesh.eneighbours(e,1) = e - nex(2);
                 Mesh.eneighbours(e,2) = e + 1;
-                Mesh.eneighbours(e,3) = e + Mesh.nex(2);
+                Mesh.eneighbours(e,3) = e + nex(2);
                 Mesh.eneighbours(e,4) = e - 1;
             
                 badleftneighbours = Mesh.eneighbours(e,1) < ney;
                 badrightneighbours = Mesh.eneighbours(e,3)> ...
-                                            Mesh.ne - (Mesh.nex(2) - ney);
+                                            Mesh.ne - (nex(2) - ney);
                 Mesh.eneighbours(e,1) = Mesh.eneighbours(e,1)*(1-badleftneighbours);
                 Mesh.eneighbours(e,3) = Mesh.eneighbours(e,3)*(1-badrightneighbours);
                 e = e + 1;
@@ -242,18 +246,18 @@ function Mesh = BuildMesh_structured(Mesh)
             end
             % Set non-existent neighbours to zero (for edge elements)
             % elements in this column
-            colel = (nex-1)*Mesh.nex(2)+1:nex*Mesh.nex(2);
-            badbotneighbours = find(Mesh.eneighbours(colel,4)<(nex-1)*Mesh.nex(2)+1);
-            badtopneighbours = find(Mesh.eneighbours(colel,2)>nex*Mesh.nex(2));
+            colel = (nex-1)*nex(2)+1:nex*nex(2);
+            badbotneighbours = find(Mesh.eneighbours(colel,4)<(nex-1)*nex(2)+1);
+            badtopneighbours = find(Mesh.eneighbours(colel,2)>nex*nex(2));
             Mesh.eneighbours(colel(badbotneighbours),4) = zeros(size(badbotneighbours));
             Mesh.eneighbours(colel(badtopneighbours),2) = zeros(size(badtopneighbours));
         end
     elseif strcmp(Mesh.type,'Q9')
         e = 1; % element counter
         % run through the elements in the y-direction
-        for ney = 1:Mesh.nex(2)
+        for ney = 1:nex(2)
             % run through the elements in the x-direction
-            for nex = 1:Mesh.nex(1)
+            for nex = 1:nex(1)
                 % starting node
                 L1 = 2*(ney-1)*nnx(1) + 2*(nex-1) + 1;
                 
@@ -267,9 +271,9 @@ function Mesh = BuildMesh_structured(Mesh)
                 Mesh.conn(e,8) = L1 + nnx(1);
                 Mesh.conn(e,9) = L1 + 1 + nnx(1);
                 
-                Mesh.eneighbours(e,1) = e - Mesh.nex(1);
+                Mesh.eneighbours(e,1) = e - nex(1);
                 Mesh.eneighbours(e,2) = e + 1;
-                Mesh.eneighbours(e,3) = e + Mesh.nex(1);
+                Mesh.eneighbours(e,3) = e + nex(1);
                 Mesh.eneighbours(e,4) = e - 1;
                 
                 e = e + 1;
@@ -292,9 +296,9 @@ function Mesh = BuildMesh_structured(Mesh)
         end             
     elseif strcmp(Mesh.type,'B8')
         e = 1;
-        for nex = 1:Mesh.nex(1)
-            for ney = 1:Mesh.nex(2)
-                for nez = 1:Mesh.nex(3)
+        for nex = 1:nex(1)
+            for ney = 1:nex(2)
+                for nez = 1:nex(3)
                     L1 = [ney,nex,nez];
                     L2 = L1 + [0,1,0];
                     L3 = L1 + [1,1,0];
