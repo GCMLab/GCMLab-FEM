@@ -217,11 +217,11 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
     elseif strcmp(Mesh.type,'Q4')
         e = 1; % element counter
         % run through the elements in the x direction
-        for nex = 1:nex(1)
+        for nx = 1:nex(1)
             % run through the elements in the y direction
-            for ney = 1:nex(2)
+            for ny = 1:nex(2)
                 % starting node number for the element
-                L1 = [ney,nex];            
+                L1 = [ny,nx];            
                 L2 = L1 + [0,1];
                 L3 = L1 + [1,1];
                 L4 = L1 + [1,0];
@@ -236,9 +236,9 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
                 Mesh.eneighbours(e,3) = e + nex(2);
                 Mesh.eneighbours(e,4) = e - 1;
             
-                badleftneighbours = Mesh.eneighbours(e,1) < ney;
+                badleftneighbours = Mesh.eneighbours(e,1) < ny;
                 badrightneighbours = Mesh.eneighbours(e,3)> ...
-                                            Mesh.ne - (nex(2) - ney);
+                                            Mesh.ne - (nex(2) - ny);
                 Mesh.eneighbours(e,1) = Mesh.eneighbours(e,1)*(1-badleftneighbours);
                 Mesh.eneighbours(e,3) = Mesh.eneighbours(e,3)*(1-badrightneighbours);
                 e = e + 1;
@@ -246,20 +246,20 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
             end
             % Set non-existent neighbours to zero (for edge elements)
             % elements in this column
-            colel = (nex-1)*nex(2)+1:nex*nex(2);
-            badbotneighbours = find(Mesh.eneighbours(colel,4)<(nex-1)*nex(2)+1);
-            badtopneighbours = find(Mesh.eneighbours(colel,2)>nex*nex(2));
+            colel = (nx-1)*nex(2)+1:nx*nex(2);
+            badbotneighbours = find(Mesh.eneighbours(colel,4)<(nx-1)*nex(2)+1);
+            badtopneighbours = find(Mesh.eneighbours(colel,2)>nx*nex(2));
             Mesh.eneighbours(colel(badbotneighbours),4) = zeros(size(badbotneighbours));
             Mesh.eneighbours(colel(badtopneighbours),2) = zeros(size(badtopneighbours));
         end
     elseif strcmp(Mesh.type,'Q9')
         e = 1; % element counter
         % run through the elements in the y-direction
-        for ney = 1:nex(2)
+        for ny = 1:nex(2)
             % run through the elements in the x-direction
-            for nex = 1:nex(1)
+            for nx = 1:nex(1)
                 % starting node
-                L1 = 2*(ney-1)*nnx(1) + 2*(nex-1) + 1;
+                L1 = 2*(ny-1)*nnx(1) + 2*(nx-1) + 1;
                 
                 Mesh.conn(e,1) = L1;
                 Mesh.conn(e,2) = L1 + 2;
@@ -296,10 +296,10 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
         end             
     elseif strcmp(Mesh.type,'B8')
         e = 1;
-        for nex = 1:nex(1)
-            for ney = 1:nex(2)
-                for nez = 1:nex(3)
-                    L1 = [ney,nex,nez];
+        for nx = 1:nex(1)
+            for ny = 1:nex(2)
+                for nz = 1:nex(3)
+                    L1 = [ny,nx,nz];
                     L2 = L1 + [0,1,0];
                     L3 = L1 + [1,1,0];
                     L4 = L1 + [1,0,0];
