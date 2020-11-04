@@ -1,5 +1,11 @@
-function Material = Material_shale()
-%% Material Properties - Shale
+function Material = MaterialShale()
+%MATERIALSHALE Defines material properties for shale
+% 	Material = MATERIALSHALE() is a structure array with the following 
+% 				fields,
+%		 		.E: 		Elastic modulus
+%		 		.Dtype: 	2D approximation
+%		 		.t: 		Thickness
+%		 		.nu: 		Poisson's ratio
 
 	% Young's modulus [Pa]
 	Material.E = @(x) 7.5e9;  

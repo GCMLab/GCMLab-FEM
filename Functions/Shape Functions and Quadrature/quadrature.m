@@ -1,38 +1,41 @@
-function [W,Q] = quadrature( quadorder, type, dim )
-%QUADRATURE Returns a n x 1 column vector W of quadrature
-%weights and a n x dim matrix of quadrature points, where n is the
-%number of quadrature points.  The function is called as follows:
-%   [W,Q] = quadrature( quadorder, type, dim )
+function [W, Q] = quadrature(quadorder, type, dim)
+%QUADRATURE Quadrature weights and points   
+%   W = QUADRATURE(quadorder, type, dim) returns an n x 1 column vector
+%   of quadrature weights for the specified quadrature order (quadorder),
+%   element type (type), and spatial dimensions (dim), where n is the 
+%   number of quadrature points
+% 
+%   [W, Q] = QUADRATURE(quadorder, type, dim) also returns an n x dim
+%   matrix of quadrature points
 %
-%   ----------------------------------------------------------------------
+%   --------------------------------------------------------------------
 % 	Input
-%   ----------------------------------------------------------------------
-%   quadorder: quadrature order. If an invalid quadrature order for
+%   --------------------------------------------------------------------
+%   quadorder:  quadrature order. If an invalid quadrature order for
 %               triangular quadrature is given, the default is 1.
-%   type: type of quadrature (i.e. gaussian, triangular, etc.. );
-%           The default for type is GAUSS.
-%   dim: number of spatial dimensions of the problem. The default for dim 
-%           is unity.
+%   type:       type of quadrature (i.e. gaussian, triangular, etc.. );
+%               The default for type is GAUSS.
+%   dim:        number of spatial dimensions of the problem. The default  
+%               for dim is unity.
 %
-%   ----------------------------------------------------------------------
+%   --------------------------------------------------------------------
 %   References
-%   ----------------------------------------------------------------------
+%   --------------------------------------------------------------------
 %   [1] Fish, J., & Belytschko, T. (2007). A first course in finite 
 %       elements. Chichester; Hoboken, NJ: John Wiley & Sons.
-%
-%   ----------------------------------------------------------------------
+
 %   Acknowledgements: Jack Chessa
 
-% -------------------------------------------------------------------
+% ----------------------------------------------------------------------
 % set default type to Gaussian if not specified
-% -------------------------------------------------------------------
+% ----------------------------------------------------------------------
 if ( nargin < 2 )
     type = 'GAUSS';
 end
 
-% -------------------------------------------------------------------
+% ----------------------------------------------------------------------
 % set default dimensions to 1 if type is Gaussian, 2 otherwise
-% -------------------------------------------------------------------
+% ----------------------------------------------------------------------
 if nargin < 3
     if strcmp(type,'GAUSS') == 1
         dim = 1;
@@ -190,9 +193,9 @@ if ( strcmp(type,'GAUSS') == 1 )
     W = quadweight;
     % END OF GAUSSIAN QUADRATURE DEFINITION
 
-% -------------------------------------------------------------------
+% ----------------------------------------------------------------------
 % Triangular quadrature
-% -------------------------------------------------------------------
+% ----------------------------------------------------------------------
 elseif ( strcmp(type,'TRIANGULAR') == 1 ) 
 
     if ( dim == 3 )  %%% TETRAHEDRA
@@ -260,9 +263,9 @@ elseif ( strcmp(type,'TRIANGULAR') == 1 )
         Q = quadpoint;
         W = quadweight/6;
 
-% -------------------------------------------------------------------
+% ----------------------------------------------------------------------
 % TRIANGLES
-% -------------------------------------------------------------------
+% ----------------------------------------------------------------------
     else  
 
         if ( quadorder == 1 )   % set quad points and quadweights
@@ -378,7 +381,7 @@ elseif ( strcmp(type,'TRIANGULAR') == 1 )
         end
         
         Q = quadpoint;
-        W = quadweight/2;   % TODO: Figure out why divided quadweight by 2
+        W = quadweight/2; % TODO: Figure out why divided quadweight by 2
         
     end
 

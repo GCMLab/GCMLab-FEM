@@ -1,4 +1,55 @@
 function Mesh = NodeSets(Mesh)
+%NODESETS define sets of nodes and DOFs in the domain
+%   Mesh = NODESETS(Mesh) updates the structure array containing mesh
+%           information with relevant node sets
+% 
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   Mesh:
+%       .nsd        number of spatial dimensions
+%       .x          array of nodal spatial locations for undeformed mesh 
+%                   (size nn x nsd in which nn is the number of nodes)
+% 
+%   --------------------------------------------------------------------
+%   Output
+%   --------------------------------------------------------------------
+%   The function returns the Mesh structure array with new fields,
+%       .left_nodes     Nodes on the left edge of the domain
+%       .left_dof       DOF on the left edge of the domain
+%       .right_nodes    Nodes on the right edge of the domain
+%       .right_dof      DOF on the right edge of the domain
+%       .xdofs          DOF in the x-direction
+%       .ydofs          DOF in the y-direction
+%       .zdofs          DOF in the z-direction
+%   Two-dimensional meshes also contain the new fields,
+%       .top_nodes      Nodes on the top edge of the domain
+%       .top_dof        DOF on the top edge of the domain
+%       .top_dofx       DOF on the top boundary in the x-direction
+%       .top_dofy       DOF on the top boundary in the y-direction
+%       .bottom_nodes   Nodes on the bottom edge of the domain
+%       .bottom_dof     DOF on the bottom edge of the domain
+%       .bottom_dofx    DOF on the bottom boundary in the x-direction
+%       .bottom_dofy    DOF on the bottom boundary in the y-direction
+%       .left_dofx      DOF on the left boundary in the x-direction
+%       .left_dofy      DOF on the left boundary in the y-direction
+%       .right_dofx     DOF on the right boundary in the x-direction
+%       .right_dofy     DOF on the right boundary in the y-direction
+%   Three-dimensional meshes also contain the new fields, 
+%       .near_nodes     nodes on the nearest face of the domain
+%       .near_dof       DOF on the nearest face of the domain
+%       .near_dofx      DOF on the near face in the x-direction
+%       .near_dofy      DOF on the near face in the y-direction
+%       .near_dofz      DOF on the near face in the z-direction
+%       .far_nodes      Nodes on the farthest face of the domain
+%       .far_dof        DOF on the farthest face of the domain
+%       .far_dofx       DOF on the far face in the x-direction
+%       .far_dofy       DOF on the far face in the y-direction
+%       .far_dofz       DOF on the far face in the z-direction
+%       .left_dofz      DOF on the left face in the z-direction
+%       .right_dofz     DOF on the right face in the z-direction
+%       .top_dofz       DOF on the top face in the z-direction
+%       .bottom_dofz    DOF on the bottom face in the z-direction
 
 switch Mesh.nsd
     case 1
