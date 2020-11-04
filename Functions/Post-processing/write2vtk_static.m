@@ -1,4 +1,4 @@
-function write2vtk_static(Mesh, Control, BC, d, strain, stress, Fint, Fext)
+function write2vtk_static(Mesh, Control, fixedDOF, d, strain, stress, Fint, Fext)
 %WRITE2VTK_STATIC Exports results to VTK file 
 %   WRITE2VTK_STATIC(Mesh, Control, fixedDOF, d, strain, stress, Fint, Fext) 
 %   produces vtk files that can be opened in Paraview to visualize
@@ -82,7 +82,7 @@ function write2vtk_static(Mesh, Control, BC, d, strain, stress, Fint, Fext)
             scalardata(end).type = 'float';
 
             fixed = zeros(Mesh.nDOF,1);
-            fixed(BC.fixed) = 1;
+            fixed(fixedDOF) = 1;
             scalardata(end+1).name = 'fixedX';
             scalardata(end).data = fixed(Mesh.xdofs);
             scalardata(end).type = 'float';
@@ -184,7 +184,8 @@ function write2vtk_static(Mesh, Control, BC, d, strain, stress, Fint, Fext)
             scalardata(end).type = 'float';
 
             fixed = zeros(Mesh.nDOF,1);
-            fixed(BC.fixed) = 1;
+            fixed(fixedDOF) = 1;
+            scalardata(end+1).name = 'fixedX';
             scalardata(end+1).name = 'fixedX';
             scalardata(end).data = fixed(Mesh.xdofs);
             scalardata(end).type = 'float';

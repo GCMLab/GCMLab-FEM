@@ -65,6 +65,8 @@
 
 %% Write to vtk
     if Control.vtk
-        write2vtk_static(Mesh, Control, BC, d, strain, stress, Fint, Fext);
+        write2vtk_static(Mesh, Control, BC.fixed, d, strain, stress, ...
+                        Fint, Fext);
     end
+    
 disp('done')
