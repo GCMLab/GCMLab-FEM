@@ -1,4 +1,5 @@
-function write2vtk_static(Mesh, Control, fixedDOF, d, strain, stress, Fint, Fext)
+function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
+                        fixedDOF, d, strain, stress, Fint, Fext)
 %WRITE2VTK_STATIC Exports results to VTK file 
 %   WRITE2VTK_STATIC(Mesh, Control, fixedDOF, d, strain, stress, Fint, Fext) 
 %   produces vtk files that can be opened in Paraview to visualize
@@ -42,9 +43,9 @@ function write2vtk_static(Mesh, Control, fixedDOF, d, strain, stress, Fint, Fext
 %   Fext:       Column vector of external forces (size ndof x 1)
 
 %% Define variables
-    description = Control.config_name;
-    filename1 = fullfile(Control.vtk_dir, [Control.config_name '.vtk.0']); 
-    filename2 = fullfile(Control.vtk_dir, [Control.config_name '.vtk.1']);
+    description = config_name;
+    filename1 = fullfile(vtk_dir, [config_name '.vtk.0']); 
+    filename2 = fullfile(vtk_dir, [config_name '.vtk.1']);
 
     deformedshape = Mesh.x + ...
                 Control.MagCoef*[d(Mesh.xdofs),d(Mesh.ydofs),d(Mesh.zdofs)];

@@ -68,16 +68,7 @@ try
         config_name_full = ConfigFiles{file};
         [~,config_name] = fileparts(config_name_full);
 
-        Control.config_name = config_name;
-        Control.vtk_dir = VTKDirs{file};
-        Control.config_dir = ConfigDir;
-
-        % post-processing controls
-        if plot2vtk
-            Control.vtk = 1;  
-        else 
-            Control.vtk = 0;
-        end
+        vtk_dir = VTKDirs{file};
         
         if ~isfolder(VTKDirs{file}) 
             mkdir(VTKDirs{file})

@@ -3,16 +3,16 @@
 % Acknowledgements: Matin Parchei Esfahani, Endrina Rivas
 
 %% Delete past vtk files (so don't overwrite any)
-    if Control.vtk
+    if plot2vtk
         fprintf('%.2f: Deleting old vtk files...\n', toc);
-        sol = fullfile(Control.vtk_dir, '*');
+        sol = fullfile(vtk_dir, '*');
         delete(sol)
     end
 
 %% Input problem definition
     fprintf('%.2f: Reading config file...\n', toc);
     [Mesh, Material, BC, Control] = ...
-            feval(Control.config_name, Control.config_dir);
+            feval(config_name, ConfigDir);
 
 %% Set Default Values
     [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
@@ -63,8 +63,8 @@
     Fint = K*d;
 
 %% Write to vtk
-    if Control.vtk
-        write2vtk_static(Mesh, Control, BC.fixed, d, strain, stress, ...
+    if plot2vtk
+        write2vtk_static(config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain, stress, ...
                         Fint, Fext);
     end
     
