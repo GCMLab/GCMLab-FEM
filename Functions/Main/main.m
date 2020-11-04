@@ -14,6 +14,9 @@
     [Mesh, Material, BC, Control] = ...
             feval(Control.config_name, Control.config_dir);
 
+%% Set Default Values
+    [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
+
 %% Identify free and fixed dofs
     BC.fixed = BC.fix_disp_dof;
     BC.free = setdiff(Mesh.DOF, BC.fixed)';
