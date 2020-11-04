@@ -1,4 +1,4 @@
-function D = getD(E, nu, nsd)
+function D = getD(E, nu, nsd, Dtype)
 %GETD Elasticity tensor
 %   D = GETD(E, nu, nsd) is the elasticity tensor for a problem of 
 %   spatial dimension, nsd, Young's modulus, E, and Poisson's ratio, nu. 
@@ -16,7 +16,7 @@ switch nsd
     case 1
         D = E;
     case 2                 
-        switch Material.Dtype
+        switch Dtype
             case 'PlaneStrain'
                 D  = E/((1+nu)*(1-2*nu))*[1-nu  nu   0     ;
                                           nu    1-nu 0     ;

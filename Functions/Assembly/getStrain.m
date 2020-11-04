@@ -1,5 +1,5 @@
 function [strain, stress] = getStrain(d, Mesh, Material, contour_type)
-%GETSTRAIN stress and strain at nodes
+%GETSTRAIN Evaluate stress and strain at nodes
 %   strain = GETSTRAIN(d, Mesh, Material) is a cell array of  
 %   nodal strains in each element of the mesh. The cell array is of size 
 %   nsd x nn.
@@ -109,7 +109,7 @@ for e = 1:Mesh.ne
             % convert B matrix to Voigt form
             Bv = getBv(B', Mesh.nsd);
 
-            D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd);    
+            D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
             
             % strain_e = [strainx_n1  strainx_n2...;
                          %strainy_n1  strainy_n2...;

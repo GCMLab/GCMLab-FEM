@@ -92,7 +92,7 @@ for e = 1:Mesh.ne
             % convert B matrix to Voigt form
             Bv = getBv(B', Mesh.nsd);
 
-            D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd);    
+            D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
             
             % for 2D, volume integral includes the thickness
             switch Mesh.nsd 
