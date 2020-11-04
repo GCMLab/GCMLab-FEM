@@ -1,8 +1,52 @@
-function F = getFext(Mesh, BC, Material, Quad, Control)
-% Computes column matrix of external forces
-% Acknowledgements: Chris Ladubec, Endrina Rivas
+function F = getFext(Mesh, BC, Quad)
+%GETFEXT External forces
+%   F = GETFEXT(Mesh, BC, Quad) is a column vector of external forces 
+%   acting on each degree of freedom (size ndof x 1 in which ndof is the
+%   number of degrees of freedom)
+%   
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   Mesh:   Structure array with the following fields,
+%           .nDOF:      Total number of DOFs
+%           .ne:        Total number of elements in the mesh
+%           .conn:      Array of element connectivity (size ne x nne)
+%           .x:         Array of nodal spatial locations for
+%                       undeformed mesh (size nn x nsd)
+%           .DOF:       Array of DOF indices (size nn x nsd)
+%           .nDOFe:     Number of DOFs per element
+%           .type:      the toplogical class of finite element; it is in 
+%                       the general form 'topology-#of nodes' ie a three 
+%                       node triangle is T3 a four node quadralateral is 
+%                       Q4 a 4 node tetrahedra is H4 a 27 node brick is 
+%                       B27 etc. Presently defined are L2, Q4, and Q9. 
+%           .nsd:       Number of spatial dimensions
+% 
+%   BC:     Structure array with the following fields,
+%           .b                          Anonymous function of distributed
+%                                       body force (size 1 x nsd)
+%           .traction_force_node        Column vector of nodes with 
+%                                       prescribed tractions
+%           .traction_force_value       Column vector of prescribed tractions
+%                                       on nodes
+%           .traction_force_dof         Column vector of degrees of freedom
+%                                       with prescribed tractions
+%           .traction_force_dof_value   Column vector of prescribed tractions
+%                                       on DOF
+% 
+%   Quad:   Structure array with the following fields,
+%           .W:         Vector of quadrature weights (size nq x 1)      
+%           .Q:         Vector of quadrature points (size nq x nsd)
+%           .nq:        Number of quadrature points 
+%           .Nq:        Cell array (size nq x 1) with shape functions  
+%                       evaluated at each quadrature point
+%           .dNdxiq:    Cell array (size nq x 1) with derivative of shape 
+%                       functions w.r.t. parent coordinates evaluated at 
+%                       each quadrature point
 
-%% initialize values
+% Acknowledgements: Chris Ladubec
+
+%% Initialize values
 
 	% initialize source (body) force vector
 	F = zeros(Mesh.nDOF, 1);       

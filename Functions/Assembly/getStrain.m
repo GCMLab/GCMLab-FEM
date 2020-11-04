@@ -1,25 +1,43 @@
 function [strain, stress] = getStrain(d, Mesh, Control, Material)
-%GETSTRAIN 
-%
-%   strain: nodal strain
-%   strainc: nodal strain with averaging for contour plots
-%
-%   if Control.contour = 'none'
-%       strain/stress are cell arrays
-%       strain = {strainx in e1} {strainx in e2} ... {strainx in enn}
-%                {strainy in e1} {strainy in e2} ... {strainy in enn}
-%   if Control.contour = 'nodal'
-%           strain = [strainx_n1  strainx_n2  ... strainx_nn;
-%                     strainy_n1  strainy_n2  ... strainy_nn;
-%                     strainxy_n1 strainxy_n2 ... strainxy_nn];
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       January 2016
-%   Last updated October 2020
-%   ----------------------------------------------------------------------
+%GETSTRAIN stress and strain at nodes
+%   strain = GETSTRAIN(d, Mesh, Material) is a cell array of  
+%   nodal strains in each element of the mesh. The cell array is of size 
+%   nsd x nn.
+%   {strainx in e1} {strainx in e2} ... {strainx in enn}
+%   {strainy in e1} {strainy in e2} ... {strainy in enn}
+% 
+%   strain = GETSTRAIN(d, Mesh, Material, 'nodal') is a matrix of 
+%   nodal-averaged strains of size 3 x nn.
+%   [strainx_n1  strainx_n2  ... strainx_nn;
+%    strainy_n1  strainy_n2  ... strainy_nn;
+%    strainxy_n1 strainxy_n2 ... strainxy_nn];
+% 
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   d:          Vector of displacements at each DOF (size ndof x 1 in 
+%               which ndof is the number of degrees of freedom)
+% 
+%   Mesh:       Structure array with the following fields,
+%               .nsd:   Number of spatial dimensions
+%               .ne:    Total number of elements in the mesh
+%               .nn:    Total number of nodes 
+%               .nne:   Vector of number of nodes per element (size nsd x 1)
+%               .type:  the toplogical class of finite element; it is in 
+%                       the general form 'topology-#of nodes' ie a three 
+%                       node triangle is T3 a four node quadralateral is 
+%                       Q4 a 4 node tetrahedra is H4 a 27 node brick is 
+%                       B27 etc. Presently defined are L2, Q4, and Q9. 
+%               .nDOFe: Number of DOFs per element
+%               .conn:  Array of element connectivity (size ne x nne)
+%               .x:     Array of nodal spatial locations for
+%                       undeformed mesh (size nn x nsd)
+%               .DOF:   Array of DOF indices (size nn x nsd)
+% 
+%   Material:   Structure array with the following fields,
+%               .E:     Modulus of elasticity
+%               .nu:    Poisson's ratio
+%               .Dtype: 2D approximation ('PlaneStrain' or 'PlainStress')
 
 % Specify dimension of the strain/stress matrix
 switch Mesh.nsd

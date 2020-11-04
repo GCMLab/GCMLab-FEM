@@ -20,17 +20,17 @@ function Quad = GlobalQuad(nsd, elem_type, qo)
 %   --------------------------------------------------------------------
 % 	Output
 %   --------------------------------------------------------------------
-% 	Quad: 			Structure array with fields,
-%       .nq         Number of quadrature points	
-%       .W          Vector of quadrature weights (size nq x 1)      
-%       .Q          Vector of quadrature points	(size nq x nsd)
-%       .Nq         Cell array (size nq x 1) with shape functions  
-%                   evaluated at each quadrature point
-%       .dNdxiq     Cell array (size nq x 1) with derivative of shape 
-%                   functions w.r.t. parent coordinates evaluated at 
-%                   each quadrature point
-%       .Nv         Cell array (size nq x 1) with shape functions 
-%                   evaluated at each quadrature point in Voigt form
+% 	Quad: 	Structure array with fields,
+%       	.nq:     Number of quadrature points	
+%       	.W:      Vector of quadrature weights (size nq x 1)      
+%       	.Q:      Vector of quadrature points	(size nq x nsd)
+%       	.Nq:     Cell array (size nq x 1) with shape functions  
+%       	         evaluated at each quadrature point
+%       	.dNdxiq: Cell array (size nq x 1) with derivative of shape 
+%       	         functions w.r.t. parent coordinates evaluated at 
+%       	         each quadrature point
+%       	.Nv:     Cell array (size nq x 1) with shape functions 
+%       	         evaluated at each quadrature point in Voigt form
 
 % Acknowledgments: Matin Parchei Esfahani
 

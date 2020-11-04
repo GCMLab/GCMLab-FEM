@@ -1,6 +1,82 @@
 function Mesh = BuildMesh_structured(Mesh)
-%BUILDMESH Build a mesh
-%   BuildMesh()
+%BUILDMESH_STRUCTURED Structured mesh generator
+%   Mesh = BUILDMESH_STRUCTURED(nsd, x1, L, nex, type) is a structure 
+%   array with the structured mesh description. The mesh is built for a 
+%   model with spatial dimension nsd, initial node location x1, 
+%   length L, and nex elements. 
+% 
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   nsd:    Number of spatial dimensions
+%   x1:     Starting location for the rectangular mesh (size nsd x 1)
+%   L:      Length of domain (size nsd x 1)
+%   nex:    Number of elements in each direction (size nsd x 1)
+%   type:   the toplogical class of finite element; it is in the general
+%           form 'topology-#of nodes' ie a three node triangle is T3 a 
+%           four node quadralateral is Q4 a 4 node tetrahedra is H4 a 27 
+%           node brick is B27 etc. Presently defined are L2, Q4, and Q9.  
+% 
+%   --------------------------------------------------------------------
+%   Output
+%   --------------------------------------------------------------------
+%   Mesh is a structure array with the following fields,
+%       .type:          the toplogical class of finite element; it is in 
+%                       the general form 'topology-#of nodes' ie a three 
+%                       node triangle is T3 a four node quadralateral is 
+%                       Q4 a 4 node tetrahedra is H4 a 27 node brick is 
+%                       B27 etc. Presently defined are L2, Q4, and Q9. 
+%       .nsd:           Number of spatial dimensions
+%       .ne:            Total number of elements in the mesh
+%       .nne:           Vector of number of nodes per element (size nsd x 1)
+%       .nn:            Total number of nodes 
+%       .nDOFe:         Number of DOFs per element
+%       .nDOF:          Total number of DOFs
+%       .x:             Array of nodal spatial locations for
+%                       undeformed mesh (size nn x nsd)
+%       .conn:          Array of element connectivity (size ne x nne)
+%       .eneighbours:   Array of neighbouring elements (size ne x nneighbours
+%                       in which nneighbours is 1 for 1D elements and 4
+%                       for 2D elements)
+%       .DOF:           Array of DOF indices (size nn x nsd)
+%       .nodeconn:      Array of nodal connectivity (size nn x 8)
+%                       containing the indices of elements connected to 
+%                       each node
+%       .left_nodes     Nodes on the left edge of the domain
+%       .left_dof       DOFs on the left edge of the domain
+%       .right_nodes    Nodes on the right edge of the domain
+%       .right_dof      DOFs on the right edge of the domain
+%       .xdofs          DOFs in the x-direction
+%       .ydofs          DOFs in the y-direction
+%       .zdofs          DOFs in the z-direction
+%   Two-dimensional meshes also contain the fields,
+%       .top_nodes      Nodes on the top edge of the domain
+%       .top_dof        DOFs on the top edge of the domain
+%       .top_dofx       DOFs on the top boundary in the x-direction
+%       .top_dofy       DOFs on the top boundary in the y-direction
+%       .bottom_nodes   Nodes on the bottom edge of the domain
+%       .bottom_dof     DOFs on the bottom edge of the domain
+%       .bottom_dofx    DOFs on the bottom boundary in the x-direction
+%       .bottom_dofy    DOFs on the bottom boundary in the y-direction
+%       .left_dofx      DOFs on the left boundary in the x-direction
+%       .left_dofy      DOFs on the left boundary in the y-direction
+%       .right_dofx     DOFs on the right boundary in the x-direction
+%       .right_dofy     DOFs on the right boundary in the y-direction
+%   Three-dimensional meshes also contain the fields, 
+%       .near_nodes     nodes on the nearest face of the domain
+%       .near_dof       DOFs on the nearest face of the domain
+%       .near_dofx      DOFs on the near face in the x-direction
+%       .near_dofy      DOFs on the near face in the y-direction
+%       .near_dofz      DOFs on the near face in the z-direction
+%       .far_nodes      Nodes on the farthest face of the domain
+%       .far_dof        DOFs on the farthest face of the domain
+%       .far_dofx       DOFs on the far face in the x-direction
+%       .far_dofy       DOFs on the far face in the y-direction
+%       .far_dofz       DOFs on the far face in the z-direction
+%       .left_dofz      DOFs on the left face in the z-direction
+%       .right_dofz     DOFs on the right face in the z-direction
+%       .top_dofz       DOFs on the top face in the z-direction
+%       .bottom_dofz    DOFs on the bottom face in the z-direction
 %   Acknowledgments: Chris Ladubec, Matin Parchei Esfahani
 
 %% Mesh properties

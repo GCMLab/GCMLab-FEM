@@ -1,5 +1,45 @@
 function write2vtk_static(Mesh, Control, BC, d, strain, stress, Fint, Fext)
-% Acknowledgements: Endrina Rivas
+%WRITE2VTK_STATIC Exports results to VTK file 
+%   WRITE2VTK_STATIC(Mesh, Control, fixedDOF, d, strain, stress, Fint, Fext) 
+%   produces vtk files that can be opened in Paraview to visualize
+%   the simulation results. The mesh, boundary conditions, and 
+%   simulation parameters are described in the structure arrays
+%   Mesh, fixedDOF, and Control, respectively. The simulation results are 
+%   the vectors d, Fint, and Fext of size ndof x 1, containing the 
+%   displacement, internal forces, and external forces, respectively. 
+% 
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   Mesh:       Structure array with the following fields, 
+%               .x:     Array of nodal spatial locations for
+%                       undeformed mesh (size nn x nsd)
+%               .conn:  Array of element connectivity (size ne x nne)
+%               .xdofs: DOFs in the x-direction
+%               .ydofs: DOFs in the y-direction
+%               .zdofs: DOFs in the z-direction
+%               .nn:    Total number of nodes 
+%               .nsd:   Number of spatial dimensions
+%               .nDOF:  Total number of DOFs
+%               .ne:    Total number of elements in the mesh
+%   Control:    Structure array with the following fields,
+%               .config_name:   Name of the configuration file
+%               .vtk_dir:       Directory where VTK files are stored
+%               .MagCoef:       Displacement magnification coefficient
+%                               for visualization
+%               .contour:       Nodal averaging for discontinous variables
+%                               ('none', 'nodal')
+%   fixedDOF:   Row vector containing fixed degrees of freedom
+%   d:          Column vector of displacements (size ndof x 1 where ndof 
+%               is the number of degrees of freedom)
+%   strain:     Matrix of nodal strains (size dim x nn in which dim is 
+%               1 for 1D elements, 3 for 2D elements, and 6 for 3D elements
+%               and nn is the number of nodes)
+%   stress:     Matrix of nodal stresses (size dim x nn in which dim is 
+%               1 for 1D elements, 3 for 2D elements, and 6 for 3D elements
+%               and nn is the number of nodes)
+%   Fint:       Column vector of internal forces (size ndof x 1)
+%   Fext:       Column vector of external forces (size ndof x 1)
 
 %% Define variables
     description = Control.config_name;

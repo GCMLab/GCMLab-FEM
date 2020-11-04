@@ -1,7 +1,7 @@
 function Mesh = NodeDOFs(Mesh)
 %NODEDOFS Define degrees of freedom (DOFs) in a mesh
 % 	Mesh = NODEDOFS(Mesh) updates the structure array containing mesh
-%           information with an array of degree of freedom indices
+%   information with an array of degree of freedom indices
 % 
 %   --------------------------------------------------------------------
 %   Input
