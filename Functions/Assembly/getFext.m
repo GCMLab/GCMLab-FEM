@@ -51,7 +51,7 @@ function F = getFext(Mesh, BC, Quad)
 	% initialize source (body) force vector
 	F = zeros(Mesh.nDOF, 1);       
 
-    if isfield(BC,'traction_force_node')
+    if ~isempty(BC.traction_force_node)
         % counter to assess whether point load has been yet accounted for
         t_count = zeros(size(BC.traction_force_node));
         traction_value = BC.traction_force_value; 
@@ -61,9 +61,9 @@ function F = getFext(Mesh, BC, Quad)
     end
 
 %% return zeros if there is no applied force
-	if ( ~isfield(BC,'traction_force_node') || isempty(BC.traction_force_node) )...
-	        && strcmp(func2str(BC.b),'@(x)[]') ...
-	        && ~isfield(BC,'traction_force_dof')
+	if isempty(BC.traction_force_node) ...
+	    && strcmp(func2str(BC.b),'@(x)[]') ...
+	    && isempty(BC.traction_force_dof)
 	    return
 	end
 
@@ -115,9 +115,7 @@ for e = 1:Mesh.ne
                 dJe = det(Je);
 
                 % Applied body force
-                if ~strcmp(func2str(BC.b),'@(x)[]')
-                    Fbe = Fbe + W(q)*Nv*BC.b(Xi,t)*dJe;
-                end
+                Fbe = Fbe + W(q)*Nv*BC.b(Xi,t)*dJe;
 
                 % quadrature debug tool
                 A = A + W(q)*dJe; 
@@ -154,9 +152,7 @@ for e = 1:Mesh.ne
 end
 
 %% Add forces prescribed at dofs
-    if isfield(BC,'traction_force_dof')
-        F(BC.traction_force_dof) = F(BC.traction_force_dof) ...
+    F(BC.traction_force_dof) = F(BC.traction_force_dof) ...
                                     + BC.traction_force_dof_value;
-    end
 
 end
