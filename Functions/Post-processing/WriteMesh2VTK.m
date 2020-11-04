@@ -147,7 +147,7 @@ for i = 1:nd % for each data set
     if strcmp(type,'float')
         % find smallest significant digit
         mindata = num2str(abs(scalar_data(i).data),'%e');
-        test = min(str2num(mindata(:,end-2:end)));
+        test = min(str2double(mindata(:,end-2:end)));
         numsigdigs = num2str(max([abs(test),min_sig_digs]));
     elseif strcmp(type,'int')
         numsigdigs = '0';
@@ -181,7 +181,7 @@ for i = 1:nc
     if strcmp(type,'float')
         % find smallest significant digit
         mindata = num2str(abs(scalar_data(i).data),'%e');
-        test = min(str2num(mindata(:,end-2:end)));
+        test = min(str2double(mindata(:,end-2:end)));
         numsigdigs = num2str(max([abs(test),min_sig_digs]));
     elseif strcmp(type,'int')
         numsigdigs = '0';
@@ -189,7 +189,7 @@ for i = 1:nc
     
     text = ['SCALARS ',cell_data(i).name,' ' type ' 1'];
     fprintf(fid,'%s\n',text);
-    text = ['LOOKUP_TABLE default'];
+    text = 'LOOKUP_TABLE default';
     fprintf(fid,'%s\n',text);
     fprintf(fid,['%.' numsigdigs 'f\n'],cell_data(i).data');
 end
