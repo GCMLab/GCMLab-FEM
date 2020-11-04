@@ -32,10 +32,9 @@
     disp([num2str(toc),': Assembling Stiffness Matrix...']);
     K = getK(Mesh, Quad, Material);
     
-    
     % Compute external force vector
     disp([num2str(toc),': Compute Force Vector...']);
-    Fext = getFext(Mesh, BC, Material, Quad, Control);
+    Fext = getFext(Mesh, BC, Quad);
 
 %% Define initial conditions
     % For static solution, always assume that free nodes are initially at
@@ -47,7 +46,7 @@
     switch Control.LinearSolver
         case 'LinearSolver1'
             [d, f_fixed] = LinearSolver1(K, Fext, BC.fix_disp_value, ...
-                                            Mesh.nDOF, BC.free, BC.fixed);
+                                            BC.free, BC.fixed);
         case 'LinearSolver2'
             [d, f_fixed] = LinearSolver2(K,Fext,BC.fix_disp_value, ...
                                             BC.free, BC.fixed);
