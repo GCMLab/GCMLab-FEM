@@ -375,9 +375,6 @@ switch type
         if size(coord,2) < 3
             error('Error: three coordinates needed for the B8 element')
         else
-            xi = coord(1);
-            eta = coord(2);
-            zeta = coord(3);
             I1 = 1/2-coord/2;
             I2 = 1/2+coord/2;
             N = [I1(1)*I1(2)*I1(3);
@@ -396,14 +393,6 @@ switch type
                      I1(2)*I2(3)    -I2(1)*I2(3)    I2(1)*I1(2)
                      I2(2)*I2(3)    I2(1)*I2(3)     I2(1)*I2(2)
                      -I2(2)*I2(3)   I1(1)*I2(3)     I1(1)*I2(2)]*0.5;
-%     dNdxi = [-1+eta+zeta-eta*zeta  -1+xi+zeta-xi*zeta  -1+xi+eta-xi*eta;
-%              1-eta-zeta+eta*zeta   -1-xi+zeta+xi*zeta  -1-xi+eta+xi*eta;
-%              1+eta-zeta-eta*zeta    1+xi-zeta-xi*zeta  -1-xi-eta-xi*eta;
-%             -1-eta+zeta+eta*zeta    1-xi-zeta+xi*zeta  -1+xi-eta+xi*eta;      
-%             -1+eta-zeta+eta*zeta   -1+xi-zeta+xi*zeta   1-xi-eta+xi*eta;
-%              1-eta+zeta-eta*zeta   -1-xi-zeta-xi*zeta   1+xi-eta-xi*eta;
-%              1+eta+zeta+eta*zeta    1+xi+zeta+xi*zeta   1+xi+eta+xi*eta;
-%             -1-eta-zeta-eta*zeta    1-xi+zeta-xi*zeta   1-xi+eta-xi*eta]/8;
         end
 
     case 'B27'
@@ -459,11 +448,7 @@ end
 %% Convert to Voigt Notation
 
 % Shape functions in Voigt Notation
-I = eye(dim);
-Nv = [];
-for i = 1:size(N,1)
-    Nv = [Nv;I*N(i)];
-end
+Nv = getNv(N, dim);
 
 %% Calculate shape functions for L3 elements
 

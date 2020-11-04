@@ -289,9 +289,7 @@ elseif ( strcmp(type,'TRIANGULAR') == 1 )
             a = (6+sqrt(15))/21;
             b = 4/7-a;
             A = 2*( (155+sqrt(15))/2400 );
-            Aby2 = A/2;
             B = 2* 31/240-A  ;
-            Bby2 = B/2;
             quadpoint(1,:) = [1/3,1/3];
             quadpoint(2,:) = [a,a];
             quadpoint(3,:) = [1-2*a,a];
@@ -394,11 +392,11 @@ function poly = legpol(n)
 % Returns the coefficients of the Legendre polynomial of order n
 
     switch n
-    case 0,
+    case 0
         poly = 1;
-    case 1,
+    case 1
         poly = [1 0];
-    otherwise,
+    otherwise
         poly2 = 1;
         poly1 = [1 0];
         for m = 1:n-1
