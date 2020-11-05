@@ -1,16 +1,15 @@
 function [strain, stress] = getStrain(d, Mesh, Material, contour_type)
-%GETSTRAIN Evaluate stress and strain at nodes
+%GETSTRAIN Evaluate stress and strain
 %   strain = GETSTRAIN(d, Mesh, Material) is a cell array of  
 %   nodal strains in each element of the mesh. The cell array is of size 
-%   nsd x nn.
-%   {strainx in e1} {strainx in e2} ... {strainx in enn}
-%   {strainy in e1} {strainy in e2} ... {strainy in enn}
+%   dim x ne, in which dim = 1 for 1D elements, 3 for 2D elements, and 6 
+%   for 3D elements.
+%
+%   [strain, stress] = GETSTRAIN(d, Mesh, Material) also returns a cell 
+%   array of nodal stresses in each element of the mesh (size dim x ne).
 % 
-%   strain = GETSTRAIN(d, Mesh, Material, 'nodal') is a matrix of 
-%   nodal-averaged strains of size 3 x nn.
-%   [strainx_n1  strainx_n2  ... strainx_nn;
-%    strainy_n1  strainy_n2  ... strainy_nn;
-%    strainxy_n1 strainxy_n2 ... strainxy_nn];
+%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'nodal') returns 
+%   matrices of nodal-averaged strains (size dim x nn).
 % 
 %   --------------------------------------------------------------------
 %   Input
