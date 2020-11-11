@@ -1,0 +1,12 @@
+==========================
+Unit Testing Master List
+==========================
+
+Reference list of tests with short descriptions. See the wiki for in-depth details and solutions.
+
+=======================================================================================================
+File Name			Test Type			Short Test Description
+=======================================================================================================
+PatchTestA.m			Patch Test			Q4 elements. Dirichlet BC prescribed to all nodes.
+PatchTestB.m			Patch Test			Q4 elements. Dirichlet BC prescribed on all sides.
+PatchTestC.m			Patch Test			Q4 elements. Dirichlet BC prescribed on 1 edge and Neumann BC prescribed on the opposite edges.
