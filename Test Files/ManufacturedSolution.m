@@ -29,7 +29,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            Mesh.MeshFileName = 'Unstructured_sample.msh';
+            Mesh.MeshFileName = 'Manufactured_sample_finer.msh';
             % number of space dimensions 
             Mesh.nsd = 2;
             
@@ -119,7 +119,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[-0.5.*Material.E(x)*(20.*x(1).^3+20.*x(1).^3+3.*x(2).^2+6.*x(1).*x(2)-30.*x(2).^4),-0.5.*Material.E(x).*(3.*x(2).^2+6.*x(1).*x(2)-30.*x(2).^4+6.*x(1).*x(2)-30.*x(2).^4+20.*x(1).^3)];    
+        BC.b = @(x)[-0.5.*Material.E(x)*(20.*x(1).^3+20.*x(1).^3+3.*x(2).^2+6.*x(1).*x(2)-30.*x(2).^4);-0.5.*Material.E(x).*(3.*x(2).^2+6.*x(1).*x(2)-30.*x(2).^4+6.*x(1).*x(2)-30.*x(2).^4+20.*x(1).^3)];    
 
 %% Computation controls
 
