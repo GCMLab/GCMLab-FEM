@@ -1,4 +1,5 @@
-function [Mesh, Material, BC, Control] = ManufacturedSolution_fine(Control)
+function [Mesh, Material, BC, Control] = ManufacturedSolution(Control)
+global meshfilename quadorder
 
 %% Mesh Properties
     disp([num2str(toc),': Building Mesh...']);
@@ -29,7 +30,7 @@ function [Mesh, Material, BC, Control] = ManufacturedSolution_fine(Control)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            Mesh.MeshFileName = 'Manufactured_fine.msh';
+            Mesh.MeshFileName = meshfilename;
             % number of space dimensions 
             Mesh.nsd = 2;
             
@@ -124,7 +125,7 @@ function [Mesh, Material, BC, Control] = ManufacturedSolution_fine(Control)
 %% Computation controls
 
         % quadrature order
-        Control.qo = 2;
+        Control.qo = quadorder;
 
         % displacement magnification coefficient (for visualization)
         Control.MagCoef = 1;

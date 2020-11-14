@@ -61,6 +61,8 @@ function Mesh = BuildMesh_unstructured(Mesh, Control)
         switch Mesh.type
             case 'Q4'
                 pattern = [1,2,3,4,1];
+            case 'Q9'
+                pattern = [1,5,2,6,3,7,8,1];
         end
 
         for i = 1:Mesh.nne
