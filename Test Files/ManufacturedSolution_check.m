@@ -29,7 +29,7 @@ function [m_L2, m_e] = ManufacturedSolution_check(d1, d2, d3, s1, s2, s3, e1, e2
 
 global quadorder
 
-plot_on = 1; % turn plots on/off - debugging tool
+plot_on = 0; % turn plots on/off - debugging tool
 
 E = 1000;
 nu = 0;
@@ -59,7 +59,8 @@ for sim = 1:3
     end
     
     % Mesh size
-    h(sim) = abs(Mesh.x(Mesh.conn(1,1),1) - Mesh.x(Mesh.conn(1,3),1));
+    xI = Mesh.x(Mesh.conn(1,:),:);
+    h(sim) = sqrt(polyarea(xI(:,1),xI(:,2)));
     
     % Calculate exact solutions
     x = Mesh.x(:,1);
