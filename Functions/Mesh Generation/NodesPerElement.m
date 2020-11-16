@@ -12,6 +12,8 @@ switch etype
         nne = 4;
     case 'Q4'
         nne = [2;2];
+    case 'T6'
+        nne = 6;
     case 'Q9'
         nne = [3;3];
     case 'B8'
