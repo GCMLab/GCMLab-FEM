@@ -21,7 +21,7 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
 %   Output
 %   --------------------------------------------------------------------
 %   Mesh is a structure array with the following fields,
-%       .type:          the toplogical class of finite element; it is in 
+%       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 
 %                       node triangle is T3 a four node quadralateral is 
 %                       Q4 a 4 node tetrahedra is H4 a 27 node brick is 
