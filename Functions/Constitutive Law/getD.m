@@ -3,7 +3,7 @@ function D = getD(E, nu, nsd, Dtype)
 %   D = GETD(E, nu, nsd) is the elasticity tensor for a problem of 
 %   spatial dimension, nsd, Young's modulus, E, and Poisson's ratio, nu. 
 %   For a 1D problem, a scalar is returned. For a 2D problem, a 3x3 
-%   matrix is returned, and a for a 3D problem, a 6x6 matrix is returned. 
+%   matrix is returned, and for a 3D problem, a 6x6 matrix is returned. 
 % 
 %   --------------------------------------------------------------------
 %   Input
