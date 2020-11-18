@@ -9,7 +9,7 @@ function xi_node = getXI(node_num, type)
 %   Input
 %   --------------------------------------------------------------------
 %   node_num:   node number, based on standard element numbering
-%   type:       the toplogical class of finite element; it is in the 
+%   type:       the topological class of finite element; it is in the 
 %               general form 'topology-#of nodes' ie a three node 
 %               triangle is T3 a four node quadralateral is Q4 a 4 node 
 %               tetrahedra is H4 a 27 node brick is B27 etc. Presently 
