@@ -196,142 +196,16 @@
 
 
 
-%% Test 4: Manufactured Solution - Q4 elements
-        fprintf('\n\n Test 4: Manufactured Solution - Q4 elements\n')
-        % Step 1 - Run Simulation
-        global meshfilename quadorder E nu
-            E = 2230;
-            nu = 0.3;
-            quadorder = 2; 
-            Control.config_name = 'ManufacturedSolution';
-            % Run coarse mesh
-            meshfilename = 'Manufactured_coarseQ4.msh';
-            run('Functions/Main/main');
-
-            d_coarse = d;
-            stress_coarse = stress;
-            strain_coarse = strain;
-            Mesh_coarse = Mesh;
-
-
-            % Run fine mesh
-            meshfilename = 'Manufactured_fineQ4.msh';
-            run('Functions/Main/main');
-
-            d_fine = d;
-            stress_fine = stress;
-            strain_fine = strain;
-            Mesh_fine = Mesh;
-
-            % Run finer mesh
-            meshfilename = 'Manufactured_finerQ4.msh';
-            run('Functions/Main/main');
-
-            d_finer = d;
-            stress_finer = stress;
-            strain_finer = strain;
-            Mesh_finer = Mesh;
-        
-        % Step 2 - Check results
-            [m_L2, m_e] = ManufacturedSolution_check(d_coarse, d_fine, d_finer, ...
-                stress_coarse, stress_fine, stress_finer, strain_coarse, strain_fine, ...
-                strain_finer, Mesh_coarse, Mesh_fine, Mesh_finer);
-            
-            fprintf('\nQ4 L2-norm converges at a rate of %.2f',m_L2)
-            fprintf('\nQ4  e-norm converges at a rate of %.2f',m_e)
-            
-            convergence_tolerance = 0.05;
-            if m_L2 >= (2 - convergence_tolerance) && m_e >= (1 - convergence_tolerance)
-                test_pass = 1;
-            else
-                test_pass = 0;
-            end
-        
-        
-        % Step 3 - Output results
-            if test_pass
-                fprintf('\nPASS\n')
-            else
-                fprintf('\n\nFAIL\n')
-            end
-            testpasssummary(4) = test_pass;
-
-            
-        % Step 4 - Cleanup
-            clearvars -except VTKDirs ConfigFiles...
-                      curDir FuncDir  ConfigDir ...
-                      file codeSubmitTime ...
-                      Control ntests testpasssummary
+%% Test 4: Manufactured Solution - Q4 element convergence
+         run('Test Files/RunTest4')
     
     
-%% Test 5: Manufactured Solution - Q9 elements
-
-        % Unit testing for convergence of Q9 elements is setup, but the
-        % code is not currently capable of handling Q9 elements
-        fprintf('\n\n Test 3: Manufactured Solution - Q9 elements\n')
-        % Step 1 - Run Simulation
-        global meshfilename quadorder 
-            quadorder = 4;
-            Control.config_name = 'ManufacturedSolution';
-            % Run coarse mesh
-            meshfilename = 'Manufactured_coarseQ9.msh';
-            run('Functions/Main/main');
-
-            d_coarse = d;
-            stress_coarse = stress;
-            strain_coarse = strain;
-            Mesh_coarse = Mesh;
-
-
-            % Run fine mesh
-            meshfilename = 'Manufactured_fineQ9.msh';
-            run('Functions/Main/main');
-
-            d_fine = d;
-            stress_fine = stress;
-            strain_fine = strain;
-            Mesh_fine = Mesh;
-
-            % Run finer mesh
-            meshfilename = 'Manufactured_finerQ9.msh';
-            run('Functions/Main/main');
-
-            d_finer = d;
-            stress_finer = stress;
-            strain_finer = strain;
-            Mesh_finer = Mesh;
+%% Test 5: Manufactured Solution - Q9 element convergence
+        run('Test Files/RunTest5')
         
-        % Step 2 - Check results
-            [m_L2, m_e] = ManufacturedSolution_check(d_coarse, d_fine, d_finer, ...
-                stress_coarse, stress_fine, stress_finer, strain_coarse, strain_fine, ...
-                strain_finer, Mesh_coarse, Mesh_fine, Mesh_finer);
-            
-            fprintf('\nQ4 L2-norm converges at a rate of %.2f',m_L2)
-            fprintf('\nQ4  e-norm converges at a rate of %.2f',m_e)
-            
-            convergence_tolerance = 0.05;
-            if m_L2 >= (3 - convergence_tolerance) && m_e >= (2 - convergence_tolerance)
-                test_pass = 1;
-            else
-                test_pass = 0;
-            end
-        
-        
-        % Step 3 - Output results
-            if test_pass
-                fprintf('\nPASS\n')
-            else
-                fprintf('\n\nFAIL\n')
-            end
-            testpasssummary(5) = test_pass;
 
-        % Step 4 - Cleanup
-            clearvars -except VTKDirs ConfigFiles...
-                      curDir FuncDir  ConfigDir ...
-                      file codeSubmitTime ...
-                      Control ntests testpasssummary
     
-%% New tests space
+%% Add new tests here
 
 %% Summarize test results
 fprintf('\n\n%10s%10s', 'Test', 'Status')
