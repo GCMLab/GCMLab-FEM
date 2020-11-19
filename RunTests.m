@@ -28,6 +28,10 @@
     addpath(genpath(FuncDir));
     addpath(genpath(ConfigDir));
     
+    % number of tests
+    ntests = 5;
+    % initialize test summary
+    testpasssummary = zeros(ntests,1);
     
 %% Run Tests
 
@@ -51,12 +55,14 @@
 %         else
 %             fprintf('\nFAIL')
 %         end
-%         
+%         testpasssummary([testnumber]) = test_pass
+%           
+%
 %         % Step 4 - Cleanup
 %         clearvars -except VTKDirs ConfigFiles...
 %                   curDir FuncDir  ConfigDir ...
 %                   file codeSubmitTime ...
-%                   Control
+%                   Control ntests testpasssummary
        
 %% Test 1: Patch Test A - Dirichlet-Dirichlet BC
 % For Patch Test A, all nodes are restrained and nodal displacement values 
@@ -89,14 +95,15 @@
             fprintf('\nPASS Patch Test A\n')
         else
             fprintf('\n\nFAIL Patch Test A\n')
-            return
         end
+        testpasssummary(1) = test_pass;
+
         
         % Step 4 - Cleanup
         clearvars -except VTKDirs ConfigFiles...
                       curDir FuncDir  ConfigDir ...
                       file codeSubmitTime ...
-                      Control
+                      Control ntests testpasssummary
         
 
 %% Test 2: Patch Test B - Dirichlet-Neumann BC
@@ -125,6 +132,7 @@
             test_pass = 0;
         end
         
+        
         % Step 3 - Output results
         if test_pass
             fprintf('\nPASS Patch Test B\n')
@@ -132,12 +140,14 @@
             fprintf('\n\nFAIL Patch Test B\n')
             return
         end
+        testpasssummary(2) = test_pass;
+
         
         % Step 4 - Cleanup
         clearvars -except VTKDirs ConfigFiles...
                       curDir FuncDir  ConfigDir ...
                       file codeSubmitTime ...
-                      Control
+                      Control ntests testpasssummary
 
                   
 %% Test 3: Patch Test C
@@ -175,12 +185,14 @@
             fprintf('\n\nFAIL Patch Test C\n')
             return
         end
+        testpasssummary(3) = test_pass;
+
         
         % Step 4 - Cleanup
         clearvars -except VTKDirs ConfigFiles...
                       curDir FuncDir  ConfigDir ...
                       file codeSubmitTime ...
-                      Control
+                      Control ntests testpasssummary
 
 
 
@@ -241,17 +253,18 @@
                 fprintf('\nPASS\n')
             else
                 fprintf('\n\nFAIL\n')
-                return
             end
-        
+            testpasssummary(4) = test_pass;
+
+            
         % Step 4 - Cleanup
             clearvars -except VTKDirs ConfigFiles...
                       curDir FuncDir  ConfigDir ...
                       file codeSubmitTime ...
-                      Control
+                      Control ntests testpasssummary
     
     
-%% Test 4: Manufactured Solution - Q9 elements
+%% Test 5: Manufactured Solution - Q9 elements
 
         % Unit testing for convergence of Q9 elements is setup, but the
         % code is not currently capable of handling Q9 elements
@@ -309,12 +322,25 @@
                 fprintf('\nPASS\n')
             else
                 fprintf('\n\nFAIL\n')
-                return
             end
-        
+            testpasssummary(5) = test_pass;
+
         % Step 4 - Cleanup
             clearvars -except VTKDirs ConfigFiles...
                       curDir FuncDir  ConfigDir ...
                       file codeSubmitTime ...
-                      Control
+                      Control ntests testpasssummary
     
+%% New tests space
+
+%% Summarize test results
+fprintf('\n\n%10s%10s', 'Test', 'Status')
+fprintf('\n----------------------------------------------')
+for test = 1:ntests
+   if testpasssummary(test)
+       fprintf('\n%10d%10s', test, 'PASS')
+   else
+      fprintf('\n%10d%10s', test, 'FAIL')
+   end
+end
+fprintf('\n\n')
