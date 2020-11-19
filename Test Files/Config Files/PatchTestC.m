@@ -29,7 +29,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            Mesh.MeshFileName = 'Unstructured_sample.msh';
+            Mesh.MeshFileName = 'Mesh Files\Unstructured_sample.msh';
             % number of space dimensions 
             Mesh.nsd = 2;
             
@@ -80,12 +80,19 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
         BC.VV = @(x) -0.0006*x(:,2);
         
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = 1:Mesh.nDOF;
+        topleftnode = Mesh.left_nodes(find(Mesh.x(Mesh.left_nodes,2) == max(Mesh.x(:,2))));
+        botleftnode = Mesh.left_nodes(find(Mesh.x(Mesh.left_nodes,2) == min(Mesh.x(:,2))));
+        
+        BC.fix_disp_dof1 = [Mesh.left_nodes*2-1];
+        BC.fix_disp_dof2 = botleftnode*2;
+        
+        BC.fix_disp_dof = [BC.fix_disp_dof1;BC.fix_disp_dof2];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
-        BC.fix_disp_value(1:2:end) = BC.UU(Mesh.x);
-        BC.fix_disp_value(2:2:end) = BC.VV(Mesh.x);  
+        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
+        BC.fix_disp_value1 = BC.UU([Mesh.x(Mesh.left_nodes,1),Mesh.x(Mesh.left_nodes,2)]);
+        BC.fix_disp_value2 = BC.VV([Mesh.x(botleftnode,1),Mesh.x(botleftnode,2)]);
+        BC.fix_disp_value = [BC.fix_disp_value1;BC.fix_disp_value2];  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -100,8 +107,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
         BC.traction_force_node = Mesh.right_nodes;  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        Fnode = 2/(length(BC.traction_force_node) - 1);
+        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
         
         % find the nodes in the top right and bottom right corners
         toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));

@@ -29,7 +29,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            Mesh.MeshFileName = 'Unstructured_sample.msh';
+            Mesh.MeshFileName = 'Mesh Files\Unstructured_sample.msh';
             % number of space dimensions 
             Mesh.nsd = 2;
             

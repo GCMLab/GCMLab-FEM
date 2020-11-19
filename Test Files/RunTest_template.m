@@ -1,0 +1,42 @@
+% RunTest_template 
+% Template file to add runs of new unit tests
+
+% SCRIPT 
+% Runs unit Test X - [Test Name] as part of RunTests
+%
+% Acknowledgements: Bruce Gee, X
+       
+
+        % Add function folder to filepath    
+        addpath('../Functions')
+
+        fprintf('\n\n Test X: [Test Name] - Test Description')
+        % Step 1 - Run Simulation
+        Control.config_name = '[Test config file name]';
+        main
+        
+        % Step 2 - Check results
+        % run check file, script is specific to each test
+        some_error_check = test_check();
+        if some_error_check < some_test_condtion
+            test_pass = 1;
+        else
+            test_pass = 0;
+        end
+        
+        
+        % Step 3 - Output results
+        if test_pass
+            fprintf('\nPASS')
+        else
+            fprintf('\nFAIL')
+        end
+        testpasssummary([testnumber]) = test_pass;
+          
+
+        % Step 4 - Cleanup
+        clearvars -except VTKDirs ConfigFiles...
+                  curDir FuncDir  ConfigDir ...
+                  file codeSubmitTime ...
+                  Control ntests testpasssummary
+       

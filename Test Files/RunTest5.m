@@ -13,7 +13,7 @@
             quadorder = 4;
             Control.config_name = 'ManufacturedSolution';
             % Run coarse mesh
-            meshfilename = 'Manufactured_coarseQ9.msh';
+            meshfilename = 'Mesh Files\Manufactured_coarseQ9.msh';
             main
 
             d_coarse = d;
@@ -23,7 +23,7 @@
 
 
             % Run fine mesh
-            meshfilename = 'Manufactured_fineQ9.msh';
+            meshfilename = 'Mesh Files\Manufactured_fineQ9.msh';
             main
 
             d_fine = d;
@@ -32,7 +32,7 @@
             Mesh_fine = Mesh;
 
             % Run finer mesh
-            meshfilename = 'Manufactured_finerQ9.msh';
+            meshfilename = 'Mesh Files\Manufactured_finerQ9.msh';
             main
             
             d_finer = d;
