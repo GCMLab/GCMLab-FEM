@@ -1,7 +1,5 @@
 % This script runs all units tests sequentially and checks the results
-%   Acknowledgements: Bruce Gee, Saeed Hatefi Ardakani
-
-
+%   Acknowledgements: Bruce Gee
 
 %% Clear variables and initialize code
     clearvars -global
