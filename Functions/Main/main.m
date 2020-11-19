@@ -2,17 +2,22 @@
 
 % Acknowledgements: Matin Parchei Esfahani, Endrina Rivas
 
+
 %% Delete past vtk files (so don't overwrite any)
     if plot2vtk
-        fprintf('%.2f: Deleting old vtk files...\n', toc);
+        if progress_on
+            fprintf('%.2f: Deleting old vtk files...\n', toc);
+        end
         sol = fullfile(vtk_dir, '*');
         delete(sol)
     end
 
 %% Input problem definition
-    fprintf('%.2f: Reading config file...\n', toc);
+    if progress_on
+        fprintf('%.2f: Reading config file...\n', toc);
+    end
     [Mesh, Material, BC, Control] = ...
-            feval(config_name, ConfigDir);
+            feval(config_name, ConfigDir, progress_on);
 
 %% Set Default Values
     [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
@@ -29,11 +34,15 @@
 %% Compute system matrices
 
     % Compute stiffness matrix
-    disp([num2str(toc),': Assembling Stiffness Matrix...']);
+    if progress_on
+        disp([num2str(toc),': Assembling Stiffness Matrix...']);
+    end
     K = getK(Mesh, Quad, Material);
     
     % Compute external force vector
-    disp([num2str(toc),': Compute Force Vector...']);
+    if progress_on
+        disp([num2str(toc),': Compute Force Vector...']);
+    end
     Fext = getFext(Mesh, BC, Quad);
 
 %% Define initial conditions

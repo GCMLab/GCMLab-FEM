@@ -28,6 +28,9 @@
     
     % output vtk files
     plot2vtk = 1;
+    
+    % output progress messages
+    progress_on = 1;
 
 %% Directories
     FuncDir = fullfile(curDir, 'Functions');
@@ -60,7 +63,7 @@ try
                   curDir FuncDir  ConfigDir ...
                   file codeSubmitTime ...
                   exit_when_done print_log ...
-                  plot2vtk
+                  plot2vtk progress_on
 
         clearvars -global
 

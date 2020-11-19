@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
+function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -108,12 +108,14 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
 %                   unstructured mesh is stored
 
 %% Mesh Properties
-    disp([num2str(toc),': Building Mesh...']);
+    if progress_on
+        disp([num2str(toc),': Building Mesh...']);
+    end
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
     % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    MeshType = 'GMSH';        
+    MeshType = 'MANUAL';        
     
     switch MeshType
         case 'MANUAL'
@@ -128,7 +130,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
             % element type ('Q4')
             type = 'Q4';
             
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type);
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
         case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
@@ -139,7 +141,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir);            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
     end    
     
 %% Material Properties (Solid)
@@ -239,6 +241,6 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir)
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';
+        Control.LinearSolver = 'LinearSolver1';       
  
 end

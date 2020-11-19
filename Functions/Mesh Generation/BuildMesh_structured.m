@@ -1,4 +1,4 @@
-function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
+function Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on)
 %BUILDMESH_STRUCTURED Structured mesh generator
 %   Mesh = BUILDMESH_STRUCTURED(nsd, x1, L, nex, type) is a structure 
 %   array with the structured mesh description. The mesh is built for a 
@@ -97,7 +97,9 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
 
     if ~isfield(Mesh,'x')
         % compute nodal locations
-        disp([num2str(toc),': Computing nodal locations...']);
+        if progress_on
+            disp([num2str(toc),': Computing nodal locations...']);
+        end
         dL = L./(nex.*(nnex-1));  % node spacing
         x_temp = cell(1,nsd);
         for i = 1:nsd
@@ -179,9 +181,9 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
     end   
 
 %% Element connectivity and neighbours
-
-    disp([num2str(toc),': Defining element connectivity...']);
-
+    if progress_on
+        disp([num2str(toc),': Defining element connectivity...']);
+    end
     % initialize member connectivity
     Mesh.conn = zeros(Mesh.ne, Mesh.nne);
 
@@ -332,6 +334,7 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type)
 
 %% Node sets
     Mesh = NodeSets(Mesh);       
-
-disp([num2str(toc),': Done generating mesh...']);
+if progress_on
+    disp([num2str(toc),': Done generating mesh...']);
+end
 end
