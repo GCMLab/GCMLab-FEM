@@ -79,13 +79,15 @@ for e = 1:Mesh.ne
         end
    
     %% Forming the vectorized stiffness matrix
-        for i = 1:ndofE
-            col(count:count + ndofE -1) = dofE(i)*ones(ndofE, 1);    % column index
-            row(count:count + ndofE -1) = dofE;                      % row index
-            count = count + ndofE;                                % component counter
-        end
-        Ke = reshape(Ke, [numel(Ke), 1]);
-        Kvec(count-numel(Ke):count-1) = Ke;
+        count = count + ndofE^2;
+        Ke = reshape(Ke, [ndofE^2, 1]);
+        rowmatrix = dofE*ones(1,ndofE);        
+        rowe = reshape(rowmatrix,[ndofE^2, 1]);
+        cole = reshape(rowmatrix',[ndofE^2, 1]);
+        
+        Kvec(count-ndofE^2:count-1) = Ke;
+        row(count-ndofE^2:count-1) = rowe;
+        col(count-ndofE^2:count-1) = cole;
 end
 
 % sparse stiffness matrix
