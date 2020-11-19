@@ -1,14 +1,16 @@
-% SCRIPT
+% ------------------------------------------------------------------------
 % Runs unit Test 4 - Q4 manufactured solution convergence as a part of RunTests
-% moved to separate script for increased legibility
+% ------------------------------------------------------------------------
+% Test 4 calculates the convergence rates of a uniform Q4 mesh using a
+% manufactured solution in which 
+% ux = x^5 + x*y^3 - y^6
+% uy = x^5 + x*y^3 - y^6
+% under plane stress conditions
 %
-% Acknowledgements: Bruce Gee
-       
-
+% Acknowledgements: Bruce Gee, Saeed Hatefi Ardakani
 
         % Add function folder to filepath    
         addpath('../Functions')
-
 
         fprintf('\n\n Test 4: Manufactured Solution - Q4 elements\n')
         % Step 1 - Run Simulation
@@ -25,7 +27,6 @@
             stress_coarse = stress;
             strain_coarse = strain;
             Mesh_coarse = Mesh;
-
 
             % Run fine mesh
             meshfilename = 'Mesh Files\Manufactured_fineQ4.msh';

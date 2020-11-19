@@ -1,15 +1,22 @@
-% SCRIPT
+% ------------------------------------------------------------------------
 % Runs unit Test 5 - Q9 manufactured solution convergence as a part of RunTests
-% moved to separate script for increased legibility
+% ------------------------------------------------------------------------
+% Test 5 calculates the convergence rates of a uniform Q9 mesh using a
+% manufactured solution in which 
+% ux = x^5 + x*y^3 - y^6
+% uy = x^5 + x*y^3 - y^6
+% under plane stress conditions
 %
-% Acknowledgements: Bruce Gee
+% Acknowledgements: Bruce Gee, Saeed Hatefi Ardakani
 
         % Add function folder to filepath    
         addpath('../Functions')
     
         fprintf('\n\n Test 5: Manufactured Solution - Q9 elements\n')
         % Step 1 - Run Simulation
-        global meshfilename quadorder 
+        global meshfilename quadorder E nu
+            E = 2230;
+            nu = 0.3; 
             quadorder = 4;
             Control.config_name = 'ManufacturedSolution';
             % Run coarse mesh

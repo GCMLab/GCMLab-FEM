@@ -35,38 +35,21 @@
     
 %% Run Tests
 
-%% Test 1: Patch Test A - Dirichlet-Dirichlet BC
-% For Patch Test A, all nodes are restrained and nodal displacement values 
-% are specfied according to the exact solution.
-%
-% Pass Condition: FEA solution displacements, stresses, and strains are
-% exact
+%% Test 1: Patch Test A - All nodal displacements prescribed
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
         run('Test Files/RunTest1')
 
-%% Test 2: Patch Test B - Dirichlet-Neumann BC
-% For Patch Test B, only nodes 1-8 (nodes in the boundaries) are restrained
-% with their displacements specified according to the exact solution. 
-%
-% Pass Condition: FEA solution displacements, stresses, and strains are
-% exact
+%% Test 2: Patch Test B - Dirichlet-Dirichlet BC
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
         run('Test Files/RunTest2')
 
-%% Test 3: Patch Test C
-% Patch Test C is performed with node 1 fully restrained and nodes 4 and 8 
-% restrained only in the x -direction. Nodal forces are applied to nodes 2,
-% 3, and 6 in accordance with the values generated through the boundary 
-% tractions by sigma(x)=2 
-%
-% Pass Condition: FEA solution displacements, stresses, and strains are
-% exact
+%% Test 3: Patch Test C - Dirichlet-Neumann BC
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
         run('Test Files/RunTest3')
 
 %% Test 4: Manufactured Solution - Q4 element convergence
 %   Pass condition: L2-norm converges at a rate of at least h^2
 %                    e-norm converges at a rate of at least h
-%
-% Pass Condition: FEA solution displacements, stresses, and strains are
-% exact
          run('Test Files/RunTest4')
  
 %% Test 5: Manufactured Solution - Q9 element convergence

@@ -1,5 +1,14 @@
-% SCRIPT
+% ------------------------------------------------------------------------
 % Runs unit Test 3 - Patch Test C as part of RunTests
+% ------------------------------------------------------------------------
+% Patch Test C is performed with node 1 fully restrained and nodes 4 and 8 
+% restrained only in the x -direction. Nodal forces are applied to nodes 2,
+% 3, and 6 in accordance with the values generated through the boundary 
+% tractions by sigma(x)=2. The error between the FEA
+% and exact solutions is then calculated. The FEA approximate solution
+% should be exact.
+%
+%
 %
 % Acknowledgements: Bruce Gee, Saeed Hatefi Ardakani
        

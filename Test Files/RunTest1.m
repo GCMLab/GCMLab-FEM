@@ -1,5 +1,10 @@
-% SCRIPT
+% ------------------------------------------------------------------------
 % Runs unit Test 1 - Patch Test A as part of RunTests
+% ------------------------------------------------------------------------
+% For Patch Test A, all nodes are restrained and nodal displacement values 
+% are specfied according to the exact solution. The error between the FEA
+% and exact solutions is then calculated. The FEA approximate solution
+% should be exact.
 %
 % Acknowledgements: Bruce Gee, Saeed Hatefi Ardakani
        

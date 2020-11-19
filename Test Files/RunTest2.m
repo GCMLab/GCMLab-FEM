@@ -1,5 +1,10 @@
-% SCRIPT
+% ------------------------------------------------------------------------
 % Runs unit Test 2 - Patch Test B as part of RunTests
+% ------------------------------------------------------------------------
+% For Patch Test B, only nodes 1-8 (nodes in the boundaries) are restrained
+% with their displacements specified according to the exact solution. The error between the FEA
+% and exact solutions is then calculated. The FEA approximate solution
+% should be exact.
 %
 % Acknowledgements: Bruce Gee, Saeed Hatefi Ardakani
        

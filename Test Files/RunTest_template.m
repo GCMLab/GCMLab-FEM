@@ -1,8 +1,10 @@
 % RunTest_template 
 % Template file to add runs of new unit tests
 
-% SCRIPT 
+% ------------------------------------------------------------------------
 % Runs unit Test X - [Test Name] as part of RunTests
+% ------------------------------------------------------------------------
+% [Summary of test details]
 %
 % Acknowledgements: Bruce Gee, X
        
@@ -13,7 +15,7 @@
         fprintf('\n\n Test X: [Test Name] - Test Description')
         % Step 1 - Run Simulation
         Control.config_name = '[Test config file name]';
-        main
+        main  % Runs calculation
         
         % Step 2 - Check results
         % run check file, script is specific to each test

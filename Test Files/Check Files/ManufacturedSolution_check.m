@@ -27,6 +27,8 @@ function [m_L2, m_e] = ManufacturedSolution_check(d1, d2, d3, s1, s2, s3, e1, e2
 %   syy = E/(1-v^2) * [ v*exx +   eyy ]
 %   sxy = E/(1-v^2) * (1-v)/2 * exy
 
+% Acknowledgements: Bruce Gee
+
 global quadorder E nu
 
 plot_on = 0; % turn plots on/off - debugging tool
