@@ -1,5 +1,36 @@
 function K = getK(Mesh, Quad, Material)
-% Acknowledgements: Chris Ladubec, Endrina Rivas
+%GETK Stiffness matrix 
+%   K = GETK(Mesh, Quad, Material) is the global stiffness matrix for 
+%   parameters defined in the structure arrays Mesh, Quad, and Material. 
+%   The sparse matrix has size Mesh.nDOF x Mesh.nDOF
+%   
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   Mesh:       Structure array with the following fields,
+%               .ne:    Total number of elements in the mesh
+%               .nne:   Vector of number of nodes per element (size nsd x 1)
+%               .nsd:   Number of spatial dimensions
+%               .conn:  Array of element connectivity (size ne x nne)
+%               .x:     Array of nodal spatial locations for
+%                       undeformed mesh (size nn x nsd)
+%               .DOF:   Array of DOF indices (size nn x nsd)
+%               .nDOFe: Number of DOFs per element
+%               .nDOF:  Total number of DOFs
+%  
+%   Quad:       Structure array with the following fields,
+%               .W:      Vector of quadrature weights (size nq x 1)      
+%               .nq:     Number of quadrature points 
+%               .Nq:     Cell array (size nq x 1) with shape functions  
+%                        evaluated at each quadrature point
+%               .dNdxiq: Cell array (size nq x 1) with derivative of shape 
+%                        functions w.r.t. parent coordinates evaluated at 
+%                        each quadrature point
+% 
+%   Material:   Structure array with the following fields,
+%               .t:         Material thickness
+
+% Acknowledgements: Chris Ladubec
 
 % initialize stiffness matrix
 vec_size = Mesh.ne*(Mesh.nne * Mesh.nsd)^2; % vector size (solid dofs)
@@ -61,7 +92,7 @@ for e = 1:Mesh.ne
             % convert B matrix to Voigt form
             Bv = getBv(B', Mesh.nsd);
 
-            D = getD(Xi, Mesh.nsd, Material);    
+            D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
             
             % for 2D, volume integral includes the thickness
             switch Mesh.nsd 

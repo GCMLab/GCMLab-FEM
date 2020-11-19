@@ -1,12 +1,51 @@
-function WriteMesh2VTK(filename,description,nodes,conn,...
-                            scalar_data,cell_data)
-% This function writes FEM mesh data to a file in VTK format
-%
-% INPUTS:
-% nodes = array of nodal coordinates (n x nsd)
-% conn = connectivity matrix (ne x nne)
-%
-% Acknowledgements: Robert Gracie, Endrina Rivas
+function WriteMesh2VTK(filename, description, x, conn,...
+                            scalar_data, cell_data)
+%WRITEMESH2VTK Exports mesh data to a file in VTK format
+%   WRITEMESH2VTK(filename, description, x, conn, scalar_data, cell_data)
+%   produces a vtk file (filename), with scalar nodal data (scalar_data), 
+%   and scalar element data (cell_data). The nodal spatial locations are 
+%   described in x, and the element connectivity in conn. 
+% 
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   filename:       Full path for the filename of the vtk file produced
+%   description:    Text description of the problem 
+%   x:              spatial locations of the nodes in the mesh, 
+%                   specified as a matrix of size n x nsd in which n
+%                   is the number of nodes and nsd is the number of 
+%                   spatial dimensions.
+%   conn:           Element connectivity of the mesh, specified as a 
+%                   matrix of size ne x nne in which ne is the number 
+%                   of elements in the mesh and nne is the number of 
+%                   nodes per element. Each row of the connectivity 
+%                   matrix corresponds to an element in the mesh, and
+%                   the value in each column correspond to the global 
+%                   node numbers associated with the element.
+%   scalar_data:    Scalar nodal data, specified as a structure array 
+%                   of size n x 1 in which n is the number of data arrays
+%                   to output. The structure array has the following
+%                   fields,
+%                   .data:  column vector (size nn x 1 in which nn is 
+%                           the number of nodes) containing the scalar 
+%                           data 
+%                   .name:  name of the data field
+%                   .type:  numerical data type ('float' or 'int'); used 
+%                           to determine number of significant digits to 
+%                           export. Default is 'float'.
+%   cell_data:      Scalar element data, specified as a structure array 
+%                   of size n x 1 in which n is the number of data arrays
+%                   to output. The structure array has the following
+%                   fields,
+%                   .data:  column vector (size ne x 1 in which ne is 
+%                           the number of elements) containing the scalar 
+%                           data 
+%                   .name:  name of the data field
+%                   .type:  numerical data type ('float' or 'int'); used 
+%                           to determine number of significant digits to 
+%                           export. Default is 'float'.
+
+% Acknowledgements: Robert Gracie
 
 min_sig_digs = 5;
 
@@ -17,8 +56,8 @@ if nargin < 5
     scalar_data = [];
 end
 
-nn = size(nodes,1);         % number of nodes (points)
-nsd = size(nodes,2);        % number of space dimensions
+nn = size(x,1);             % number of nodes (points)
+nsd = size(x,2);            % number of space dimensions
 ne = size(conn,1);          % number of elements (cells)
 nne = size(conn,2);         % number of nodes per element 
 nd = length(scalar_data);   % number of scalar datum defined at each node (point);
@@ -33,25 +72,25 @@ fprintf(fid,'%s\n',['HFX mesh description: ',description]);
 fprintf(fid,'%s\n','ASCII');
 fprintf(fid,'%s\n','DATASET UNSTRUCTURED_GRID');
 
-% print out the number of nodes 
+% print out the number of nodes
 %(POINTS = nodes, float bc data is float type)
 text = ['POINTS ',num2str(nn),' float'];
 fprintf(fid,'%s\n',text);
 
-% if it's a 2D model, add a row of zeros to the end of nodes that is the
+% if it's a 2D model, add a row of zeros to the end of x that is the
 % same length as the number of nodes (to signify zero in the z-direction), 
-% and if it's a 1D model, add two rows of zeros to end of nodes (for y- and
+% and if it's a 1D model, add two rows of zeros to end of x (for y- and
 % z- directions)
 if nsd == 1
-    nodes = [nodes,zeros(nn,1),zeros(nn,1)];
+    x = [x, zeros(nn,1), zeros(nn,1)];
 elseif nsd == 2
-    nodes = [nodes,zeros(nn,1)];
+    x = [x, zeros(nn,1)];
 end
 
 % print out the nodal locations
-fprintf(fid,'%f %f %f\n',nodes');
+fprintf(fid, '%f %f %f\n', x');
 
-% print out 'CELLS', #of elements, # of nodes (+1 for each element)
+% print out 'CELLS', # of elements, # of nodes (+1 for each element)
 text = ['CELLS ',num2str(ne), ' ',num2str((nne+1)*ne)];
 fprintf(fid,'%s\n',text);
 
@@ -90,10 +129,10 @@ text = ['CELL_TYPES ',num2str(ne)];
 fprintf(fid,'%s\n',text);
 
 % print the number of nodes per cell for each element
-fprintf(fid,'%d\n',cell_type*ones(1,ne));
+fprintf(fid, '%d\n', cell_type*ones(1,ne));
 
 if nd > 0 % if point data is defined
-    % print POINT_DATA and #of nodes for each data set
+    % print POINT_DATA and # of nodes for each data set
     text = ['POINT_DATA ',num2str(nn)];
     fprintf(fid,'%s\n',text);
 end
@@ -108,19 +147,18 @@ for i = 1:nd % for each data set
     if strcmp(type,'float')
         % find smallest significant digit
         mindata = num2str(abs(scalar_data(i).data),'%e');
-        test = min(str2num(mindata(:,end-2:end)));
+        test = min(str2double(mindata(:,end-2:end)));
         numsigdigs = num2str(max([abs(test),min_sig_digs]));
     elseif strcmp(type,'int')
         numsigdigs = '0';
     end
     
     if str2double(numsigdigs) > 30
-%         disp(['NUM SIG DIGS = ' num2str(numsigdigs)])
         numsigdigs = '30';
     end
     
     % print 'SCALARS data_name data_type'
-    text = ['SCALARS ',scalar_data(i).name,' ' type ' 1'];
+    text = ['SCALARS ', scalar_data(i).name,' ' type ' 1'];
     fprintf(fid,'%s\n',text);
     text = 'LOOKUP_TABLE default';
     fprintf(fid,'%s\n',text);
@@ -143,7 +181,7 @@ for i = 1:nc
     if strcmp(type,'float')
         % find smallest significant digit
         mindata = num2str(abs(scalar_data(i).data),'%e');
-        test = min(str2num(mindata(:,end-2:end)));
+        test = min(str2double(mindata(:,end-2:end)));
         numsigdigs = num2str(max([abs(test),min_sig_digs]));
     elseif strcmp(type,'int')
         numsigdigs = '0';
@@ -151,7 +189,7 @@ for i = 1:nc
     
     text = ['SCALARS ',cell_data(i).name,' ' type ' 1'];
     fprintf(fid,'%s\n',text);
-    text = ['LOOKUP_TABLE default'];
+    text = 'LOOKUP_TABLE default';
     fprintf(fid,'%s\n',text);
     fprintf(fid,['%.' numsigdigs 'f\n'],cell_data(i).data');
 end
