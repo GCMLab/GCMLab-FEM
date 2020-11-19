@@ -187,7 +187,9 @@
 %% Test 4: Manufactured Solution - Q4 elements
         fprintf('\n\n Test 4: Manufactured Solution - Q4 elements\n')
         % Step 1 - Run Simulation
-        global meshfilename quadorder 
+        global meshfilename quadorder E nu
+            E = 2230;
+            nu = 0.3;
             quadorder = 2; 
             Control.config_name = 'ManufacturedSolution';
             % Run coarse mesh

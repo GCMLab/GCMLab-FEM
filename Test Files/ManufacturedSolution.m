@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = ManufacturedSolution(Control)
-global meshfilename quadorder
+global meshfilename quadorder E nu
 
 %% Mesh Properties
     disp([num2str(toc),': Building Mesh...']);
@@ -31,6 +31,7 @@ global meshfilename quadorder
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
             Mesh.MeshFileName = meshfilename;
+
             % number of space dimensions 
             Mesh.nsd = 2;
             
@@ -49,7 +50,7 @@ global meshfilename quadorder
         % otherwise, quadrature order must be increased significantly
 
     % Young's modulus [Pa]
-    Material.E = @(x) 1000;  
+    Material.E = @(x) E;  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -58,7 +59,7 @@ global meshfilename quadorder
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) 0;
+    Material.nu = @(x) nu;
 
     % Alternatively, import a material file
     % Material = Material_shale();
@@ -114,13 +115,14 @@ global meshfilename quadorder
 
         % magnitude of distributed body force [N/m] [bx;by] according to
         % the manufactured solution:
-        % bx = -0.5*E*(20*x^3+20*x^3+3*y^2+6*x*y-30*y^4)
-        % by = -0.5*E*(3*y^2+6*x*y-30*y^4+6*x*y-30*y^4+20*x^3)
+        % bx = -E / (1-v^2) * ( 20x^3 + 3vy^2          + (1-v)/2*[ 6xy - 30y^4 + 3y^2 ])
+        % by = -E/  (1-v^2) * ( (1-v)/2*[3y^2 + 20x^3] +           3vy^2 + 6xy - 30y^4 )
             % 1D: [N/m], 2D: [N/m2]
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[-0.5.*Material.E(x)*(20.*x(1).^3+20.*x(1).^3+3.*x(2).^2+6.*x(1).*x(2)-30.*x(2).^4);-0.5.*Material.E(x).*(3.*x(2).^2+6.*x(1).*x(2)-30.*x(2).^4+6.*x(1).*x(2)-30.*x(2).^4+20.*x(1).^3)];    
+        BC.b = @(x)[-E / (1-nu^2)  * ( 20*x(1).^3 + 3*nu*x(2).^2              + (1-nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2));
+                    -E / (1-nu^2)  * ( (1-nu)/2*( 3*x(2).^2  + 20*x(1).^3)    + 3*nu*x(2).^2 + 6*x(1).*x(2) - 30*x(2).^4 )];
 
 %% Computation controls
 

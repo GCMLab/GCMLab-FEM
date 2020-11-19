@@ -22,17 +22,14 @@ function [m_L2, m_e] = ManufacturedSolution_check(d1, d2, d3, s1, s2, s3, e1, e2
 %   uy = x^5 + x*y^3 - y^6
 %   exx = 5x^4 + y^3
 %   eyy = 3xy^2 - 6y^5
-%   exy = 0.5*(3xy^2 - 6y^5 + 5x^4 + y^3)
+%   exy = (3xy^2 - 6y^5 + 5x^4 + y^3) 
 %   sxx = E/(1-v^2) * [   exx + v*eyy ]
 %   syy = E/(1-v^2) * [ v*exx +   eyy ]
 %   sxy = E/(1-v^2) * (1-v)/2 * exy
 
-global quadorder
+global quadorder E nu
 
 plot_on = 0; % turn plots on/off - debugging tool
-
-E = 1000;
-nu = 0;
 
 % Step 1 - Loop through each element and calculate the L2 and e-norms
 eL2 = zeros(3,1);
