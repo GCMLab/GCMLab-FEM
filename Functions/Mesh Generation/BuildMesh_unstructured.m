@@ -48,7 +48,7 @@ function Mesh = BuildMesh_unstructured(Mesh, Control)
     Mesh.nodeconn = NodalConn(Mesh);
 
 %% Element neighbours 
-    % NOTE: Only works for Q4 elements at the moment
+    if strcmp(Mesh.type,'Q4')    % NOTE: Only works for Q4 elements at the moment
     Mesh.eneighbours = zeros(Mesh.ne,4);  % element neighbours (share an edge)
     for e = 1:Mesh.ne
         % list of elements which share at least one node with element e       
@@ -76,7 +76,7 @@ function Mesh = BuildMesh_unstructured(Mesh, Control)
             end
         end
     end
-
+    end
 %% Node sets
     Mesh = NodeSets(Mesh);
 

@@ -252,7 +252,7 @@
     
     
 %% Test 4: Manufactured Solution - Q9 elements
-        return
+
         % Unit testing for convergence of Q9 elements is setup, but the
         % code is not currently capable of handling Q9 elements
         fprintf('\n\n Test 3: Manufactured Solution - Q9 elements\n')
