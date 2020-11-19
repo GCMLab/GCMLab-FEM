@@ -45,8 +45,8 @@
                 stress_coarse, stress_fine, stress_finer, strain_coarse, strain_fine, ...
                 strain_finer, Mesh_coarse, Mesh_fine, Mesh_finer);
             
-            fprintf('\nQ4 L2-norm converges at a rate of %.2f',m_L2)
-            fprintf('\nQ4  e-norm converges at a rate of %.2f',m_e)
+            fprintf('\nQ9 L2-norm converges at a rate of %.2f',m_L2)
+            fprintf('\nQ9  e-norm converges at a rate of %.2f',m_e)
             
             convergence_tolerance = 0.05;
             if m_L2 >= (3 - convergence_tolerance) && m_e >= (2 - convergence_tolerance)
