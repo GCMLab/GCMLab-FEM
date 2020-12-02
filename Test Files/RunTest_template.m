@@ -14,7 +14,7 @@
 
         fprintf('\n\n Test X: [Test Name] - Test Description')
         % Step 1 - Run Simulation
-        Control.config_name = '[Test config file name]';
+        config_name = '[Test config file name]';
         main  % Runs calculation
         
         % Step 2 - Check results
@@ -38,7 +38,6 @@
 
         % Step 4 - Cleanup
         clearvars -except VTKDirs ConfigFiles...
-                  curDir FuncDir  ConfigDir ...
-                  file codeSubmitTime ...
-                  Control ntests testpasssummary
-       
+                      curDir  ConfigDir file ...
+                      Control ntests testpasssummary...
+                      plot2vtk progress_on
