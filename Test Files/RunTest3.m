@@ -20,9 +20,9 @@
         fprintf('\n\n Test 3: Patch Test C - Q4 elements\n')
         % Step 1 - Run Simulation
         global  E nu t
-        t = 3.495;
-        E = 2540;
-        nu = 0.3;
+        t = 3.495; % applied traction (both directions)
+        E = 2540;  % elastic modulus
+        nu = 0.3;  % poisson's ratio
         
         config_name = 'PatchTestC';
         main
