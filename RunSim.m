@@ -4,9 +4,6 @@
     format compact
     tic;
     
-    % Current time and date
-    codeSubmitTime = datetime('now','Format','yyyy-MM-dd''_''HH-mm-ss');
-
     % Current directory
     curDir = pwd;
  
@@ -56,11 +53,8 @@ try
     % Loop through every configuration file 
     for file = 1:numfiles
         % clear variables from previous simulation
-        clearvars -except VTKDirs ConfigFiles...
-                  curDir FuncDir  ConfigDir ...
-                  file codeSubmitTime ...
-                  exit_when_done print_log ...
-                  plot2vtk
+        clearvars -except ConfigDir VTKDirs curDir ...
+                    ConfigFiles file plot2vtk
 
         clearvars -global
 
@@ -70,8 +64,8 @@ try
 
         vtk_dir = VTKDirs{file};
         
-        if ~isfolder(VTKDirs{file}) 
-            mkdir(VTKDirs{file})
+        if ~isfolder(vtk_dir) 
+            mkdir(vtk_dir)
         end
         
         % run and time the simulation
@@ -79,12 +73,11 @@ try
         run('Functions/Main/main');
         end_time = toc;
 
+        disp(['run time: ' num2str(end_time - start_time)])
         close all
     end
 
 catch err
-	% save a text file called 'error' to the directory so I 
-	% know it is incomplete.
     disp(err.message);
 
     errStack = struct2cell(err.stack);
@@ -93,5 +86,4 @@ catch err
 
     disp([errStackName' errStackLine']);
     disp(err.identifier);
-
 end
