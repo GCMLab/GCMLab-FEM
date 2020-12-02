@@ -1,4 +1,4 @@
-function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir)
+function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on)
 %BUILDMESH_GMSH Import GMSH file
 %   Mesh = BUILDMESH_GMSH(meshFileName, nsd, config_dir) is a structure 
 %   array with the mesh description. The mesh is imported from the GMSH 
@@ -106,8 +106,9 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir)
     Mesh = NodeDOFs(Mesh);
 
 %% Element connectivity and neighbours
-    disp([num2str(toc),': Defining element connectivity...']);
-
+    if progress_on
+        disp([num2str(toc),': Defining element connectivity...']);
+    end
 %% Nodal Connectivity
     % list of elements connected to each node
     Mesh.nodeconn = NodalConn(Mesh);
@@ -142,6 +143,8 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir)
 
 %% Node sets
     Mesh = NodeSets(Mesh);
-
-disp([num2str(toc),': Done generating mesh...']);
+    
+if progress_on
+    disp([num2str(toc),': Done generating mesh...']);
+end
 end
