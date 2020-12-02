@@ -1,8 +1,9 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
+function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
 
 %% Mesh Properties
-    disp([num2str(toc),': Building Mesh...']);
-    
+    if progress_on
+        disp([num2str(toc),': Building Mesh...']);
+    end
     % Mesh formats: 
     %   'MANUAL'    - In-house structured meshing
     % 	'GMSH'      - Import .msh file from GMSH, structured or unstructured
@@ -12,28 +13,28 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
     switch MeshType
         case 'MANUAL'
             % location of initial node [m] [x0;y0;z0] 
-            Mesh.x1 = [0;0;0];
+            x1 = [0;0;0];
             % number of space dimensions 
-            Mesh.nsd = 2;
+            nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            Mesh.L = [1;1];
+            L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            Mesh.nex = [2;2]*20;
+            nex = [2;2]*20;
             % element type ('Q4')
-            Mesh.type = 'Q4';
+            type = 'Q4';
             
-            Mesh = BuildMesh_structured(Mesh);
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
         case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            Mesh.MeshFileName = 'Mesh Files\Unstructured_sample.msh';
+            meshFileName = 'Mesh Files\Unstructured_sample.msh';
             % number of space dimensions 
-            Mesh.nsd = 2;
+            nsd = 2;
             
-            Mesh = BuildMesh_unstructured(Mesh, Control);            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);               
     end    
     
 

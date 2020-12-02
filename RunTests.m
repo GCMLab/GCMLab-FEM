@@ -9,7 +9,10 @@
     
     % Do not output any vtk files from unit tests
     Control.vtk = 0;
+    plot2vtk = 0;
     Control.vtk_dir = [];
+    % suppress progress messages
+    progress_on = 0;
     
     % Current time and date
     codeSubmitTime = datetime('now','Format','yyyy-MM-dd''_''HH-mm-ss');

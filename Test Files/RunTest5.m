@@ -18,7 +18,8 @@
             E = 2230;
             nu = 0.3; 
             quadorder = 4;
-            Control.config_name = 'ManufacturedSolution';
+            config_name = 'ManufacturedSolution';
+            
             % Run coarse mesh
             meshfilename = 'Mesh Files\Manufactured_coarseQ9.msh';
             main
@@ -71,7 +72,7 @@
             testpasssummary(5) = test_pass;
 
         % Step 4 - Cleanup
-            clearvars -except VTKDirs ConfigFiles...
-                      curDir FuncDir  ConfigDir ...
-                      file codeSubmitTime ...
-                      Control ntests testpasssummary
+        clearvars -except VTKDirs ConfigFiles...
+                      curDir  ConfigDir file ...
+                      Control ntests testpasssummary...
+                      plot2vtk progress_on

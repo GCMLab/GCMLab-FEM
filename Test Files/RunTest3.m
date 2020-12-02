@@ -19,7 +19,7 @@
 
         fprintf('\n\n Test 3: Patch Test C - Q4 elements\n')
         % Step 1 - Run Simulation
-        Control.config_name = 'PatchTestC';
+        config_name = 'PatchTestC';
         main
         
         % Step 2 - Check results
@@ -48,6 +48,6 @@
         
         % Step 4 - Cleanup
         clearvars -except VTKDirs ConfigFiles...
-                      curDir FuncDir  ConfigDir ...
-                      file codeSubmitTime ...
-                      Control ntests testpasssummary
+                      curDir  ConfigDir file ...
+                      Control ntests testpasssummary...
+                      plot2vtk progress_on
