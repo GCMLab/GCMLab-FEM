@@ -20,28 +20,28 @@ function [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Me
 %   reaction_er:         Error related to reaction forces
 
 % Patch Test
-%   ux = 0.002x
-%   uy = -0.0006y
-%   produces zero body forces and zero stresses except for ?(x)=2.
-%   stress = [2*ones(1,Mesh.nn); zeros(1,Mesh.nn); zeros(1,Mesh.nn)]
+% ux = (1-nu)*t/E*x
+% uy = (1-nu)*t/E*y
+%   applied traction of t in both x and y directions
+%   stress = [t*ones(1,Mesh.nn); t*ones(1,Mesh.nn); zeros(1,Mesh.nn)]
 %   Fext = [-0.5 0 0.5 0 0.5 0 -0.5 0 0 0 1 0 0 0 -1 0 0 0 0 0 0 0]'
 
-
+global E nu t
 
 % Calculate exact solutions
-sigma = 2;
+sigma = t;
 x = Mesh.x(:,1);
 y = Mesh.x(:,2);
 d_exact = zeros(2*Mesh.nn,1);
-d_exact(1:2:end) = 0.002.*x;
-d_exact(2:2:end) = -0.0006.*y;
-Fext_exact = [-0.5 0 0.5 0 0.5 0 -0.5 0 0 0 1 0 0 0 -1 0 0 0 0 0 0 0]';
-stress_exact = [sigma*ones(1,Mesh.nn); zeros(1,Mesh.nn); zeros(1,Mesh.nn)];
+d_exact(1:2:end) = (1-nu)*t/E.*x;
+d_exact(2:2:end) = (1-nu)*t/E.*y;
+stress_exact = [sigma*ones(1,Mesh.nn); sigma*ones(1,Mesh.nn); zeros(1,Mesh.nn)];
 
 % Calculate the error
 disp_er = norm(d - d_exact);
 stress_er = sqrt(sum((stress - stress_exact).^2,'all'));
-reaction_er = norm(Fext - Fext_exact);
+%reaction_er = norm(Fext - Fext_exact);
+reaction_er = sum(Fext);
 
 end
 

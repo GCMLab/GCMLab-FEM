@@ -31,7 +31,7 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Mesh Files\Unstructured_sample.msh';
+            meshFileName = 'Mesh Files\PatchTest.msh';
             % number of space dimensions 
             nsd = 2;
             
@@ -40,6 +40,7 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
     
 
 %% Material Properties (Solid)
+    global E nu t
 
     % NOTES-------------------------------------------------------------
                                 
@@ -50,7 +51,7 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
         % otherwise, quadrature order must be increased significantly
 
     % Young's modulus [Pa]
-    Material.E = @(x) 1000;  
+    Material.E = @(x) E;  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -59,7 +60,7 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) 0.3;
+    Material.nu = @(x) nu;
 
     % Alternatively, import a material file
     % Material = Material_shale();
@@ -75,11 +76,12 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
 
     % Dirichlet boundary conditions (essential) according to exact solution
-    % ux = 0.002x
-    % uy = -0.0006y
+    % ux = (1-nu)*t/E*x
+    % uy = (1-nu)*t/E*y
     % -----------------------------------------------------------------
-        BC.UU = @(x) 0.002*x(:,1);
-        BC.VV = @(x) -0.0006*x(:,2);
+        
+        BC.UU = @(x) (1-nu)*t/E*x(:,1);
+        BC.VV = @(x) (1-nu)*t/E*x(:,2);
         
         % column vector of prescribed displacement dof  
         BC.fix_disp_dof = 1:Mesh.nDOF;

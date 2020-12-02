@@ -15,6 +15,11 @@
 
         fprintf('\n\n Test 1: Patch Test A - Q4 elements\n')
         % Step 1 - Run Simulation
+        global  E nu t
+        t = 3.495;
+        E = 2540;
+        nu = 0.3;
+        
         config_name = 'PatchTestA';
         main
         
@@ -25,7 +30,7 @@
         fprintf('\nQ4-patch test A: Stress error is %.2f',stress_er)
         fprintf('\nQ4-patch test A: Reaction forces error is %.2f',reaction_er)
         
-        convergence_tolerance = 1e-14;
+        convergence_tolerance = 1e-10;
         if disp_er <= convergence_tolerance && stress_er <= convergence_tolerance && reaction_er <= convergence_tolerance 
             test_pass = 1;
         else

@@ -30,7 +30,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Mesh Files\Unstructured_sample.msh';
+            meshFileName = 'Mesh Files\PatchTest.msh';
             % number of space dimensions 
             nsd = 2;
             
@@ -39,6 +39,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
     
 
 %% Material Properties (Solid)
+    global E nu t
 
     % NOTES-------------------------------------------------------------
                                 
@@ -49,7 +50,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         % otherwise, quadrature order must be increased significantly
 
     % Young's modulus [Pa]
-    Material.E = @(x) 1000;  
+    Material.E = @(x) E;  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -58,7 +59,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) 0.3;
+    Material.nu = @(x) nu;
 
     % Alternatively, import a material file
     % Material = Material_shale();
@@ -74,25 +75,26 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
 
     % Dirichlet boundary conditions (essential) according to exact solution
-    % ux = 0.002x
-    % uy = -0.0006y
+    % ux = (1-nu)*t/E*x
+    % uy = (1-nu)*t/E*y
     % -----------------------------------------------------------------
-        BC.UU = @(x) 0.002*x(:,1);
-        BC.VV = @(x) -0.0006*x(:,2);
+        
+        BC.UU = @(x) (1-nu)*t/E*x(:,1);
+        BC.VV = @(x) (1-nu)*t/E*x(:,2);
         
         % column vector of prescribed displacement dof  
         topleftnode = Mesh.left_nodes(find(Mesh.x(Mesh.left_nodes,2) == max(Mesh.x(:,2))));
         botleftnode = Mesh.left_nodes(find(Mesh.x(Mesh.left_nodes,2) == min(Mesh.x(:,2))));
         
         BC.fix_disp_dof1 = [Mesh.left_nodes*2-1];
-        BC.fix_disp_dof2 = botleftnode*2;
+        BC.fix_disp_dof2 = Mesh.bottom_nodes*2;
         
         BC.fix_disp_dof = [BC.fix_disp_dof1;BC.fix_disp_dof2];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
         BC.fix_disp_value1 = BC.UU([Mesh.x(Mesh.left_nodes,1),Mesh.x(Mesh.left_nodes,2)]);
-        BC.fix_disp_value2 = BC.VV([Mesh.x(botleftnode,1),Mesh.x(botleftnode,2)]);
+        BC.fix_disp_value2 = BC.VV([Mesh.x(Mesh.bottom_nodes,1),Mesh.x(Mesh.bottom_nodes,2)]);
         BC.fix_disp_value = [BC.fix_disp_value1;BC.fix_disp_value2];  
 
     %% Neumann BC
@@ -105,18 +107,30 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
+        toprightnode = Mesh.right_nodes(Mesh.x(Mesh.right_nodes,2) == max(Mesh.x(:,2)));
+        index_right = Mesh.right_nodes ~= toprightnode;
+        index_top   = Mesh.top_nodes   ~= toprightnode;
+        
+        BC.traction_force_node = [Mesh.right_nodes(index_right);  Mesh.top_nodes(index_top); toprightnode];
+        
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 2/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        t = 4;
+        Fright = t*max(Mesh.x(:,2))/(length(Mesh.right_nodes) - 1);
+        Ftop   = t*max(Mesh.x(:,1))/(length(Mesh.top_nodes)   - 1);
+        BC.traction_force_value =       [   Fright*ones(size(Mesh.right_nodes(index_right))),     zeros(size(Mesh.right_nodes(index_right)));      % right side nodes
+                                            zeros(size(Mesh.top_nodes(index_top))),               Ftop*ones(size(Mesh.top_nodes(index_top)));           % top side nodes
+                                            Fright*1/2,                                           Ftop*1/2                                           ]; % top right node
         
         % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
         botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
+        topleftnode  = find(Mesh.x(BC.traction_force_node,1) == min(Mesh.x(:,1)));
         
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
         BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
+        BC.traction_force_value(topleftnode,2) = BC.traction_force_value(topleftnode,2)/2;
+        
+        % specify the force on the top right node
+        
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -134,7 +148,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         Control.qo = 2;
 
         % displacement magnification coefficient (for visualization)
-        Control.MagCoef = 1;
+        Control.MagCoef = 1000;
 
         % Nodal averaging for discontinuous variables (stress/strain)
         % 'none', 'nodal'
