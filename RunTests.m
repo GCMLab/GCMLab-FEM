@@ -8,21 +8,17 @@
     tic;
     
     % Do not output any vtk files from unit tests
-    Control.vtk = 0;
     plot2vtk = 0;
-    Control.vtk_dir = [];
+    vtk_dir = [];
     % suppress progress messages
     progress_on = 0;
     
-    % Current time and date
-    codeSubmitTime = datetime('now','Format','yyyy-MM-dd''_''HH-mm-ss');
-
     % Current directory
     curDir = pwd;
     DirFolder = 'Test Files';
     ConfigDir = fullfile(curDir, DirFolder);
-    %% Directories
-    Control.config_dir = ConfigDir;
+
+%% Directories
     FuncDir = fullfile(curDir, 'Functions');
     ConfigDir = fullfile(curDir, DirFolder);
     % add paths
