@@ -87,7 +87,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
             nodedata(end).type = 'float';
 
             nodedata(end+1).name = 'R';
-            nodedata(end).data = Fext(Mesh.DOF);
+            nodedata(end).data = R(Mesh.DOF);
             nodedata(end).type = 'float';
 
             if strcmp(Control.contour,'nodal')
@@ -186,7 +186,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
             nodedata(end).type = 'float';
 
             nodedata(end+1).name = 'R';
-            nodedata(end).data = Fext(Mesh.DOF);
+            nodedata(end).data = R(Mesh.DOF);
             nodedata(end).type = 'float';
 
             if strcmp(Control.contour,'nodal')
