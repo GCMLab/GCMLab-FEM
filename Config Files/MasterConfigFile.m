@@ -160,7 +160,10 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStrain'; 
 
-    % Thickness (set as default to 1)
+    % Cross-sectional area - required for 1D problems (set as default to 1)
+    Material.A = @(x) 1;
+
+    % Thickness - required for 2D problems (set as default to 1)
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
@@ -229,7 +232,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         Control.MagCoef = 1;
 
         % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal'
+        % 'none', 'nodal', 'center'
         Control.contour = 'nodal';
 
         % penalty parameter for solution of static problem with 

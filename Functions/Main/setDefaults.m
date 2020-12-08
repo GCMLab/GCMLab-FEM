@@ -77,8 +77,12 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
                 ' Define Material.Dtype']);
     end
 
-    if ~isfield(Material, 't')
-        error('Model thickness is not defined - Define Material.t');
+    if Mesh.nsd==1 &&  ~isfield(Material, 'A')
+        Material.A = @(x) 1;
+    end
+
+    if Mesh.nsd==2 &&  ~isfield(Material, 't')
+        Material.t = @(x) 1;
     end
 
     if ~isfield(Material, 'nu')
