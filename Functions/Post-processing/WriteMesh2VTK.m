@@ -48,6 +48,7 @@ function WriteMesh2VTK(filename, description, x, conn, ...
 % Acknowledgements: Robert Gracie
 
 min_sig_digs = 5;
+max_sig_digs = 20;
 
 if nargin < 6
     cell_data = [];
@@ -63,135 +64,175 @@ nne = size(conn,2);         % number of nodes per element
 nd = length(nodal_data);   % number of scalar datum defined at each node (point);
 nc = length(cell_data);     % number of scalar datum defined at each cell (element)
 
+% fix length of nodal vector
+if nsd == 1 && size(x,2)==1
+    x = [x, zeros(nn,1), zeros(nn,1)];
+elseif nsd == 2 && size(x,2)==2
+    x = [x, zeros(nn,1)];
+elseif size(x,2)<3
+    error('WriteMesh2VTK: The size of the vector x is incorrect.')
+end
+
 % open the file in write mode
 fid = fopen(filename, 'w');
 
-% header
-fprintf(fid,'%s\n','# vtk DataFile Version 2.0');
-fprintf(fid,'%s\n',['HFX mesh description: ',description]);
-fprintf(fid,'%s\n','ASCII');
-fprintf(fid,'%s\n','DATASET UNSTRUCTURED_GRID');
+%% header
+    fprintf(fid,'%s\n','# vtk DataFile Version 2.0');
+    fprintf(fid,'%s\n',['HFX mesh description: ',description]);
+    fprintf(fid,'%s\n','ASCII');
 
-% print out the number of nodes
-%(POINTS = nodes, float bc data is float type)
-text = ['POINTS ',num2str(nn),' float'];
-fprintf(fid,'%s\n',text);
+%% Geometry/topology
+if nne == 1
+    fprintf(fid,'%s\n','DATASET POLYDATA');
 
-% if it's a 2D model, add a row of zeros to the end of x that is the
-% same length as the number of nodes (to signify zero in the z-direction), 
-% and if it's a 1D model, add two rows of zeros to end of x (for y- and
-% z- directions)
-if nsd == 1
-    x = [x, zeros(nn,1), zeros(nn,1)];
-elseif nsd == 2
-    x = [x, zeros(nn,1)];
-end
-
-% print out the nodal locations
-fprintf(fid, '%f %f %f\n', x');
-
-% print out 'CELLS', # of elements, # of nodes (+1 for each element)
-text = ['CELLS ',num2str(ne), ' ',num2str((nne+1)*ne)];
-fprintf(fid,'%s\n',text);
-
-% output the connectivity of the mesh
-% in vtk: cells are elements
-if nsd == 2 && (nne == 4 || nne ==9) % Q4 or Q9
-      outputformat = '%d %d %d %d %d \n';
-      conn = [4*ones(ne,1),conn(:,1:4)-ones(ne,4)];
-      cell_type = 9;
-elseif nne == 2 % L2
-    outputformat = '%d %d %d  \n';
-    conn = [nne*ones(ne,1),conn-ones(ne,nne)];
-    cell_type = 3;
-elseif nne == 3 && nsd == 1 % L3
-    outputformat = '%d %d %d %d \n';
-    conn = [nne*ones(ne,1),conn-ones(ne,nne)];
-    cell_type = 21;
-elseif nne == 4 && nsd == 1 % L4
-    outputformat = '%d %d %d %d %d \n';
-    conn = [nne*ones(ne,1),conn-ones(ne,nne)];
-    cell_type = 4;
-elseif nne == 3 % T3
-    outputformat = '%d %d %d %d \n';
-    conn = [nne*ones(ne,1),conn-ones(ne,nne)];
-    cell_type = 5;
-else %B8
-      conn = [nne*ones(ne,1),conn-ones(ne,nne)];
-      outputformat = '%d %d %d %d %d %d %d %d %d \n';
-      cell_type = 12;
-end
-   
-fprintf(fid,outputformat,conn');
-
-% print 'CELL_TYPES #of elements'
-text = ['CELL_TYPES ',num2str(ne)];
-fprintf(fid,'%s\n',text);
-
-% print the number of nodes per cell for each element
-fprintf(fid, '%d\n', cell_type*ones(1,ne));
-
-if nd > 0 % if point data is defined
-    % print POINT_DATA and # of nodes for each data set
-    text = ['POINT_DATA ',num2str(nn)];
+    % print out the number of nodes 
+    %(POINTS = nodes, float bc data is float type)
+    text = ['POINTS ',num2str(nn),' float'];
     fprintf(fid,'%s\n',text);
-end
 
-for i = 1:nd % for each data set
-    if isfield(scalar_data,'type')
-        type = scalar_data(i).type;
+    % print out the nodal locations
+    fprintf(fid,'%f %f %f\n',x');
+
+else
+    fprintf(fid,'%s\n','DATASET UNSTRUCTURED_GRID');
+        
+    % print out the number of nodes
+    %(POINTS = nodes, float bc data is float type)
+    text = ['POINTS ',num2str(nn),' float'];
+    fprintf(fid,'%s\n',text);
+
+    % print out the nodal locations
+    fprintf(fid, '%f %f %f\n', x');
+
+    % print out 'CELLS', # of elements, # of nodes (+1 for each element)
+    text = ['CELLS ',num2str(ne), ' ',num2str((nne+1)*ne)];
+    fprintf(fid,'%s\n',text);
+
+    % output the connectivity of the mesh
+    % in vtk: cells are elements
+    if nsd==1 && nne == 2 % L2
+        outputformat = '%d %d %d  \n';
+        conn = [nne*ones(ne,1),conn-ones(ne,nne)];
+        cell_type = 3;
+    elseif nsd==1 && nne == 3 && nsd == 1 % L3
+        outputformat = '%d %d %d %d \n';
+        conn = [nne*ones(ne,1),conn-ones(ne,nne)];
+        cell_type = 21;
+    elseif nsd==1 && nne == 4 && nsd == 1 % L4
+        outputformat = '%d %d %d %d %d \n';
+        conn = [nne*ones(ne,1),conn-ones(ne,nne)];
+        cell_type = 4;
+    elseif nsd==2 && nne == 3 % T3
+        outputformat = '%d %d %d %d \n';
+        conn = [nne*ones(ne,1),conn-ones(ne,nne)];
+        cell_type = 5;
+    elseif nsd == 2 && nne == 4 % Q4 
+        outputformat = '%d %d %d %d %d \n';
+        conn = [4*ones(ne,1),conn(:,1:4)-ones(ne,4)];
+        cell_type = 9;
+    elseif nsd == 2 && nne == 9 % Q9
+        outputformat = '%d %d %d %d %d %d %d %d %d %d \n';  
+        conn_out = [9*ones(ne,1),conn-ones(ne,9) ];
+        cell_type = 23;   
+    elseif nsd == 2 && nne == 8 %B8
+        conn = [nne*ones(ne,1),conn-ones(ne,nne)];
+        outputformat = '%d %d %d %d %d %d %d %d %d \n';
+        cell_type = 12;
     else
-        type = 'float';
+        error('WriteMesh2VTK: Element not supported')
     end
 
-    if strcmp(type,'float')
-        % find smallest significant digit
-        mindata = num2str(abs(scalar_data(i).data),'%e');
-        test = min(str2double(mindata(:,end-2:end)));
-        numsigdigs = num2str(max([abs(test),min_sig_digs]));
-    elseif strcmp(type,'int')
-        numsigdigs = '0';
-    end
-    
-    if str2double(numsigdigs) > 30
-        numsigdigs = '30';
-    end
-    
-    % print 'SCALARS data_name data_type'
-    text = ['SCALARS ', scalar_data(i).name,' ' type ' 1'];
+    fprintf(fid,outputformat,conn');
+
+    % print 'CELL_TYPES #of elements'
+    text = ['CELL_TYPES ',num2str(ne)];
     fprintf(fid,'%s\n',text);
-    text = 'LOOKUP_TABLE default';
-    fprintf(fid,'%s\n',text);
-    % print data
-    fprintf(fid,['%.' numsigdigs 'f\n'],scalar_data(i).data);
+
+    % print the number of nodes per cell for each element
+    fprintf(fid, '%d\n', cell_type*ones(1,ne));
 end
 
-if nc > 0
-text = ['CELL_DATA ',num2str(ne)];
-fprintf(fid,'%s\n',text);
-end
+%% Dataset Attributes
 
-for i = 1:nc
-    if isfield(scalar_data,'type')
-        type = scalar_data(i).type;
-    else
-        type = 'float';
+    %% Point data
+    if nd > 0 % if point data is defined
+        % print POINT_DATA and # of nodes for each data set
+        text = ['POINT_DATA ',num2str(nn)];
+        fprintf(fid,'%s\n',text);
     end
 
-    if strcmp(type,'float')
-        % find smallest significant digit
-        mindata = num2str(abs(scalar_data(i).data),'%e');
-        test = min(str2double(mindata(:,end-2:end)));
-        numsigdigs = num2str(max([abs(test),min_sig_digs]));
-    elseif strcmp(type,'int')
-        numsigdigs = '0';
+    for i = 1:nd % for each data set
+        if isfield(nodal_data,'type')
+            type = nodal_data(i).type;
+        else
+            type = 'float';
+        end
+
+        if strcmp(type,'float')
+            sig_digs = real(floor(log10(nodal_data(i).data)));
+            lowest_exp = min(sig_digs(~isinf(sig_digs)));
+            numsigdigs = min(max_sig_digs,max([abs(lowest_exp),min_sig_digs]));
+        elseif strcmp(type,'int')
+            numsigdigs = '0';
+        end
+         
+        % number of components
+        numcomp = size(nodal_data(i).data,2);
+        if numcomp == 3
+            text = ['VECTORS ', nodal_data(i).name,' ' type ' '];
+            fprintf(fid,'%s\n',text);
+        else
+            % print 'SCALARS data_name data_type'
+            text = ['SCALARS ', nodal_data(i).name,' ' type ' ', num2str(numcomp)];
+            fprintf(fid,'%s\n',text);
+            text = 'LOOKUP_TABLE default';
+            fprintf(fid,'%s\n',text);
+        end
+
+        % print data
+        fprintf(fid,[ repmat(['%.' num2str(numsigdigs) 'f '],1,numcomp), '\n'], nodal_data(i).data');
+
     end
-    
-    text = ['SCALARS ',cell_data(i).name,' ' type ' 1'];
-    fprintf(fid,'%s\n',text);
-    text = 'LOOKUP_TABLE default';
-    fprintf(fid,'%s\n',text);
-    fprintf(fid,['%.' numsigdigs 'f\n'],cell_data(i).data');
-end
+
+    %% Cell data
+    if nc > 0
+        text = ['CELL_DATA ',num2str(ne)];
+        fprintf(fid,'%s\n',text);
+    end
+
+    for i = 1:nc
+        if isfield(cell_data,'type')
+            type = cell_data(i).type;
+        else
+            type = 'float';
+        end
+
+        if strcmp(type,'float')
+            % find smallest significant digit
+            sig_digs = real(floor(log10(cell_data(i).data)));
+            lowest_exp = min(sig_digs(~isinf(sig_digs)));
+            numsigdigs = min(max_sig_digs,max([abs(lowest_exp),min_sig_digs]));
+        elseif strcmp(type,'int')
+            numsigdigs = '0';
+        end
+        
+        % number of components
+        numcomp = size(cell_data(i).data,2);
+        if numcomp == 3
+            text = ['VECTORS ', cell_data(i).name,' ' type ' '];
+            fprintf(fid,'%s\n',text);
+        else
+            % print 'SCALARS data_name data_type'
+            text = ['SCALARS ', cell_data(i).name,' ' type ' ', num2str(numcomp)];
+            fprintf(fid,'%s\n',text);
+            text = 'LOOKUP_TABLE default';
+            fprintf(fid,'%s\n',text);
+        end
+
+        % print data
+        fprintf(fid,[ repmat(['%.' num2str(numsigdigs) 'f '],1,numcomp), '\n'], cell_data(i).data');
+    end
 
 fclose(fid);
+
+end
