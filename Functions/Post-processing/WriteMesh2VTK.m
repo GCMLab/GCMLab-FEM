@@ -1,8 +1,8 @@
-function WriteMesh2VTK(filename, description, x, conn,...
-                            scalar_data, cell_data)
+function WriteMesh2VTK(filename, description, x, conn, ...
+                            nodal_data, cell_data)
 %WRITEMESH2VTK Exports mesh data to a file in VTK format
-%   WRITEMESH2VTK(filename, description, x, conn, scalar_data, cell_data)
-%   produces a vtk file (filename), with scalar nodal data (scalar_data), 
+%   WRITEMESH2VTK(filename, description, x, conn, nodal_data, cell_data)
+%   produces a vtk file (filename), with scalar nodal data (nodal_data), 
 %   and scalar element data (cell_data). The nodal spatial locations are 
 %   described in x, and the element connectivity in conn. 
 % 
@@ -22,7 +22,7 @@ function WriteMesh2VTK(filename, description, x, conn,...
 %                   matrix corresponds to an element in the mesh, and
 %                   the value in each column correspond to the global 
 %                   node numbers associated with the element.
-%   scalar_data:    Scalar nodal data, specified as a structure array 
+%   nodal_data:    Scalar nodal data, specified as a structure array 
 %                   of size n x 1 in which n is the number of data arrays
 %                   to output. The structure array has the following
 %                   fields,
@@ -53,14 +53,14 @@ if nargin < 6
     cell_data = [];
 end
 if nargin < 5
-    scalar_data = [];
+    nodal_data = [];
 end
 
 nn = size(x,1);             % number of nodes (points)
 nsd = size(x,2);            % number of space dimensions
 ne = size(conn,1);          % number of elements (cells)
 nne = size(conn,2);         % number of nodes per element 
-nd = length(scalar_data);   % number of scalar datum defined at each node (point);
+nd = length(nodal_data);   % number of scalar datum defined at each node (point);
 nc = length(cell_data);     % number of scalar datum defined at each cell (element)
 
 % open the file in write mode
