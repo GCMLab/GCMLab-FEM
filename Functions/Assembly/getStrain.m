@@ -11,6 +11,10 @@ function [strain, stress] = getStrain(d, Mesh, Material, contour_type)
 %   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'nodal') returns 
 %   matrices of nodal-averaged strains (size dim x nn).
 % 
+%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'center') returns 
+%   matrices of strains computed at the center of each element 
+%   (size dim x ne).
+% 
 %   --------------------------------------------------------------------
 %   Input
 %   --------------------------------------------------------------------
@@ -63,6 +67,9 @@ switch contour_type
         strain = zeros(dim, Mesh.nn);
         stress = zeros(dim, Mesh.nn);
         count = zeros(dim, Mesh.nn);
+    case 'center'
+        strain = zeros(dim, Mesh.ne);
+        stress = zeros(dim, Mesh.ne);
 end
 
 % Loop through all elements
@@ -79,7 +86,17 @@ for e = 1:Mesh.ne
         % local displacement vector
         de = d(dofE);
   
-    %% Calculate element strains
+    if strcmp(contour_type, 'center')
+        xi = zeros(1,Mesh.nsd);
+        [N, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+        Xi = xI'*N;
+        Je = dNdxi'*xI;
+        B = Je\(dNdxi');
+        Bv = getBv(B', Mesh.nsd);
+        D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);
+        strain(:, e) = Bv'*de;
+        stress(:, e) = D*strain(:, e);
+    else
         % initialize strain element
         strain_e = zeros(dim, Mesh.nne);   
         stress_e = zeros(dim, Mesh.nne);
@@ -118,7 +135,7 @@ for e = 1:Mesh.ne
             
         end
             
-    %% Add to global strains
+        %% Add to global strains
         switch contour_type
             case 'none'
                 for s = 1:size(strain_e,1)
@@ -131,6 +148,7 @@ for e = 1:Mesh.ne
                 count(:,enodes) = count(:,enodes) + 1;
         end
         
+    end
 end
 
 %% For nodal strains, divide by count to get the average
