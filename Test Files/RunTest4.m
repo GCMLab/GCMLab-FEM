@@ -9,8 +9,7 @@
 %
 % Acknowledgements: Bruce Gee, Saeed Hatefi Ardakani
 
-        % Add function folder to filepath    
-        addpath('../Functions')
+
 
         fprintf('\n\n Test 4: Manufactured Solution - Q4 elements\n')
         % Step 1 - Run Simulation

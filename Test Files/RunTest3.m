@@ -14,9 +14,6 @@
        
 
 
-        % Add function folder to filepath    
-        addpath('../Functions')
-
         fprintf('\n\n Test 3: Patch Test C - Q4 elements\n')
         % Step 1 - Run Simulation
         global  E nu t
