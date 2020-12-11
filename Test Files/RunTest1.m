@@ -5,11 +5,17 @@
 % are specfied according to the exact solution. The error between the FEA
 % and exact solutions is then calculated. The FEA approximate solution
 % should be exact.
-%
-% Acknowledgements: Bruce Gee, Saeed Hatefi Ardakani
+
        
+        % Create test VTK folder
+        if plot2vtk
+            vtk_dir = fullfile(VTKFolder,'\Test2');
+            if ~isfolder(vtk_dir) 
+                mkdir(vtk_dir)
+            end
+        end
 
-
+        
         fprintf('\n\n Test 1: Patch Test A - Q4 elements\n')
         % Step 1 - Run Simulation
         global  E nu t
@@ -44,7 +50,6 @@
 
         
         % Step 4 - Cleanup
-        clearvars -except VTKDirs ConfigFiles...
-                      curDir  ConfigDir file ...
-                      Control ntests testpasssummary...
-                      plot2vtk vtk_dir progress_on
+        clearvars -except  curDir  ConfigDir ...
+                      ntests testpasssummary...
+                      plot2vtk VTKFolder progress_on

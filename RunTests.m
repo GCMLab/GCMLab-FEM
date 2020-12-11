@@ -7,9 +7,9 @@
     format compact
     tic;
     
-    % Do not output any vtk files from unit tests
-    plot2vtk = 0;
-    vtk_dir = [];
+    % Test VTK output
+    plot2vtk = 1;
+    VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
     % suppress progress messages
     progress_on = 0;
     
@@ -21,6 +21,7 @@
 %% Directories
     FuncDir = fullfile(curDir, 'Functions');
     ConfigDir = fullfile(curDir, DirFolder);
+    VTKFolder = fullfile(VTKFolder, DirFolder);
     % add paths
     addpath(genpath(FuncDir));
     addpath(genpath(ConfigDir));

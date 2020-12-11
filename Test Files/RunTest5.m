@@ -6,10 +6,16 @@
 % ux = x^5 + x*y^3 - y^6
 % uy = x^5 + x*y^3 - y^6
 % under plane stress conditions
-%
-% Acknowledgements: Bruce Gee, Saeed Hatefi Ardakani
 
 
+        % Create test VTK folder
+        if plot2vtk
+            vtk_dir = fullfile(VTKFolder,'\Test5');
+            if ~isfolder(vtk_dir) 
+                mkdir(vtk_dir)
+            end
+        end
+        % test runs 3 meshes, only finest mesh will be saved
     
         fprintf('\n\n Test 5: Manufactured Solution - Q9 elements\n')
         % Step 1 - Run Simulation
@@ -62,7 +68,7 @@
                 test_pass = 0;
             end
             
-                    % Step 3 - Output results
+        % Step 3 - Output results
             if test_pass
                 fprintf('\nPASS\n')
             else
@@ -71,7 +77,6 @@
             testpasssummary(5) = test_pass;
 
         % Step 4 - Cleanup
-        clearvars -except VTKDirs ConfigFiles...
-                      curDir  ConfigDir file ...
-                      Control ntests testpasssummary...
-                      plot2vtk vtk_dir progress_on
+        clearvars -except  curDir  ConfigDir ...
+                      ntests testpasssummary...
+                      plot2vtk VTKFolder progress_on

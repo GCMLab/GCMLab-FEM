@@ -8,9 +8,13 @@
 %
 % Acknowledgements: Bruce Gee, X
        
-
-        % Add function folder to filepath    
-        addpath('../Functions')
+        % Create test VTK folder
+        if plot2vtk
+            vtk_dir = fullfile(VTKFolder,'\TestX');
+            if ~isfolder(vtk_dir) 
+                mkdir(vtk_dir)
+            end
+        end
 
         fprintf('\n\n Test X: [Test Name] - Test Description')
         % Step 1 - Run Simulation
@@ -37,7 +41,6 @@
           
 
         % Step 4 - Cleanup
-        clearvars -except VTKDirs ConfigFiles...
-                      curDir  ConfigDir file ...
-                      Control ntests testpasssummary...
-                      plot2vtk progress_on
+        clearvars -except  curDir  ConfigDir ...
+                      ntests testpasssummary...
+                      plot2vtk VTKFolder progress_on
