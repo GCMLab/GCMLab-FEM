@@ -24,7 +24,6 @@ function [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Me
 % uy = (1-nu)*t/E*y
 %   applied traction of t in both x and y directions
 %   stress = [t*ones(1,Mesh.nn); t*ones(1,Mesh.nn); zeros(1,Mesh.nn)]
-%   Fext = [-0.5 0 0.5 0 0.5 0 -0.5 0 0 0 1 0 0 0 -1 0 0 0 0 0 0 0]'
 
 global E nu t
 
@@ -40,7 +39,6 @@ stress_exact = [sigma*ones(1,Mesh.nn); sigma*ones(1,Mesh.nn); zeros(1,Mesh.nn)];
 % Calculate the error
 disp_er = norm(d - d_exact);
 stress_er = sqrt(sum((stress - stress_exact).^2,'all'));
-%reaction_er = norm(Fext - Fext_exact);
 reaction_er = sum(Fext);
 
 end
