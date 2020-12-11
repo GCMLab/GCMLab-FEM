@@ -8,7 +8,7 @@
     tic;
     
     % Test VTK output
-    plot2vtk = 1;
+    plot2vtk = 0;
     VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
     % suppress progress messages
     progress_on = 0;
