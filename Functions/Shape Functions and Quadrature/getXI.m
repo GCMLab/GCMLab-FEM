@@ -42,8 +42,11 @@ switch type
         end
     case 'T3'
         if node_num == 1
+            xi_node = [0,0];
         elseif node_num == 2
+            xi_node = [1,0];
         elseif node_num == 3
+            xi_node = [0,1];
         end
     case 'Q4'
         if node_num == 1
