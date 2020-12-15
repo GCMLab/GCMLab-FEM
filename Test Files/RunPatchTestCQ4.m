@@ -25,10 +25,13 @@
         
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global  E nu t
+        global  E nu t meshfilename quadorder
         t = 3.495; % applied traction (both directions)
         E = 2540;  % elastic modulus
         nu = 0.3;  % poisson's ratio
+        
+        meshfilename = 'Mesh Files\PatchTestQ4.msh';
+        quadorder = 2;
         
         config_name = 'PatchTestC';
         main

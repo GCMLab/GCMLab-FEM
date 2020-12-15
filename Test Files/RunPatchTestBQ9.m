@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit test - Patch Test B Q4 as part of RunTests
+% Runs unit test - Patch Test B Q9 as part of RunTests
 % ------------------------------------------------------------------------
 % For Patch Test B, only nodes 1-8 (nodes in the boundaries) are restrained
 % with their displacements specified according to the exact solution. The error between the FEA
@@ -7,7 +7,7 @@
 % should be exact.
 
         testnum = testnum + 1;
-        testname = 'Patch Test B - Q4 elements';
+        testname = 'Patch Test B - Q9 elements';
         nameslist{testnum} = testname;
        
         % Create test VTK folder
@@ -26,8 +26,8 @@
         E = 2540;  % elastic modulus
         nu = 0.3;  % poisson's ratio
         
-        meshfilename = 'Mesh Files\PatchTestQ4.msh';
-        quadorder = 2;
+        meshfilename = 'Mesh Files\PatchTestQ9.msh';
+        quadorder = 3;
         
         config_name = 'PatchTestB';
         main
