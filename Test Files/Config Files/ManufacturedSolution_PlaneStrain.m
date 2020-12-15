@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = ManufacturedSolution(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = ManufacturedSolution_PlaneStrain(config_dir, progress_on)
 global meshfilename quadorder E nu
 
 %% Mesh Properties
@@ -55,7 +55,7 @@ global meshfilename quadorder E nu
     Material.E = @(x) E;  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
+    Material.Dtype = 'PlaneStrain'; 
 
     % Thickness (set as default to 1)
     Material.t = @(x) 1;
@@ -117,14 +117,14 @@ global meshfilename quadorder E nu
 
         % magnitude of distributed body force [N/m] [bx;by] according to
         % the manufactured solution:
-        % bx = -E / (1-v^2) * ( 20x^3 + 3vy^2          + (1-v)/2*[ 6xy - 30y^4 + 3y^2 ])
-        % by = -E/  (1-v^2) * ( (1-v)/2*[3y^2 + 20x^3] +           3vy^2 + 6xy - 30y^4 )
+        % bx = -E /(1+v)/(1-2v) * ( (1-v)*20x^3                     + v*3y^2           + (1-2v)/2*[ 6xy - 30y^4 + 3y^2 ])
+        % by = -E /(1+v)/(1-2v) * ( (1-2v)/2*[3y^2 + 20x^3]         + v*3y^2           + (1-v)*(6xy - 30y^4) )
             % 1D: [N/m], 2D: [N/m2]
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[-E / (1-nu^2)  * ( 20*x(1).^3 + 3*nu*x(2).^2              + (1-nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2));
-                    -E / (1-nu^2)  * ( (1-nu)/2*( 3*x(2).^2  + 20*x(1).^3)    + 3*nu*x(2).^2 + 6*x(1).*x(2) - 30*x(2).^4 )];
+        BC.b = @(x)[-E /(1+nu)/(1-2*nu) * ( (1-nu)*20*x(1).^3                    + nu*3*x(2).^2        + (1-2*nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2 ));
+                    -E /(1+nu)/(1-2*nu) * ( (1-2*nu)/2*(3*x(2).^2 + 20*x(1).^3)  + nu*3*x(2).^2        + (1-nu)*(6*x(1).*x(2) - 30*x(2).^4) )];
 
 %% Computation controls
 

@@ -23,7 +23,7 @@
             E = 2230;
             nu = 0.3;
             quadorder = 2; 
-            config_name = 'ManufacturedSolution';
+            config_name = 'ManufacturedSolution_PlaneStress';
             
             % Run coarse mesh
             meshfilename = 'Mesh Files\Manufactured_coarseQ4.msh';
@@ -53,7 +53,7 @@
             Mesh_finer = Mesh;
         
         % Step 2 - Check results
-            [m_L2, m_e] = ManufacturedSolution_check(d_coarse, d_fine, d_finer, ...
+            [m_L2, m_e] = ManufacturedSolution_PlaneStress_check(d_coarse, d_fine, d_finer, ...
                 stress_coarse, stress_fine, stress_finer, strain_coarse, strain_fine, ...
                 strain_finer, Mesh_coarse, Mesh_fine, Mesh_finer);
             

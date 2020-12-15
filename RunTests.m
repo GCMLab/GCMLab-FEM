@@ -27,7 +27,7 @@
     addpath(genpath(ConfigDir));
     
     % number of tests
-    ntests = 5;
+    ntests = 6;
     % initialize test summary
     testpasssummary = zeros(ntests,1);
     
@@ -54,6 +54,11 @@
 %   Pass condition: L2-norm converges at a rate of at least h^3
 %                    e-norm converges at a rate of at least h^2
         run('Test Files/RunT5_ManSolQ9')
+        
+%% Test 5: Manufactured Solution - Plane Strain check
+%   Pass condition: L2-norm converges at a rate of at least h^2
+%                    e-norm converges at a rate of at least h
+        run('Test Files/RunT6_Pstrain')
         
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
