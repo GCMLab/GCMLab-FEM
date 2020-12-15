@@ -6,17 +6,22 @@
 % ------------------------------------------------------------------------
 % [Summary of test details]
 %
-% Acknowledgements: Bruce Gee, X
+
+        testnum = testnum + 1;
+        testname = 'Test name and description';
+        nameslist{testnum} = testname;
        
         % Create test VTK folder
         if plot2vtk
-            vtk_dir = fullfile(VTKFolder,'\TestX');
+            folname = ['\Test',num2str(testnum)];
+            vtk_dir = fullfile(VTKFolder,folname);
             if ~isfolder(vtk_dir) 
                 mkdir(vtk_dir)
             end
         end
 
-        fprintf('\n\n Test X: [Test Name] - Test Description')
+        
+        fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
         config_name = '[Test config file name]';
         main  % Runs calculation
@@ -37,10 +42,10 @@
         else
             fprintf('\nFAIL')
         end
-        testpasssummary([testnumber]) = test_pass;
-          
+        testpasssummary(testnum) = test_pass;
 
+        
         % Step 4 - Cleanup
         clearvars -except  curDir  ConfigDir ...
-                      ntests testpasssummary...
+                      ntests testpasssummary testnum nameslist...
                       plot2vtk VTKFolder progress_on

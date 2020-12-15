@@ -25,9 +25,11 @@
     % add paths
     addpath(genpath(FuncDir));
     addpath(genpath(ConfigDir));
-    
+       
     % number of tests
     ntests = 6;
+    nameslist = {};
+    testnum = 0;
     % initialize test summary
     testpasssummary = zeros(ntests,1);
     
@@ -35,43 +37,43 @@
 
 %% Test 1: Patch Test A - All nodal displacements prescribed
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
-        run('Test Files/RunT1_PatchTestA')
+        run('Test Files/RunPatchTestAQ4')
 
 %% Test 2: Patch Test B - Dirichlet-Dirichlet BC
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
-        run('Test Files/RunT2_PatchTestB')
+        run('Test Files/RunPatchTestBQ4')
 
 %% Test 3: Patch Test C - Dirichlet-Neumann BC
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
-        run('Test Files/RunT3_PatchTestC')
+        run('Test Files/RunPatchTestCQ4')
 
 %% Test 4: Manufactured Solution - Q4 element convergence
 %   Pass condition: L2-norm converges at a rate of at least h^2
 %                    e-norm converges at a rate of at least h
-         run('Test Files/RunT4_ManSolQ4')
+         run('Test Files/RunManSolQ4')
  
 %% Test 5: Manufactured Solution - Q9 element convergence
 %   Pass condition: L2-norm converges at a rate of at least h^3
 %                    e-norm converges at a rate of at least h^2
-        run('Test Files/RunT5_ManSolQ9')
+        run('Test Files/RunManSolQ9')
         
 %% Test 5: Manufactured Solution - Plane Strain check
 %   Pass condition: L2-norm converges at a rate of at least h^2
 %                    e-norm converges at a rate of at least h
-        run('Test Files/RunT6_Pstrain')
+        run('Test Files/RunPstrain')
         
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
 %       run('Test Files/RunTestX')
 
 %% Summarize test results
-fprintf('\n\n%10s%10s', 'Test', 'Status')
+fprintf('\n\n%-10s%-10s%-20s', 'Test', 'Status','Test Name')
 fprintf('\n----------------------------------------------')
 for test = 1:ntests
    if testpasssummary(test)
-       fprintf('\n%10d%10s', test, 'PASS')
+       fprintf('\n%-10d%-10s%-20s', test, 'PASS',nameslist{test})
    else
-      fprintf('\n%10d%10s', test, 'FAIL')
+      fprintf('\n%-10d%-10s%-20s', test, 'FAIL',nameslist{test})
    end
 end
 fprintf('\n\n')
