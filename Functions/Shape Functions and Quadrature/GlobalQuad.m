@@ -35,7 +35,15 @@ function Quad = GlobalQuad(nsd, elem_type, qo)
 % Acknowledgments: Matin Parchei Esfahani
 
 % quadrature weights and points
-[Quad.W, Quad.Q] = quadrature(qo, 'GAUSS', nsd);
+switch elem_type
+    case 'T3'
+        [Quad.W, Quad.Q] = quadrature(qo, 'TRIANGULAR', nsd);
+    case 'T6'
+        [Quad.W, Quad.Q] = quadrature(qo, 'TRIANGULAR', nsd);
+    otherwise
+        [Quad.W, Quad.Q] = quadrature(qo, 'GAUSS', nsd);
+end
+        
 
 % number of quad points
 Quad.nq = length(Quad.W); 

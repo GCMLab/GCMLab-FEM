@@ -91,10 +91,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
-%       .MagCoef:       Displacement magnification coefficient
-%                       for visualization
-%       .contour:       Nodal averaging for discontinous variables
-%                       ('none', 'nodal')
+%       .stress_calc    Calculation of values for discontinous variables
+%                       ('none', 'nodal', 'center')
 %       .beta:          Penalty parameter  
 %       .LinearSolver   Method used for solving linear problem:
 %                       'LinearSolver1': Partitioning
@@ -225,12 +223,15 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % quadrature order
         Control.qo = 2;
 
-        % displacement magnification coefficient (for visualization)
-        Control.MagCoef = 1;
-
-        % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal'
-        Control.contour = 'nodal';
+        % Calculation of values for discontinuous variables 
+        % (i.e. stress/strain)
+        % 'none': calculated at each node for each element separately; 
+        %           no output in vtk
+        % 'nodal': averaged at each node for all elements attached to 
+        %           the node; output as nodal values in vtk
+        % 'center': calculated at the center of each element; output as 
+        %           single value for each element in vtk
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3

@@ -129,12 +129,9 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
         % quadrature order
         Control.qo = quadorder;
 
-        % displacement magnification coefficient (for visualization)
-        Control.MagCoef = 1;
-
         % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal'
-        Control.contour = 'nodal';
+        % 'none', 'nodal', 'center'
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3

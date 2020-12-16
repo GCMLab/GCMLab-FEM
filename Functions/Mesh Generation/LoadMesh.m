@@ -90,6 +90,13 @@ for i = 1:nelem
             else
                 edg = 1;
             end
+        case 2          % T3 element
+            nne = 3;
+            if nsd == 2
+                edg = 0;
+            else
+                edg = 1;
+            end
     end
     
     if ~edg
