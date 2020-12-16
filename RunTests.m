@@ -27,7 +27,7 @@
     addpath(genpath(ConfigDir));
     
     % number of tests
-    ntests = 5;
+    ntests = 6;
     % initialize test summary
     testpasssummary = zeros(ntests,1);
     
@@ -54,6 +54,11 @@
 %   Pass condition: L2-norm converges at a rate of at least h^3
 %                    e-norm converges at a rate of at least h^2
         run('Test Files/RunT5_ManSolQ9')
+        
+%% Test 6: Plate with Hole under tension
+%  Pass Condtion: error of L2 projected stresses is less than nodal
+%  averaged stresses
+      run('Test Files/RunT6_PlateWHole')
         
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
