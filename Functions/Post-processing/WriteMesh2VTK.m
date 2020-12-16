@@ -94,22 +94,6 @@ if nne == 1
     fprintf(fid,'%f %f %f\n',x');
 
 else
-    fprintf(fid,'%s\n','DATASET UNSTRUCTURED_GRID');
-        
-    % print out the number of nodes
-    %(POINTS = nodes, float bc data is float type)
-    text = ['POINTS ',num2str(nn),' float'];
-    fprintf(fid,'%s\n',text);
-
-    % print out the nodal locations
-    fprintf(fid, '%f %f %f\n', x');
-
-    % print out 'CELLS', # of elements, # of nodes (+1 for each element)
-    text = ['CELLS ',num2str(ne), ' ',num2str((nne+1)*ne)];
-    fprintf(fid,'%s\n',text);
-
-    % output the connectivity of the mesh
-    % in vtk: cells are elements
     if nsd==1 && nne == 2 % L2
         outputformat = '%d %d %d  \n';
         conn = [nne*ones(ne,1),conn-ones(ne,nne)];
@@ -131,8 +115,33 @@ else
         conn = [4*ones(ne,1),conn(:,1:4)-ones(ne,4)];
         cell_type = 9;
     elseif nsd == 2 && nne == 9 % Q9
-        outputformat = '%d %d %d %d %d %d %d %d %d %d \n';  
-        conn_out = [9*ones(ne,1),conn-ones(ne,9) ];
+        % Paraview does not render Q9 elements, only Q8 - remove column 9,
+        % element middle nodes
+        outputformat = '%d %d %d %d %d %d %d %d %d \n';  
+        middlenodes = conn(:,9);
+        conn(:,9) = [];
+        
+        % remove middle nodes from node list
+        nn = nn - length(middlenodes);
+        nne = 8;
+        x(middlenodes,:) = [];
+        
+        % remove middle nodes from nodal_data
+        ndata = length(nodal_data);
+        for field = 1:ndata
+            fielddata = nodal_data(field).data;
+            fielddata(middlenodes,:) = [];
+            nodal_data(field).data = fielddata;
+        end
+        
+        % remove middle nodes from connectivity
+        middlenodes = sort(middlenodes,'ascend');
+        for i = 1:length(middlenodes)
+            conn(conn>middlenodes(i)) = conn(conn>middlenodes(i))-1;
+            middlenodes(middlenodes>middlenodes(i)) = middlenodes(middlenodes>middlenodes(i))-1;
+        end
+     
+        conn = [nne*ones(ne,1),conn-ones(ne,nne) ];
         cell_type = 23;   
     elseif nsd == 2 && nne == 8 %B8
         conn = [nne*ones(ne,1),conn-ones(ne,nne)];
@@ -141,7 +150,23 @@ else
     else
         error('WriteMesh2VTK: Element not supported')
     end
+    
+    % Print out to VTK
+     fprintf(fid,'%s\n','DATASET UNSTRUCTURED_GRID');   
+    % print out the number of nodes
+    %(POINTS = nodes, float bc data is float type)
+    text = ['POINTS ',num2str(nn),' float'];
+    fprintf(fid,'%s\n',text);
 
+    % print out the nodal locations
+    fprintf(fid, '%f %f %f\n', x');
+
+    % print out 'CELLS', # of elements, # of nodes (+1 for each element)
+    text = ['CELLS ',num2str(ne), ' ',num2str((nne+1)*ne)];
+    fprintf(fid,'%s\n',text);
+    
+    % output the connectivity of the mesh
+    % in vtk: cells are elements
     fprintf(fid,outputformat,conn');
 
     % print 'CELL_TYPES #of elements'
