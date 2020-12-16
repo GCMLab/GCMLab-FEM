@@ -27,7 +27,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests
-    ntests = 9;
+    ntests = 13;
     nameslist = {};
     testnum = 0;
     % initialize test summary
@@ -69,7 +69,24 @@
 %                    e-norm converges at a rate of at least h^2
         run('Test Files/RunManSolQ9')
         
-%% Test 9: Manufactured Solution - Plane Strain check
+%% Test 9: Patch Test A - All nodal displacements prescribed T3
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunPatchTestAT3')
+
+%% Test 10: Patch Test B - Dirichlet-Dirichlet BC T3
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunPatchTestBT3')
+
+%% Test 11: Patch Test C - Dirichlet-Neumann BC T3
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunPatchTestCT3')
+
+%% Test 12: Manufactured Solution - T3 element convergence
+%   Pass condition: L2-norm converges at a rate of at least h^2
+%                    e-norm converges at a rate of at least h
+         run('Test Files/RunManSolT3')
+        
+%% Test 13: Manufactured Solution - Plane Strain check
 %   Pass condition: L2-norm converges at a rate of at least h^2
 %                    e-norm converges at a rate of at least h
         run('Test Files/RunPstrain')
