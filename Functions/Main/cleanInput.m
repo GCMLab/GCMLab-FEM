@@ -3,7 +3,7 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
 %   [Mesh, Material, BC, Control] = CLEANINPUT(Mesh, Material, BC, Control)
 %   returns the clean input structure arrays BC 
 %   
-adsf= 0;
+
 %% Mesh
 
 
