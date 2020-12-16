@@ -26,8 +26,6 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
 %   Control:    Structure array with the following fields,
 %               .config_name:   Name of the configuration file
 %               .vtk_dir:       Directory where VTK files are stored
-%               .MagCoef:       Displacement magnification coefficient
-%                               for visualization
 %               .stress_calc:   Calculation of values for discontinous variables
 %                               ('none', 'nodal', 'center')
 %   fixedDOF:   Row vector containing fixed degrees of freedom
@@ -47,11 +45,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
 
 %% Define variables
     description = config_name;
-    filename1 = fullfile(vtk_dir, [config_name '.vtk.0']); 
-    filename2 = fullfile(vtk_dir, [config_name '.vtk.1']);
-
-    deformedshape = Mesh.x + ...
-                Control.MagCoef*[d(Mesh.xdofs),d(Mesh.ydofs),d(Mesh.zdofs)];
+    filename = fullfile(vtk_dir, [config_name '.vtk']); 
 
     R = Fext - Fint;
 
@@ -123,6 +117,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
             nodedata(end).data = [R(Mesh.DOF), zeros(size(Mesh.xdofs'))];
             nodedata(end).type = 'float';
             
+
             if strcmp(Control.stress_calc,'nodal')
                 nodedata(end+1).name = 'exx';
                 nodedata(end).data = strain(1,:)';
@@ -148,6 +143,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
                 nodedata(end).data = stress(3,:)';
                 nodedata(end).type = 'float';
             
+
             elseif strcmp(Control.stress_calc, 'center')
                 elementdata(end+1).name = 'exx';
                 elementdata(end).data = strain(1,:)';
@@ -242,6 +238,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
                 nodedata(end).data = stress(6,:)';
                 nodedata(end).type = 'float';
  
+
             elseif strcmp(Control.stress_calc, 'center')
                 elementdata(end+1).name = 'exx';
                 elementdata(end).data = strain(1,:)';
@@ -295,7 +292,5 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
     end
 
 %% Write to vtk
-    WriteMesh2VTK(filename1, description, Mesh.x, ...
+    WriteMesh2VTK(filename, description, Mesh.x, ...
                     Mesh.conn, nodedata, elementdata);
-    WriteMesh2VTK(filename2, description, deformedshape, ...
-            Mesh.conn, nodedata, elementdata);
