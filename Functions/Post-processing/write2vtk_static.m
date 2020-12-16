@@ -44,11 +44,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
 
 %% Define variables
     description = config_name;
-    filename1 = fullfile(vtk_dir, [config_name '.vtk.0']); 
-    filename2 = fullfile(vtk_dir, [config_name '.vtk.1']);
-
-    deformedshape = Mesh.x + ...
-                Control.MagCoef*[d(Mesh.xdofs),d(Mesh.ydofs),d(Mesh.zdofs)];
+    filename = fullfile(vtk_dir, [config_name '.vtk']); 
 
     R = Fext - Fint;
 
@@ -292,7 +288,5 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
     end
 
 %% Write to vtk
-    WriteMesh2VTK(filename1, description, Mesh.x, ...
+    WriteMesh2VTK(filename, description, Mesh.x, ...
                     Mesh.conn, nodedata, elementdata);
-    WriteMesh2VTK(filename2, description, deformedshape, ...
-            Mesh.conn, nodedata, elementdata);
