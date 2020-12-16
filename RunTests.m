@@ -16,7 +16,6 @@
     % Current directory
     curDir = pwd;
     DirFolder = 'Test Files';
-    ConfigDir = fullfile(curDir, DirFolder);
 
 %% Directories
     FuncDir = fullfile(curDir, 'Functions');
