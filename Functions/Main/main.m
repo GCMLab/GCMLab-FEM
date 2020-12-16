@@ -77,4 +77,6 @@
                         Fint, Fext);
     end
     
-disp('done')
+    if progress_on
+        disp('done')
+    end
