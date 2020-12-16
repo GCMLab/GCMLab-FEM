@@ -163,13 +163,11 @@ if ~strcmp(calc_type,'none')
                                  %strainxy_n1 strainxy_n2...];
                     strain_e(:,n) = Bv'*de;
                     stress_e(:,n) = D*strain_e(:,n);
-                    
-                    % Add to global strains
+                end
+                % Add to global strains
                     strain(:,enodes) = strain(:,enodes) + strain_e;
                     stress(:,enodes) = stress(:,enodes) + stress_e;
                     count(:,enodes) = count(:,enodes) + 1;
-
-                end
              case 'L2projection'
                     % initialize elemental matrices and vectors
                     A_e = zeros(Mesh.nne, Mesh.nne);
