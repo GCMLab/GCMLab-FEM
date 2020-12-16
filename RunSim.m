@@ -7,7 +7,7 @@
     % Current directory
     curDir = pwd;
  
-%% Input
+%% Input (these variables must be modified by the user)
     % Folder name where config files are stored
     DirFolder = 'Config Files';
     % Config files to run. Choose either 'all' or give the file name.
@@ -20,9 +20,7 @@
     else
         VTKFolder = '/home/e2rivas/Documents/Matlab Results/';
     end
-    
-    VTKFolder = fullfile(VTKFolder, DirFolder);
-    
+     
     % output vtk files
     plot2vtk = 1;
     
@@ -30,6 +28,7 @@
     progress_on = 1;
 
 %% Directories
+    VTKFolder = fullfile(VTKFolder, DirFolder);
     FuncDir = fullfile(curDir, 'Functions');
     ConfigDir = fullfile(curDir, DirFolder);
 
