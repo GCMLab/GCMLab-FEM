@@ -136,7 +136,7 @@ global meshfilename quadorder E nu
 
         % Nodal averaging for discontinuous variables (stress/strain)
         % 'none', 'nodal'
-        Control.contour = 'nodal';
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3

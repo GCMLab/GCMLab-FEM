@@ -1,7 +1,9 @@
-function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir)
+function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progress_on)
 
 %% Mesh Properties
-    disp([num2str(toc),': Building Mesh...']);
+    if progress_on
+        disp([num2str(toc),': Building Mesh...']);
+    end
     
     % Mesh format - 'STRUCTURED', 'UNSTRUCTURED'
     MeshType = 'GMSH';        
@@ -31,7 +33,7 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir)
             % number of space dimensions 
             nsd = 2;
           
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir);            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
     end    
     
 
@@ -120,8 +122,8 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir)
         Control.MagCoef = 1;
 
         % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal'
-        Control.contour = 'nodal';
+        % 'none', 'nodal', 'center'
+        Control.stress_calc = 'center';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
