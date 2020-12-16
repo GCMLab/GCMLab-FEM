@@ -148,7 +148,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
 
         % Nodal averaging for discontinuous variables (stress/strain)
         % 'none', 'nodal', 'center'
-        Control.contour = 'nodal';
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3

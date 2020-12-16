@@ -1,4 +1,4 @@
-function [strain, stress] = getStrain(d, Mesh, Material, contour_type)
+function [strain, stress] = getStrain(d, Mesh, Material, calc_type)
 %GETSTRAIN Evaluate stress and strain
 %   strain = GETSTRAIN(d, Mesh, Material) is a cell array of  
 %   nodal strains in each element of the mesh. The cell array is of size 
@@ -10,6 +10,10 @@ function [strain, stress] = getStrain(d, Mesh, Material, contour_type)
 % 
 %   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'nodal') returns 
 %   matrices of nodal-averaged strains (size dim x nn).
+% 
+%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'center') returns 
+%   matrices of strains computed at the center of each element 
+%   (size dim x ne).
 % 
 %   --------------------------------------------------------------------
 %   Input
@@ -39,7 +43,7 @@ function [strain, stress] = getStrain(d, Mesh, Material, contour_type)
 %               .Dtype: 2D approximation ('PlaneStrain' or 'PlainStress')
 
 if nargin < 4
-    contour_type = 'none';
+    calc_type = 'none';
 end
 
 % Specify dimension of the strain/stress matrix
@@ -55,7 +59,7 @@ end
 % TODO: Add least squares stress/strain projection
 
 % Specify type of strain/stress matrix/cell
-switch contour_type
+switch calc_type
     case 'none'
         strain = cell(dim,Mesh.ne);
         stress = cell(dim,Mesh.ne);
@@ -63,6 +67,9 @@ switch contour_type
         strain = zeros(dim, Mesh.nn);
         stress = zeros(dim, Mesh.nn);
         count = zeros(dim, Mesh.nn);
+    case 'center'
+        strain = zeros(dim, Mesh.ne);
+        stress = zeros(dim, Mesh.ne);
 end
 
 % Loop through all elements
@@ -79,7 +86,17 @@ for e = 1:Mesh.ne
         % local displacement vector
         de = d(dofE);
   
-    %% Calculate element strains
+    if strcmp(calc_type, 'center')
+        xi = zeros(1,Mesh.nsd);
+        [N, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+        Xi = xI'*N;
+        Je = dNdxi'*xI;
+        B = Je\(dNdxi');
+        Bv = getBv(B', Mesh.nsd);
+        D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);
+        strain(:, e) = Bv'*de;
+        stress(:, e) = D*strain(:, e);
+    else
         % initialize strain element
         strain_e = zeros(dim, Mesh.nne);   
         stress_e = zeros(dim, Mesh.nne);
@@ -118,8 +135,8 @@ for e = 1:Mesh.ne
             
         end
             
-    %% Add to global strains
-        switch contour_type
+        %% Add to global strains
+        switch calc_type
             case 'none'
                 for s = 1:size(strain_e,1)
                     strain{s,e} = strain_e(s,:);
@@ -131,10 +148,11 @@ for e = 1:Mesh.ne
                 count(:,enodes) = count(:,enodes) + 1;
         end
         
+    end
 end
 
 %% For nodal strains, divide by count to get the average
-    if strcmp(contour_type,'nodal')
+    if strcmp(calc_type,'nodal')
        strain = strain./count;
        stress = stress./count;
     end

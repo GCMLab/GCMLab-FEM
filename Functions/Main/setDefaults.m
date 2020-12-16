@@ -112,8 +112,8 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         Control.qo = 2;
     end
 
-    if ~isfield(Control, 'contour')
-        Control.contour = 'nodal';
+    if ~isfield(Control, 'stress_calc')
+        Control.stress_calc = 'nodal';
     end
 
     if ~isfield(Control, 'LinearSolver')

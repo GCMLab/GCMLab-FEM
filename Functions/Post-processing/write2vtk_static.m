@@ -26,17 +26,20 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
 %   Control:    Structure array with the following fields,
 %               .config_name:   Name of the configuration file
 %               .vtk_dir:       Directory where VTK files are stored
-%               .contour:       Nodal averaging for discontinous variables
-%                               ('none', 'nodal')
+%               .stress_calc:   Calculation of values for discontinous variables
+%                               ('none', 'nodal', 'center')
 %   fixedDOF:   Row vector containing fixed degrees of freedom
 %   d:          Column vector of displacements (size ndof x 1 where ndof 
 %               is the number of degrees of freedom)
-%   strain:     Matrix of nodal strains (size dim x nn in which dim is 
-%               1 for 1D elements, 3 for 2D elements, and 6 for 3D elements
-%               and nn is the number of nodes)
-%   stress:     Matrix of nodal stresses (size dim x nn in which dim is 
-%               1 for 1D elements, 3 for 2D elements, and 6 for 3D elements
-%               and nn is the number of nodes)
+%   strain:     if Control.stress_calc = 'nodal': Matrix of nodal strains 
+%                           (size dim x nn in which dim is 1 for 1D 
+%                           elements, 3 for 2D elements, and 6 for 3D 
+%                           elements and nn is the number of nodes)
+%               if Control.stress_calc = 'center': Matrix of element 
+%                           strains (calculated at the center of each 
+%                           element); size dim x ne in which ne is the 
+%                           number of elements
+%   stress:     Matrix of stresses (same size as strain matrix)
 %   Fint:       Column vector of internal forces (size ndof x 1)
 %   Fext:       Column vector of external forces (size ndof x 1)
 
@@ -84,14 +87,14 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
             nodedata(end).data = R(Mesh.DOF);
             nodedata(end).type = 'float';
 
-            if strcmp(Control.contour,'nodal')
+            if strcmp(Control.stress_calc,'nodal')
                 nodedata(end+1).name = 'exx';
                 nodedata(end).data = strain';
                 nodedata(end).type = 'float';
                 nodedata(end+1).name = 'sxx';
                 nodedata(end).data = stress';
                 nodedata(end).type = 'float';                
-            elseif strcmp(Control.contour, 'center')
+            elseif strcmp(Control.stress_calc, 'center')
                 elementdata(end+1).name = 'exx';
                 elementdata(end).data = strain';
                 elementdata(end).type = 'float';
@@ -114,7 +117,8 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
             nodedata(end).data = [R(Mesh.DOF), zeros(size(Mesh.xdofs'))];
             nodedata(end).type = 'float';
             
-            if strcmp(Control.contour,'nodal')
+
+            if strcmp(Control.stress_calc,'nodal')
                 nodedata(end+1).name = 'exx';
                 nodedata(end).data = strain(1,:)';
                 nodedata(end).type = 'float';
@@ -139,7 +143,8 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
                 nodedata(end).data = stress(3,:)';
                 nodedata(end).type = 'float';
             
-            elseif strcmp(Control.contour, 'center')
+
+            elseif strcmp(Control.stress_calc, 'center')
                 elementdata(end+1).name = 'exx';
                 elementdata(end).data = strain(1,:)';
                 elementdata(end).type = 'float';
@@ -183,7 +188,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
             nodedata(end).data = R(Mesh.DOF);
             nodedata(end).type = 'float';
 
-            if strcmp(Control.contour,'nodal')
+            if strcmp(Control.stress_calc,'nodal')
 
                 nodedata(end+1).name = 'exx';
                 nodedata(end).data = strain(1,:)';
@@ -233,7 +238,8 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
                 nodedata(end).data = stress(6,:)';
                 nodedata(end).type = 'float';
  
-            elseif strcmp(Control.contour, 'center')
+
+            elseif strcmp(Control.stress_calc, 'center')
                 elementdata(end+1).name = 'exx';
                 elementdata(end).data = strain(1,:)';
                 elementdata(end).type = 'float';
