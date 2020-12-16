@@ -91,8 +91,6 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
-%       .MagCoef:       Displacement magnification coefficient
-%                       for visualization
 %       .contour:       Nodal averaging for discontinous variables
 %                       ('none', 'nodal')
 %       .beta:          Penalty parameter  
@@ -224,9 +222,6 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
         % quadrature order
         Control.qo = 2;
-
-        % displacement magnification coefficient (for visualization)
-        Control.MagCoef = 1;
 
         % Nodal averaging for discontinuous variables (stress/strain)
         % 'none', 'nodal'

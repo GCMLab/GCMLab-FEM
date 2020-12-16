@@ -26,8 +26,6 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
 %   Control:    Structure array with the following fields,
 %               .config_name:   Name of the configuration file
 %               .vtk_dir:       Directory where VTK files are stored
-%               .MagCoef:       Displacement magnification coefficient
-%                               for visualization
 %               .contour:       Nodal averaging for discontinous variables
 %                               ('none', 'nodal')
 %   fixedDOF:   Row vector containing fixed degrees of freedom
