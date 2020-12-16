@@ -1,6 +1,6 @@
 % Static solid deformation of linear elastic material
 
-% Acknowledgements: Matin Parchei Esfahani, Endrina Rivas
+% Acknowledgements: Matin Parchei Esfahani
 
 
 %% Delete past vtk files (so don't overwrite any)
