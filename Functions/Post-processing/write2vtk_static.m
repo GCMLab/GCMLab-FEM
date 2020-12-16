@@ -87,7 +87,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
             nodedata(end).data = R(Mesh.DOF);
             nodedata(end).type = 'float';
 
-            if strcmp(Control.stress_calc,'nodal')
+            if strcmp(Control.stress_calc,'nodal') || strcmp(Control.stress_calc,'L2projection') 
                 nodedata(end+1).name = 'exx';
                 nodedata(end).data = strain';
                 nodedata(end).type = 'float';
@@ -118,7 +118,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
             nodedata(end).type = 'float';
             
 
-            if strcmp(Control.stress_calc,'nodal')
+            if strcmp(Control.stress_calc,'nodal') || strcmp(Control.stress_calc,'L2projection') 
                 nodedata(end+1).name = 'exx';
                 nodedata(end).data = strain(1,:)';
                 nodedata(end).type = 'float';
@@ -188,7 +188,7 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
             nodedata(end).data = R(Mesh.DOF);
             nodedata(end).type = 'float';
 
-            if strcmp(Control.stress_calc,'nodal')
+            if strcmp(Control.stress_calc,'nodal') || strcmp(Control.stress_calc,'L2projection') 
 
                 nodedata(end+1).name = 'exx';
                 nodedata(end).data = strain(1,:)';

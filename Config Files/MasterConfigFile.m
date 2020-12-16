@@ -124,7 +124,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*20;
+            nex = [2;2]*10;
             % element type ('Q4')
             type = 'Q4';
             
@@ -205,7 +205,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
         botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
         
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
+        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1);
         BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
     
         % NOTE: point loads at any of the element nodes can also be 
@@ -231,6 +231,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         %           the node; output as nodal values in vtk
         % 'center': calculated at the center of each element; output as 
         %           single value for each element in vtk
+        % 'L2projection': Least squares projection of stress and strain,
+        %           output as nodal values
         Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
