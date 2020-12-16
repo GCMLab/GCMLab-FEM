@@ -33,12 +33,15 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
 %   fixedDOF:   Row vector containing fixed degrees of freedom
 %   d:          Column vector of displacements (size ndof x 1 where ndof 
 %               is the number of degrees of freedom)
-%   strain:     Matrix of nodal strains (size dim x nn in which dim is 
-%               1 for 1D elements, 3 for 2D elements, and 6 for 3D elements
-%               and nn is the number of nodes)
-%   stress:     Matrix of nodal stresses (size dim x nn in which dim is 
-%               1 for 1D elements, 3 for 2D elements, and 6 for 3D elements
-%               and nn is the number of nodes)
+%   strain:     if Control.stress_calc = 'nodal': Matrix of nodal strains 
+%                           (size dim x nn in which dim is 1 for 1D 
+%                           elements, 3 for 2D elements, and 6 for 3D 
+%                           elements and nn is the number of nodes)
+%               if Control.stress_calc = 'center': Matrix of element 
+%                           strains (calculated at the center of each 
+%                           element); size dim x ne in which ne is the 
+%                           number of elements
+%   stress:     Matrix of stresses (same size as strain matrix)
 %   Fint:       Column vector of internal forces (size ndof x 1)
 %   Fext:       Column vector of external forces (size ndof x 1)
 
