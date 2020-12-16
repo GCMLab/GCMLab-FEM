@@ -25,6 +25,9 @@
     
     % output vtk files
     plot2vtk = 1;
+    
+    % output progress messages
+    progress_on = 1;
 
 %% Directories
     FuncDir = fullfile(curDir, 'Functions');
@@ -53,8 +56,11 @@ try
     % Loop through every configuration file 
     for file = 1:numfiles
         % clear variables from previous simulation
-        clearvars -except ConfigDir VTKDirs curDir ...
-                    ConfigFiles file plot2vtk
+        clearvars -except VTKDirs ConfigFiles...
+                  curDir FuncDir  ConfigDir ...
+                  file codeSubmitTime ...
+                  exit_when_done print_log ...
+                  plot2vtk progress_on
 
         clearvars -global
 

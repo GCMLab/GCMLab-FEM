@@ -1,4 +1,4 @@
-function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir)
+function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on)
 %BUILDMESH_GMSH Import GMSH file
 %   Mesh = BUILDMESH_GMSH(meshFileName, nsd, config_dir) is a structure 
 %   array with the mesh description. The mesh is imported from the GMSH 
@@ -106,42 +106,47 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir)
     Mesh = NodeDOFs(Mesh);
 
 %% Element connectivity and neighbours
-    disp([num2str(toc),': Defining element connectivity...']);
-
+    if progress_on
+        disp([num2str(toc),': Defining element connectivity...']);
+    end
 %% Nodal Connectivity
     % list of elements connected to each node
     Mesh.nodeconn = NodalConn(Mesh);
 
 %% Element neighbours 
-    % NOTE: Only works for Q4 elements at the moment
-    Mesh.eneighbours = zeros(Mesh.ne,4);  % element neighbours (share an edge)
-    for e = 1:Mesh.ne
-        % list of elements which share at least one node with element e       
-        elist = Mesh.nodeconn(Mesh.conn(e,:),:);
-        % reshape into a vector      
-        elist = reshape(elist,[numel(elist),1]);
-        % remove element e from the vector
-        elist = setdiff(unique(elist),[e,0]);  
+    if strcmp(Mesh.type,'Q4')% NOTE: Only works for Q4 elements at the moment
+        Mesh.eneighbours = zeros(Mesh.ne,4);  % element neighbours (share an edge)
+        for e = 1:Mesh.ne
+            % list of elements which share at least one node with element e       
+            elist = Mesh.nodeconn(Mesh.conn(e,:),:);
+            % reshape into a vector      
+            elist = reshape(elist,[numel(elist),1]);
+            % remove element e from the vector
+            elist = setdiff(unique(elist),[e,0]);  
 
-        switch Mesh.type
-            case 'Q4'
-                pattern = [1,2,3,4,1];
-        end
+            switch Mesh.type
+                case 'Q4'
+                    pattern = [1,2,3,4,1];
+            end
 
-        for i = 1:Mesh.nne
-            [r1,~] = find(Mesh.conn(elist,:) == Mesh.conn(e, pattern(i)));
-            [r2,~] = find(Mesh.conn(elist,:) == Mesh.conn(e, pattern(i+1)));
+            for i = 1:Mesh.nne
+                [r1,~] = find(Mesh.conn(elist,:) == Mesh.conn(e, pattern(i)));
+                [r2,~] = find(Mesh.conn(elist,:) == Mesh.conn(e, pattern(i+1)));
 
-            if isempty(intersect(r1,r2))
-                Mesh.eneighbours(e,i) = 0;
-            else
-                Mesh.eneighbours(e,i) = elist(intersect(r1,r2));
+                if isempty(intersect(r1,r2))
+                    Mesh.eneighbours(e,i) = 0;
+                else
+                    Mesh.eneighbours(e,i) = elist(intersect(r1,r2));
+                end
             end
         end
+    else
+        Mesh.eneighbours = 'NA - currently only available for Q4 element';
     end
-
 %% Node sets
     Mesh = NodeSets(Mesh);
-
-disp([num2str(toc),': Done generating mesh...']);
+    
+if progress_on
+    disp([num2str(toc),': Done generating mesh...']);
+end
 end
