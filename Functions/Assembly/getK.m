@@ -83,6 +83,9 @@ for e = 1:Mesh.ne
            
             % determinant of the Jacobian
             dJe = det(Je);
+            if dJe < 0
+               error('Element %d has a negative Jacobian.', e)
+            end
 
             % derivative of shape function in physical coordinates 
             % (tensor form)
