@@ -168,79 +168,78 @@ if ~strcmp(calc_type,'none')
                     strain(:,enodes) = strain(:,enodes) + strain_e;
                     stress(:,enodes) = stress(:,enodes) + stress_e;
                     count(:,enodes) = count(:,enodes) + 1;
-             case 'L2projection'
-                    % initialize elemental matrices and vectors
-                    A_e = zeros(Mesh.nne, Mesh.nne);
-                    dexx_e = zeros(Mesh.nne,1);    % column vector of strains exx
-                    deyy_e = zeros(Mesh.nne,1);    % column vector of strains eyy
-                    dexy_e = zeros(Mesh.nne,1);    % column vector of strains exy
-                    dsxx_e = zeros(Mesh.nne,1);    % column vector of stresses sxx
-                    dsyy_e = zeros(Mesh.nne,1);    % column vector of stresses syy
-                    dsxy_e = zeros(Mesh.nne,1);    % column vector of stresses sxy
-                    
+            case 'L2projection'
+                % initialize elemental matrices and vectors
+                A_e = zeros(Mesh.nne, Mesh.nne);
+                dexx_e = zeros(Mesh.nne,1);    % column vector of strains exx
+                deyy_e = zeros(Mesh.nne,1);    % column vector of strains eyy
+                dexy_e = zeros(Mesh.nne,1);    % column vector of strains exy
+                dsxx_e = zeros(Mesh.nne,1);    % column vector of stresses sxx
+                dsyy_e = zeros(Mesh.nne,1);    % column vector of stresses syy
+                dsxy_e = zeros(Mesh.nne,1);    % column vector of stresses sxy
+                
+                % loop through all quadrature points
+                for q = 1:Quad.nq     
 
-                    % loop through all quadrature points
-                    for q = 1:Quad.nq     
+                    % Shape functions and derivatives in parent coordinates
+                    N = Quad.Nq{q}';
+                    dNdxi = Quad.dNdxiq{q};
 
-                        % Shape functions and derivatives in parent coordinates
-                        N = Quad.Nq{q}';
-                        dNdxi = Quad.dNdxiq{q};
+                    % quadrature point in physical coordinates
+                    Xi = xI'*N';
 
-                        % quadrature point in physical coordinates
-                        Xi = xI'*N';
+                    % Jacobian of the transformation between parent and global 
+                    % coordinates
+                    Je = dNdxi'*xI;
 
-                        % Jacobian of the transformation between parent and global 
-                        % coordinates
-                        Je = dNdxi'*xI;
+                    % determinant of the Jacobian
+                    dJe = det(Je);
 
-                        % determinant of the Jacobian
-                        dJe = det(Je);
+                    % derivative of shape function in physical coordinates 
+                    % (tensor form)
+                    dNdxi = dNdxi';
+                    B = Je\dNdxi;
 
-                        % derivative of shape function in physical coordinates 
-                        % (tensor form)
-                        dNdxi = dNdxi';
-                        B = Je\dNdxi;
+                    % convert B matrix to Voigt form
+                    Bv = getBv(B', Mesh.nsd);
 
-                        % convert B matrix to Voigt form
-                        Bv = getBv(B', Mesh.nsd);
+                    D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
 
-                        D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
-
-                        % calculate stress and strain at quadrature point
-                            strain_q = Bv'*de;
-                            stress_q = D*strain_q;
-                            
-                        % Element level integral of L2-projections
-                        A_e = A_e + N'*N*Quad.W(q)*dJe;
-                        dexx_e = dexx_e + N'*Quad.W(q)*dJe*strain_q(1);
-                        deyy_e = deyy_e + N'*Quad.W(q)*dJe*strain_q(2);
-                        dexy_e = dexy_e + N'*Quad.W(q)*dJe*strain_q(3);
-                        dsxx_e = dsxx_e + N'*Quad.W(q)*dJe*stress_q(1);
-                        dsyy_e = dsyy_e + N'*Quad.W(q)*dJe*stress_q(2);
-                        dsxy_e = dsxy_e + N'*Quad.W(q)*dJe*stress_q(3);
-                    end
-                 
-                    % Add to global matrices and vectors
-                    % Form the vectorized A matrix
-                    nAe = Mesh.nne^2; % number of entries in A matrix
-                    count = count + nAe;
-                    A_e = reshape(A_e, [nAe,1]);
-                    rowmatrix = enodes'*ones(1,Mesh.nne);
-                    row_e = reshape(rowmatrix, [nAe,1]);
-                    col_e = reshape(rowmatrix',[nAe,1]);
-                    
-                    A(count-nAe:count-1) = A_e;
-                    row(count-nAe:count-1) = row_e;
-                    col(count-nAe:count-1) = col_e;
-                    
-                    % Add element vectors to global vectors
-                    dexx(enodes) = dexx(enodes) + dexx_e;
-                    deyy(enodes) = deyy(enodes) + deyy_e;
-                    dexy(enodes) = dexy(enodes) + dexy_e;
-                    dsxx(enodes) = dsxx(enodes) + dsxx_e;
-                    dsyy(enodes) = dsyy(enodes) + dsyy_e;
-                    dsxy(enodes) = dsxy(enodes) + dsxy_e;            
-                    
+                    % calculate stress and strain at quadrature point
+                    strain_q = Bv'*de;
+                    stress_q = D*strain_q;
+                        
+                    % Element level integral of L2-projections
+                    A_e = A_e + N'*N*Quad.W(q)*dJe;
+                    dexx_e = dexx_e + N'*Quad.W(q)*dJe*strain_q(1);
+                    deyy_e = deyy_e + N'*Quad.W(q)*dJe*strain_q(2);
+                    dexy_e = dexy_e + N'*Quad.W(q)*dJe*strain_q(3);
+                    dsxx_e = dsxx_e + N'*Quad.W(q)*dJe*stress_q(1);
+                    dsyy_e = dsyy_e + N'*Quad.W(q)*dJe*stress_q(2);
+                    dsxy_e = dsxy_e + N'*Quad.W(q)*dJe*stress_q(3);
+                end
+             
+                % Add to global matrices and vectors
+                % Form the vectorized A matrix
+                nAe = Mesh.nne^2; % number of entries in A matrix
+                count = count + nAe;
+                A_e = reshape(A_e, [nAe,1]);
+                rowmatrix = enodes'*ones(1,Mesh.nne);
+                row_e = reshape(rowmatrix, [nAe,1]);
+                col_e = reshape(rowmatrix',[nAe,1]);
+                
+                A(count-nAe:count-1) = A_e;
+                row(count-nAe:count-1) = row_e;
+                col(count-nAe:count-1) = col_e;
+                
+                % Add element vectors to global vectors
+                dexx(enodes) = dexx(enodes) + dexx_e;
+                deyy(enodes) = deyy(enodes) + deyy_e;
+                dexy(enodes) = dexy(enodes) + dexy_e;
+                dsxx(enodes) = dsxx(enodes) + dsxx_e;
+                dsyy(enodes) = dsyy(enodes) + dsyy_e;
+                dsxy(enodes) = dsxy(enodes) + dsxy_e;            
+                
         end
     end
 end
@@ -252,9 +251,9 @@ switch calc_type
        strain = strain./count;
        stress = stress./count;
     case 'L2projection'
-       % For L2 projection, solve the system of equations and assemble the
-       % nodal matrix of stresses and strains
-       A = sparse(row,col,A, Mesh.nn, Mesh.nn);
+        % For L2 projection, solve the system of equations and assemble the
+        % nodal matrix of stresses and strains
+        A = sparse(row, col, A, Mesh.nn, Mesh.nn);
         exxL2 = A\dexx;
         eyyL2 = A\deyy;
         exyL2 = A\dexy;
