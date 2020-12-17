@@ -84,9 +84,6 @@ switch calc_type
         strain = zeros(dim, Mesh.ne);
         stress = zeros(dim, Mesh.ne);
     case 'L2projection'
-        if Mesh.nsd ~= 2
-            error('L2 projection of stresses currently only supported for 2 dimensions')
-        end
         vec_size = Mesh.ne*Mesh.nne;
         A = zeros(vec_size,1); % matrix of integrals of shape functions - vectorized
         row = zeros(vec_size,1); % vector of row indices
@@ -94,11 +91,24 @@ switch calc_type
         count = 1;
         
         dexx = zeros(Mesh.nn,1);    % column vector of strains exx
-        deyy = zeros(Mesh.nn,1);    % column vector of strains eyy
-        dexy = zeros(Mesh.nn,1);    % column vector of strains exy
         dsxx = zeros(Mesh.nn,1);    % column vector of stresses sxx
-        dsyy = zeros(Mesh.nn,1);    % column vector of stresses syy
-        dsxy = zeros(Mesh.nn,1);    % column vector of stresses sxy
+        if Mesh.nsd >= 2
+            deyy = zeros(Mesh.nn,1);    % column vector of strains eyy
+            dsyy = zeros(Mesh.nn,1);    % column vector of stresses syy
+
+            dexy = zeros(Mesh.nn,1);    % column vector of strains exy
+            dsxy = zeros(Mesh.nn,1);    % column vector of stresses sxy
+            if Mesh.nsd == 3
+                dezz = zeros(Mesh.nn,1);    % column vector of strains ezz
+                dszz = zeros(Mesh.nn,1);    % column vector of stresses szz
+
+                dexz = zeros(Mesh.nn,1);    % column vector of strains exz
+                dsxz = zeros(Mesh.nn,1);    % column vector of stresses sxz
+                
+                deyz = zeros(Mesh.nn,1);    % column vector of strains eyz
+                dsyz = zeros(Mesh.nn,1);    % column vector of stresses syz
+            end
+        end
 end
 
 % Loop through all elements
@@ -172,12 +182,28 @@ if ~strcmp(calc_type,'none')
                 % initialize elemental matrices and vectors
                 A_e = zeros(Mesh.nne, Mesh.nne);
                 dexx_e = zeros(Mesh.nne,1);    % column vector of strains exx
-                deyy_e = zeros(Mesh.nne,1);    % column vector of strains eyy
-                dexy_e = zeros(Mesh.nne,1);    % column vector of strains exy
                 dsxx_e = zeros(Mesh.nne,1);    % column vector of stresses sxx
-                dsyy_e = zeros(Mesh.nne,1);    % column vector of stresses syy
-                dsxy_e = zeros(Mesh.nne,1);    % column vector of stresses sxy
+
+                if Mesh.nsd >=2
+                    deyy_e = zeros(Mesh.nne,1);    % column vector of strains eyy
+                    dsyy_e = zeros(Mesh.nne,1);    % column vector of stresses syy
+                    
+                    dexy_e = zeros(Mesh.nne,1);    % column vector of strains exy
+                    dsxy_e = zeros(Mesh.nne,1);    % column vector of stresses sxy
+                    
+                   if Mesh.nsd == 3
+                        dezz_e = zeros(Mesh.nne,1);    % column vector of strains ezz
+                        dszz_e = zeros(Mesh.nne,1);    % column vector of stresses szz
+
+                        dexz_e = zeros(Mesh.nne,1);    % column vector of strains exz
+                        dsxz_e = zeros(Mesh.nne,1);    % column vector of stresses sxz
+
+                        deyz_e = zeros(Mesh.nne,1);    % column vector of strains eyz
+                        dsyz_e = zeros(Mesh.nne,1);    % column vector of stresses syz
+                   end
+                end
                 
+            
                 % loop through all quadrature points
                 for q = 1:Quad.nq     
 
@@ -212,11 +238,27 @@ if ~strcmp(calc_type,'none')
                     % Element level integral of L2-projections
                     A_e = A_e + N'*N*Quad.W(q)*dJe;
                     dexx_e = dexx_e + N'*Quad.W(q)*dJe*strain_q(1);
-                    deyy_e = deyy_e + N'*Quad.W(q)*dJe*strain_q(2);
-                    dexy_e = dexy_e + N'*Quad.W(q)*dJe*strain_q(3);
                     dsxx_e = dsxx_e + N'*Quad.W(q)*dJe*stress_q(1);
-                    dsyy_e = dsyy_e + N'*Quad.W(q)*dJe*stress_q(2);
-                    dsxy_e = dsxy_e + N'*Quad.W(q)*dJe*stress_q(3);
+                    if Mesh.nsd >= 2
+                        deyy_e = deyy_e + N'*Quad.W(q)*dJe*strain_q(2);
+                        dsyy_e = dsyy_e + N'*Quad.W(q)*dJe*stress_q(2);
+
+                        dexy_e = dexy_e + N'*Quad.W(q)*dJe*strain_q(3);
+                        dsxy_e = dsxy_e + N'*Quad.W(q)*dJe*stress_q(3);
+                        if Mesh.nsd == 3
+                            dezz_e = dezz_e + N'*Quad.W(q)*dJe*strain_q(3);
+                            dszz_e = dszz_e + N'*Quad.W(q)*dJe*stress_q(3);
+
+                            deyz_e = deyz_e + N'*Quad.W(q)*dJe*strain_q(4);
+                            dsyz_e = dsyz_e + N'*Quad.W(q)*dJe*stress_q(4);
+                            
+                            dexz_e = dexz_e + N'*Quad.W(q)*dJe*strain_q(5);
+                            dsxz_e = dsxz_e + N'*Quad.W(q)*dJe*stress_q(5);
+                            % in 3D case, xy-shear is entry 6
+                            dexy_e = dexy_e + N'*Quad.W(q)*dJe*strain_q(6);
+                            dsxy_e = dsxy_e + N'*Quad.W(q)*dJe*stress_q(6);
+                        end
+                    end
                 end
              
                 % Add to global matrices and vectors
@@ -234,11 +276,25 @@ if ~strcmp(calc_type,'none')
                 
                 % Add element vectors to global vectors
                 dexx(enodes) = dexx(enodes) + dexx_e;
-                deyy(enodes) = deyy(enodes) + deyy_e;
-                dexy(enodes) = dexy(enodes) + dexy_e;
                 dsxx(enodes) = dsxx(enodes) + dsxx_e;
-                dsyy(enodes) = dsyy(enodes) + dsyy_e;
-                dsxy(enodes) = dsxy(enodes) + dsxy_e;            
+                
+                if Mesh.nsd >= 2
+                    deyy(enodes) = deyy(enodes) + deyy_e;
+                    dsyy(enodes) = dsyy(enodes) + dsyy_e;
+
+                    dexy(enodes) = dexy(enodes) + dexy_e;              
+                    dsxy(enodes) = dsxy(enodes) + dsxy_e; 
+                    if Mesh.nsd == 3
+                        dezz(enodes) = dezz(enodes) + dezz_e;
+                        dszz(enodes) = dszz(enodes) + dszz_e;
+
+                        dexz(enodes) = dexz(enodes) + dexz_e;              
+                        dsxz(enodes) = dsxz(enodes) + dsxz_e;
+
+                        deyz(enodes) = deyz(enodes) + deyz_e;              
+                        dsyz(enodes) = dsyz(enodes) + dsyz_e; 
+                    end
+                end
                 
         end
     end
@@ -254,21 +310,57 @@ switch calc_type
         % For L2 projection, solve the system of equations and assemble the
         % nodal matrix of stresses and strains
         A = sparse(row, col, A, Mesh.nn, Mesh.nn);
+        
         exxL2 = A\dexx;
-        eyyL2 = A\deyy;
-        exyL2 = A\dexy;
-        
-        strain = [exxL2';
-                  eyyL2';
-                  exyL2'];
-              
         sxxL2 = A\dsxx;
-        syyL2 = A\dsyy;
-        sxyL2 = A\dsxy;
         
-        stress = [sxxL2';
-                  syyL2';
-                  sxyL2'];
+        if Mesh.nsd >= 2
+        eyyL2 = A\deyy;
+        syyL2 = A\dsyy;
+        
+        exyL2 = A\dexy;
+        sxyL2 = A\dsxy;
+            if Mesh.nsd == 3
+                ezzL2 = A\dezz;
+                szzL2 = A\dszz;
+
+                exzL2 = A\dexz;
+                sxzL2 = A\dsxz;
+
+                eyzL2 = A\deyz;
+                syzL2 = A\dsyz;
+            end
+        end
+        
+        switch Mesh.nsd
+            case 1
+                strain = exxL2';
+                stress = sxxL2';
+            case 2
+                strain = [exxL2';
+                          eyyL2';
+                          exyL2'];
+
+                stress = [sxxL2';
+                          syyL2';
+                          sxyL2'];
+            case 3
+                strain = [exxL2';
+                          eyyL2';
+                          ezzL2';
+                          eyzL2';
+                          exzL2';
+                          exyL2'];
+
+                stress = [sxxL2';
+                          syyL2';
+                          szzL2';
+                          sxzL2';
+                          syzL2';
+                          sxyL2'];
+        end
+                
+
 end
 
 end
