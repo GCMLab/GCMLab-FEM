@@ -239,13 +239,16 @@ if ~strcmp(calc_type,'none')
                     A_e = A_e + N'*N*Quad.W(q)*dJe;
                     dexx_e = dexx_e + N'*Quad.W(q)*dJe*strain_q(1);
                     dsxx_e = dsxx_e + N'*Quad.W(q)*dJe*stress_q(1);
-                    if Mesh.nsd >= 2
+                    if Mesh.nsd == 2
                         deyy_e = deyy_e + N'*Quad.W(q)*dJe*strain_q(2);
                         dsyy_e = dsyy_e + N'*Quad.W(q)*dJe*stress_q(2);
 
                         dexy_e = dexy_e + N'*Quad.W(q)*dJe*strain_q(3);
                         dsxy_e = dsxy_e + N'*Quad.W(q)*dJe*stress_q(3);
-                        if Mesh.nsd == 3
+                    elseif Mesh.nsd == 3
+                            deyy_e = deyy_e + N'*Quad.W(q)*dJe*strain_q(2);
+                            dsyy_e = dsyy_e + N'*Quad.W(q)*dJe*stress_q(2);
+                        
                             dezz_e = dezz_e + N'*Quad.W(q)*dJe*strain_q(3);
                             dszz_e = dszz_e + N'*Quad.W(q)*dJe*stress_q(3);
 
@@ -254,10 +257,9 @@ if ~strcmp(calc_type,'none')
                             
                             dexz_e = dexz_e + N'*Quad.W(q)*dJe*strain_q(5);
                             dsxz_e = dsxz_e + N'*Quad.W(q)*dJe*stress_q(5);
-                            % in 3D case, xy-shear is entry 6
+                            
                             dexy_e = dexy_e + N'*Quad.W(q)*dJe*strain_q(6);
                             dsxy_e = dsxy_e + N'*Quad.W(q)*dJe*stress_q(6);
-                        end
                     end
                 end
              
