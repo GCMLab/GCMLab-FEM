@@ -92,7 +92,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
-%                       ('none', 'nodal', 'center')
+%                       ('none', 'nodal', 'center', 'L2projection')
 %       .beta:          Penalty parameter  
 %       .LinearSolver   Method used for solving linear problem:
 %                       'LinearSolver1': Partitioning
@@ -233,7 +233,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        Control.stress_calc = 'nodal';
+        Control.stress_calc = 'L2projection';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
