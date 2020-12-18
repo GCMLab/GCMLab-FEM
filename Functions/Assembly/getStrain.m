@@ -1,12 +1,12 @@
 function [strain, stress] = getStrain(d, Mesh, Material, calc_type, Quad)
 %GETSTRAIN Evaluate stress and strain
-%   strain = GETSTRAIN(d, Mesh, Material) is a cell array of  
-%   nodal strains in each element of the mesh. The cell array is of size 
-%   dim x ne, in which dim = 1 for 1D elements, 3 for 2D elements, and 6 
-%   for 3D elements.
+%   [strain, stress] = GETSTRAIN(d, Mesh, Material) returns two matrices of 
+%   strains and stresses computed at the center of each element. The 
+%   matrices are of size dim x ne, in which dim = 1 for 1D elements, 3 for 
+%   2D elements, and 6 for 3D elements.
 %
-%   [strain, stress] = GETSTRAIN(d, Mesh, Material) also returns a cell 
-%   array of nodal stresses in each element of the mesh (size dim x ne).
+%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'none') does not
+%   compute the stresses or strains
 % 
 %   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'nodal') returns 
 %   matrices of nodal-averaged strains (size dim x nn).
@@ -58,7 +58,7 @@ function [strain, stress] = getStrain(d, Mesh, Material, calc_type, Quad)
 %       	         evaluated at each quadrature point in Voigt form
 
 if nargin < 4
-    calc_type = 'none';
+    calc_type = 'center';
 end
 
 % Specify dimension of the strain/stress matrix
@@ -71,60 +71,60 @@ switch Mesh.nsd
         dim = 6;
 end
 
-% Specify type of strain/stress matrix/cell
-switch calc_type
-    case 'none'
-        strain = cell(dim,Mesh.ne);
-        stress = cell(dim,Mesh.ne);
-    case 'nodal'
-        strain = zeros(dim, Mesh.nn);
-        stress = zeros(dim, Mesh.nn);
-        count = zeros(dim, Mesh.nn);
-    case 'center'
-        strain = zeros(dim, Mesh.ne);
-        stress = zeros(dim, Mesh.ne);
-    case 'L2projection'
-        vec_size = Mesh.ne*Mesh.nne;
-        A = zeros(vec_size,1); % matrix of integrals of shape functions - vectorized
-        row = zeros(vec_size,1); % vector of row indices
-        col = zeros(vec_size,1); % vector of column indices
-        count = 1;
-        
-        dexx = zeros(Mesh.nn,1);    % column vector of strains exx
-        dsxx = zeros(Mesh.nn,1);    % column vector of stresses sxx
-        if Mesh.nsd >= 2
-            deyy = zeros(Mesh.nn,1);    % column vector of strains eyy
-            dsyy = zeros(Mesh.nn,1);    % column vector of stresses syy
+if strcmp(calc_type, 'none')
+    strain = zeros(dim, Mesh.ne);
+    stress = zeros(dim, Mesh.ne);
+else
+    % Specify type of strain/stress matrix/cell
+    switch calc_type
+        case 'nodal'
+            strain = zeros(dim, Mesh.nn);
+            stress = zeros(dim, Mesh.nn);
+            count = zeros(dim, Mesh.nn);
+        case 'center'
+            strain = zeros(dim, Mesh.ne);
+            stress = zeros(dim, Mesh.ne);
+        case 'L2projection'
+            vec_size = Mesh.ne*Mesh.nne;
+            A = zeros(vec_size,1); % matrix of integrals of shape functions - vectorized
+            row = zeros(vec_size,1); % vector of row indices
+            col = zeros(vec_size,1); % vector of column indices
+            count = 1;
 
-            dexy = zeros(Mesh.nn,1);    % column vector of strains exy
-            dsxy = zeros(Mesh.nn,1);    % column vector of stresses sxy
-            if Mesh.nsd == 3
-                dezz = zeros(Mesh.nn,1);    % column vector of strains ezz
-                dszz = zeros(Mesh.nn,1);    % column vector of stresses szz
+            dexx = zeros(Mesh.nn,1);    % column vector of strains exx
+            dsxx = zeros(Mesh.nn,1);    % column vector of stresses sxx
+            if Mesh.nsd >= 2
+                deyy = zeros(Mesh.nn,1);    % column vector of strains eyy
+                dsyy = zeros(Mesh.nn,1);    % column vector of stresses syy
 
-                dexz = zeros(Mesh.nn,1);    % column vector of strains exz
-                dsxz = zeros(Mesh.nn,1);    % column vector of stresses sxz
-                
-                deyz = zeros(Mesh.nn,1);    % column vector of strains eyz
-                dsyz = zeros(Mesh.nn,1);    % column vector of stresses syz
+                dexy = zeros(Mesh.nn,1);    % column vector of strains exy
+                dsxy = zeros(Mesh.nn,1);    % column vector of stresses sxy
+                if Mesh.nsd == 3
+                    dezz = zeros(Mesh.nn,1);    % column vector of strains ezz
+                    dszz = zeros(Mesh.nn,1);    % column vector of stresses szz
+
+                    dexz = zeros(Mesh.nn,1);    % column vector of strains exz
+                    dsxz = zeros(Mesh.nn,1);    % column vector of stresses sxz
+
+                    deyz = zeros(Mesh.nn,1);    % column vector of strains eyz
+                    dsyz = zeros(Mesh.nn,1);    % column vector of stresses syz
+                end
             end
-        end
-end
+    end
 
-% Loop through all elements
-if ~strcmp(calc_type,'none')
-    for e = 1:Mesh.ne
+    % Loop through all elements
+        for e = 1:Mesh.ne
 
-        %% Element variables
-            % nodal ids of the element's nodes
-            enodes = Mesh.conn(e,:);    
-            % global coordinates of the element's nodes
-            xI = Mesh.x(enodes,:);      
-            % DOFs of element nodes
-            dofE = Mesh.DOF(enodes,:);
-            dofE = reshape(dofE',Mesh.nDOFe,[]);
-            % local displacement vector
-            de = d(dofE);
+            %% Element variables
+                % nodal ids of the element's nodes
+                enodes = Mesh.conn(e,:);    
+                % global coordinates of the element's nodes
+                xI = Mesh.x(enodes,:);      
+                % DOFs of element nodes
+                dofE = Mesh.DOF(enodes,:);
+                dofE = reshape(dofE',Mesh.nDOFe,[]);
+                % local displacement vector
+                de = d(dofE);
 
         switch calc_type
             case 'center'
@@ -187,10 +187,10 @@ if ~strcmp(calc_type,'none')
                 if Mesh.nsd >=2
                     deyy_e = zeros(Mesh.nne,1);    % column vector of strains eyy
                     dsyy_e = zeros(Mesh.nne,1);    % column vector of stresses syy
-                    
+
                     dexy_e = zeros(Mesh.nne,1);    % column vector of strains exy
                     dsxy_e = zeros(Mesh.nne,1);    % column vector of stresses sxy
-                    
+
                    if Mesh.nsd == 3
                         dezz_e = zeros(Mesh.nne,1);    % column vector of strains ezz
                         dszz_e = zeros(Mesh.nne,1);    % column vector of stresses szz
@@ -202,8 +202,8 @@ if ~strcmp(calc_type,'none')
                         dsyz_e = zeros(Mesh.nne,1);    % column vector of stresses syz
                    end
                 end
-                
-            
+
+
                 % loop through all quadrature points
                 for q = 1:Quad.nq     
 
@@ -234,7 +234,7 @@ if ~strcmp(calc_type,'none')
                     % calculate stress and strain at quadrature point
                     strain_q = Bv'*de;
                     stress_q = D*strain_q;
-                        
+
                     % Element level integral of L2-projections
                     A_e = A_e + N'*N*Quad.W(q)*dJe;
                     dexx_e = dexx_e + N'*Quad.W(q)*dJe*strain_q(1);
@@ -248,21 +248,21 @@ if ~strcmp(calc_type,'none')
                     elseif Mesh.nsd == 3
                             deyy_e = deyy_e + N'*Quad.W(q)*dJe*strain_q(2);
                             dsyy_e = dsyy_e + N'*Quad.W(q)*dJe*stress_q(2);
-                        
+
                             dezz_e = dezz_e + N'*Quad.W(q)*dJe*strain_q(3);
                             dszz_e = dszz_e + N'*Quad.W(q)*dJe*stress_q(3);
 
                             deyz_e = deyz_e + N'*Quad.W(q)*dJe*strain_q(4);
                             dsyz_e = dsyz_e + N'*Quad.W(q)*dJe*stress_q(4);
-                            
+
                             dexz_e = dexz_e + N'*Quad.W(q)*dJe*strain_q(5);
                             dsxz_e = dsxz_e + N'*Quad.W(q)*dJe*stress_q(5);
-                            
+
                             dexy_e = dexy_e + N'*Quad.W(q)*dJe*strain_q(6);
                             dsxy_e = dsxy_e + N'*Quad.W(q)*dJe*stress_q(6);
                     end
                 end
-             
+
                 % Add to global matrices and vectors
                 % Form the vectorized A matrix
                 nAe = Mesh.nne^2; % number of entries in A matrix
@@ -271,15 +271,15 @@ if ~strcmp(calc_type,'none')
                 rowmatrix = enodes'*ones(1,Mesh.nne);
                 row_e = reshape(rowmatrix, [nAe,1]);
                 col_e = reshape(rowmatrix',[nAe,1]);
-                
+
                 A(count-nAe:count-1) = A_e;
                 row(count-nAe:count-1) = row_e;
                 col(count-nAe:count-1) = col_e;
-                
+
                 % Add element vectors to global vectors
                 dexx(enodes) = dexx(enodes) + dexx_e;
                 dsxx(enodes) = dsxx(enodes) + dsxx_e;
-                
+
                 if Mesh.nsd >= 2
                     deyy(enodes) = deyy(enodes) + deyy_e;
                     dsyy(enodes) = dsyy(enodes) + dsyy_e;
@@ -297,72 +297,70 @@ if ~strcmp(calc_type,'none')
                         dsyz(enodes) = dsyz(enodes) + dsyz_e; 
                     end
                 end
-                
+
         end
     end
-end
 
 
-switch calc_type
-    case 'nodal' 
-       % For nodal strains, divide by count to get the average
-       strain = strain./count;
-       stress = stress./count;
-    case 'L2projection'
-        % For L2 projection, solve the system of equations and assemble the
-        % nodal matrix of stresses and strains
-        A = sparse(row, col, A, Mesh.nn, Mesh.nn);
-        
-        exxL2 = A\dexx;
-        sxxL2 = A\dsxx;
-        
-        if Mesh.nsd >= 2
-        eyyL2 = A\deyy;
-        syyL2 = A\dsyy;
-        
-        exyL2 = A\dexy;
-        sxyL2 = A\dsxy;
-            if Mesh.nsd == 3
-                ezzL2 = A\dezz;
-                szzL2 = A\dszz;
+    switch calc_type
+        case 'nodal' 
+           % For nodal strains, divide by count to get the average
+           strain = strain./count;
+           stress = stress./count;
+        case 'L2projection'
+            % For L2 projection, solve the system of equations and assemble the
+            % nodal matrix of stresses and strains
+            A = sparse(row, col, A, Mesh.nn, Mesh.nn);
 
-                exzL2 = A\dexz;
-                sxzL2 = A\dsxz;
+            exxL2 = A\dexx;
+            sxxL2 = A\dsxx;
 
-                eyzL2 = A\deyz;
-                syzL2 = A\dsyz;
+            if Mesh.nsd >= 2
+            eyyL2 = A\deyy;
+            syyL2 = A\dsyy;
+
+            exyL2 = A\dexy;
+            sxyL2 = A\dsxy;
+                if Mesh.nsd == 3
+                    ezzL2 = A\dezz;
+                    szzL2 = A\dszz;
+
+                    exzL2 = A\dexz;
+                    sxzL2 = A\dsxz;
+
+                    eyzL2 = A\deyz;
+                    syzL2 = A\dsyz;
+                end
             end
-        end
-        
-        switch Mesh.nsd
-            case 1
-                strain = exxL2';
-                stress = sxxL2';
-            case 2
-                strain = [exxL2';
-                          eyyL2';
-                          exyL2'];
 
-                stress = [sxxL2';
-                          syyL2';
-                          sxyL2'];
-            case 3
-                strain = [exxL2';
-                          eyyL2';
-                          ezzL2';
-                          eyzL2';
-                          exzL2';
-                          exyL2'];
+            switch Mesh.nsd
+                case 1
+                    strain = exxL2';
+                    stress = sxxL2';
+                case 2
+                    strain = [exxL2';
+                              eyyL2';
+                              exyL2'];
 
-                stress = [sxxL2';
-                          syyL2';
-                          szzL2';
-                          sxzL2';
-                          syzL2';
-                          sxyL2'];
-        end
-                
+                    stress = [sxxL2';
+                              syyL2';
+                              sxyL2'];
+                case 3
+                    strain = [exxL2';
+                              eyyL2';
+                              ezzL2';
+                              eyzL2';
+                              exzL2';
+                              exyL2'];
 
+                    stress = [sxxL2';
+                              syyL2';
+                              szzL2';
+                              sxzL2';
+                              syzL2';
+                              sxyL2'];
+            end
+    end
 end
 
 end
