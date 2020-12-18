@@ -66,7 +66,7 @@
     Fext(BC.fixed) = f_fixed;
 
 % Strain
-    [strain, stress] = getStrain(d, Mesh, Material, Control.stress_calc);   
+    [strain, stress] = getStrain(d, Mesh, Material, Control.stress_calc, Quad);   
 
 % Force vectors
     Fint = K*d;

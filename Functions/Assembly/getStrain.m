@@ -1,12 +1,12 @@
-function [strain, stress] = getStrain(d, Mesh, Material, calc_type)
+function [strain, stress] = getStrain(d, Mesh, Material, calc_type, Quad)
 %GETSTRAIN Evaluate stress and strain
-%   strain = GETSTRAIN(d, Mesh, Material) is a cell array of  
-%   nodal strains in each element of the mesh. The cell array is of size 
-%   dim x ne, in which dim = 1 for 1D elements, 3 for 2D elements, and 6 
-%   for 3D elements.
+%   [strain, stress] = GETSTRAIN(d, Mesh, Material) returns two matrices of 
+%   strains and stresses computed at the center of each element. The 
+%   matrices are of size dim x ne, in which dim = 1 for 1D elements, 3 for 
+%   2D elements, and 6 for 3D elements.
 %
-%   [strain, stress] = GETSTRAIN(d, Mesh, Material) also returns a cell 
-%   array of nodal stresses in each element of the mesh (size dim x ne).
+%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'none') does not
+%   compute the stresses or strains
 % 
 %   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'nodal') returns 
 %   matrices of nodal-averaged strains (size dim x nn).
@@ -14,6 +14,9 @@ function [strain, stress] = getStrain(d, Mesh, Material, calc_type)
 %   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'center') returns 
 %   matrices of strains computed at the center of each element 
 %   (size dim x ne).
+%
+%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'L2projection') returns 
+%   matrices of L2-projected stresses at the nodes (size dim x nn).
 % 
 %   --------------------------------------------------------------------
 %   Input
@@ -41,9 +44,21 @@ function [strain, stress] = getStrain(d, Mesh, Material, calc_type)
 %               .E:     Modulus of elasticity
 %               .nu:    Poisson's ratio
 %               .Dtype: 2D approximation ('PlaneStrain' or 'PlainStress')
+%
+% 	Quad: 	Structure array with following fields,
+%       	.nq:     Number of quadrature points	
+%       	.W:      Vector of quadrature weights (size nq x 1)      
+%       	.Q:      Vector of quadrature points	(size nq x nsd)
+%       	.Nq:     Cell array (size nq x 1) with shape functions  
+%       	         evaluated at each quadrature point
+%       	.dNdxiq: Cell array (size nq x 1) with derivative of shape 
+%       	         functions w.r.t. parent coordinates evaluated at 
+%       	         each quadrature point
+%       	.Nv:     Cell array (size nq x 1) with shape functions 
+%       	         evaluated at each quadrature point in Voigt form
 
 if nargin < 4
-    calc_type = 'none';
+    calc_type = 'center';
 end
 
 % Specify dimension of the strain/stress matrix
@@ -56,105 +71,182 @@ switch Mesh.nsd
         dim = 6;
 end
 
-% TODO: Add least squares stress/strain projection
+if strcmp(calc_type, 'none')
+    strain = zeros(dim, Mesh.ne);
+    stress = zeros(dim, Mesh.ne);
+else
+    % Specify type of strain/stress matrix/cell
+    switch calc_type
+        case 'nodal'
+            strain = zeros(dim, Mesh.nn);
+            stress = zeros(dim, Mesh.nn);
+            count = zeros(dim, Mesh.nn);
+        case 'center'
+            strain = zeros(dim, Mesh.ne);
+            stress = zeros(dim, Mesh.ne);
+        case 'L2projection'
+            vec_size = Mesh.ne*Mesh.nne;
+            A = zeros(vec_size,1); % matrix of integrals of shape functions - vectorized
+            row = zeros(vec_size,1); % vector of row indices
+            col = zeros(vec_size,1); % vector of column indices
+            count = 1;
 
-% Specify type of strain/stress matrix/cell
-switch calc_type
-    case 'none'
-        strain = cell(dim,Mesh.ne);
-        stress = cell(dim,Mesh.ne);
-    case 'nodal'
-        strain = zeros(dim, Mesh.nn);
-        stress = zeros(dim, Mesh.nn);
-        count = zeros(dim, Mesh.nn);
-    case 'center'
-        strain = zeros(dim, Mesh.ne);
-        stress = zeros(dim, Mesh.ne);
-end
+            be = zeros(Mesh.nn, dim); % column vectors of strains 
+            bs = zeros(Mesh.nn, dim); % column vectors of stresses
+    end
 
-% Loop through all elements
-for e = 1:Mesh.ne
+    % Loop through all elements
+        for e = 1:Mesh.ne
 
-    %% Element variables
-        % nodal ids of the element's nodes
-        enodes = Mesh.conn(e,:);    
-        % global coordinates of the element's nodes
-        xI = Mesh.x(enodes,:);      
-        % DOFs of element nodes
-        dofE = Mesh.DOF(enodes,:);
-        dofE = reshape(dofE',Mesh.nDOFe,[]);
-        % local displacement vector
-        de = d(dofE);
-  
-    if strcmp(calc_type, 'center')
-        xi = zeros(1,Mesh.nsd);
-        [N, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
-        Xi = xI'*N;
-        Je = dNdxi'*xI;
-        B = Je\(dNdxi');
-        Bv = getBv(B', Mesh.nsd);
-        D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);
-        strain(:, e) = Bv'*de;
-        stress(:, e) = D*strain(:, e);
-    else
-        % initialize strain element
-        strain_e = zeros(dim, Mesh.nne);   
-        stress_e = zeros(dim, Mesh.nne);
-        
-        % loop through all nodes and calculate nodal strains/stresses
-        for n = 1:Mesh.nne
+            %% Element variables
+                % nodal ids of the element's nodes
+                enodes = Mesh.conn(e,:);    
+                % global coordinates of the element's nodes
+                xI = Mesh.x(enodes,:);      
+                % DOFs of element nodes
+                dofE = Mesh.DOF(enodes,:);
+                dofE = reshape(dofE',Mesh.nDOFe,[]);
+                % local displacement vector
+                de = d(dofE);
 
-            % node point in parent coordinate
-            xi = getXI(n, Mesh.type);  
-
-            % Shape function and derivatives in parent coordinates
-            [N, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
-
-            % quadrature point in physical coordinates
-            Xi = xI'*N;
-
-            % Jacobian of the transformation between parent and global 
-            % coordinates
-            Je = dNdxi'*xI;
-           
-            % derivative of shape function in physical coordinates 
-            % (tensor form)
-            dNdxi = dNdxi';
-            B = Je\dNdxi;
-
-            % convert B matrix to Voigt form
-            Bv = getBv(B', Mesh.nsd);
-
-            D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
-            
-            % strain_e = [strainx_n1  strainx_n2...;
-                         %strainy_n1  strainy_n2...;
-                         %strainxy_n1 strainxy_n2...];
-            strain_e(:,n) = Bv'*de;
-            stress_e(:,n) = D*strain_e(:,n);
-            
-        end
-            
-        %% Add to global strains
         switch calc_type
-            case 'none'
-                for s = 1:size(strain_e,1)
-                    strain{s,e} = strain_e(s,:);
-                    stress{s,e} = stress_e(s,:);
-                end
+            case 'center'
+                xi = zeros(1,Mesh.nsd);
+                [N, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+                Xi = xI'*N;
+                Je = dNdxi'*xI;
+                B = Je\(dNdxi');
+                Bv = getBv(B', Mesh.nsd);
+                D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);
+                strain(:, e) = Bv'*de;
+                stress(:, e) = D*strain(:, e);
             case 'nodal'
-                strain(:,enodes) = strain(:,enodes) + strain_e;
-                stress(:,enodes) = stress(:,enodes) + stress_e;
-                count(:,enodes) = count(:,enodes) + 1;
+                % initialize strain element
+                strain_e = zeros(dim, Mesh.nne);   
+                stress_e = zeros(dim, Mesh.nne);
+
+                % loop through all nodes and calculate nodal strains/stresses
+                for n = 1:Mesh.nne
+
+                    % node point in parent coordinate
+                    xi = getXI(n, Mesh.type);  
+
+                    % Shape function and derivatives in parent coordinates
+                    [N, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+
+                    % quadrature point in physical coordinates
+                    Xi = xI'*N;
+
+                    % Jacobian of the transformation between parent and global 
+                    % coordinates
+                    Je = dNdxi'*xI;
+
+                    % derivative of shape function in physical coordinates 
+                    % (tensor form)
+                    dNdxi = dNdxi';
+                    B = Je\dNdxi;
+
+                    % convert B matrix to Voigt form
+                    Bv = getBv(B', Mesh.nsd);
+
+                    D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
+
+                    % strain_e = [strainx_n1  strainx_n2...;
+                                 %strainy_n1  strainy_n2...;
+                                 %strainxy_n1 strainxy_n2...];
+                    strain_e(:,n) = Bv'*de;
+                    stress_e(:,n) = D*strain_e(:,n);
+                end
+                % Add to global strains
+                    strain(:,enodes) = strain(:,enodes) + strain_e;
+                    stress(:,enodes) = stress(:,enodes) + stress_e;
+                    count(:,enodes) = count(:,enodes) + 1;
+            case 'L2projection'
+                % initialize elemental matrices and vectors
+                A_e = zeros(Mesh.nne, Mesh.nne);
+                de_e = zeros(Mesh.nne,dim);    % column vector of strains exx
+                ds_e = zeros(Mesh.nne,dim);    % column vector of stresses sxx
+
+                % loop through all quadrature points
+                for q = 1:Quad.nq     
+
+                    % Shape functions and derivatives in parent coordinates
+                    N = Quad.Nq{q}';
+                    dNdxi = Quad.dNdxiq{q};
+
+                    % quadrature point in physical coordinates
+                    Xi = xI'*N';
+
+                    % Jacobian of the transformation between parent and global 
+                    % coordinates
+                    Je = dNdxi'*xI;
+
+                    % determinant of the Jacobian
+                    dJe = det(Je);
+
+                    % derivative of shape function in physical coordinates 
+                    % (tensor form)
+                    dNdxi = dNdxi';
+                    B = Je\dNdxi;
+
+                    % convert B matrix to Voigt form
+                    Bv = getBv(B', Mesh.nsd);
+
+                    D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
+
+                    % calculate stress and strain at quadrature point
+                    strain_q = Bv'*de;
+                    stress_q = D*strain_q;
+
+                    % Element level integral of L2-projections
+                    A_e = A_e + N'*N*Quad.W(q)*dJe;
+                    
+                    for i = 1:dim
+                       de_e(:,i) = de_e(:,i) +  N'*Quad.W(q)*dJe*strain_q(i);
+                       ds_e(:,i) = ds_e(:,i) +  N'*Quad.W(q)*dJe*stress_q(i);
+                    end
+                end
+
+                % Add to global matrices and vectors
+                % Form the vectorized A matrix
+                nAe = Mesh.nne^2; % number of entries in A matrix
+                count = count + nAe;
+                A_e = reshape(A_e, [nAe,1]);
+                rowmatrix = enodes'*ones(1,Mesh.nne);
+                row_e = reshape(rowmatrix, [nAe,1]);
+                col_e = reshape(rowmatrix',[nAe,1]);
+
+                A(count-nAe:count-1) = A_e;
+                row(count-nAe:count-1) = row_e;
+                col(count-nAe:count-1) = col_e;
+
+                % Add element vectors to global vectors
+                be(enodes,:) = be(enodes,:) + de_e;
+                bs(enodes,:) = bs(enodes,:) + ds_e;
         end
-        
+    end
+
+
+    switch calc_type
+        case 'nodal' 
+           % For nodal strains, divide by count to get the average
+           strain = strain./count;
+           stress = stress./count;
+        case 'L2projection'
+            % For L2 projection, solve the system of equations and assemble the
+            % nodal matrix of stresses and strains
+            A = sparse(row, col, A, Mesh.nn, Mesh.nn);
+            eL2 = zeros(size(be));
+            sL2 = zeros(size(bs));
+            
+            for i = 1:dim
+               eL2(:,i) = A\be(:,i);
+               sL2(:,i) = A\bs(:,i);
+            end
+            
+            strain = eL2';
+            stress = sL2';
     end
 end
-
-%% For nodal strains, divide by count to get the average
-    if strcmp(calc_type,'nodal')
-       strain = strain./count;
-       stress = stress./count;
-    end
 
 end
