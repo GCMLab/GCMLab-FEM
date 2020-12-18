@@ -113,7 +113,7 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     end
 
     if ~isfield(Control, 'stress_calc')
-        Control.stress_calc = 'nodal';
+        Control.stress_calc = 'center';
     end
 
     if ~isfield(Control, 'LinearSolver')
