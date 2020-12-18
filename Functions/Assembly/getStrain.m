@@ -200,24 +200,10 @@ else
 
                     % Element level integral of L2-projections
                     A_e = A_e + N'*N*Quad.W(q)*dJe;
-                    de_e(:,1) = de_e(:,1) + N'*Quad.W(q)*dJe*strain_q(1);
-                    ds_e(:,1) = ds_e(:,1) + N'*Quad.W(q)*dJe*stress_q(1);
-                    if Mesh.nsd >= 2
-                        de_e(:,2) = de_e(:,2) + N'*Quad.W(q)*dJe*strain_q(2);
-                        ds_e(:,2) = ds_e(:,2) + N'*Quad.W(q)*dJe*stress_q(2);
-
-                        de_e(:,3) = de_e(:,3) + N'*Quad.W(q)*dJe*strain_q(3);
-                        ds_e(:,3) = ds_e(:,3) + N'*Quad.W(q)*dJe*stress_q(3);
-                        if Mesh.nsd == 3
-                            de_e(:,4) = de_e(:,4) + N'*Quad.W(q)*dJe*strain_q(4);
-                            ds_e(:,4) = ds_e(:,4) + N'*Quad.W(q)*dJe*stress_q(4);
-
-                            de_e(:,5) = de_e(:,5) + N'*Quad.W(q)*dJe*strain_q(5);
-                            ds_e(:,5) = ds_e(:,5) + N'*Quad.W(q)*dJe*stress_q(5);
-
-                            de_e(:,6) = de_e(:,6) + N'*Quad.W(q)*dJe*strain_q(6);
-                            ds_e(:,6) = ds_e(:,6) + N'*Quad.W(q)*dJe*stress_q(6);
-                        end
+                    
+                    for i = 1:dim
+                       de_e(:,i) = de_e(:,i) +  N'*Quad.W(q)*dJe*strain_q(i);
+                       ds_e(:,i) = ds_e(:,i) +  N'*Quad.W(q)*dJe*stress_q(i);
                     end
                 end
 
@@ -253,27 +239,11 @@ else
             eL2 = zeros(size(be));
             sL2 = zeros(size(bs));
             
-            eL2(:,1) = A\be(:,1);
-            sL2(:,1) = A\bs(:,1);
-
-            if Mesh.nsd >= 2
-            eL2(:,2) = A\be(:,2);
-            sL2(:,2) = A\bs(:,2);
-
-            eL2(:,3) = A\be(:,3);
-            sL2(:,3) = A\bs(:,3);
-                if Mesh.nsd == 3
-                    eL2(:,4) = A\be(:,4);
-                    sL2(:,4) = A\bs(:,4);
-
-                    eL2(:,5) = A\be(:,5);
-                    sL2(:,5) = A\bs(:,5);
-
-                    eL2(:,6) = A\be(:,6);
-                    sL2(:,6) = A\bs(:,6);
-                end
+            for i = 1:dim
+               eL2(:,i) = A\be(:,i);
+               sL2(:,i) = A\bs(:,i);
             end
-
+            
             strain = eL2';
             stress = sL2';
     end
