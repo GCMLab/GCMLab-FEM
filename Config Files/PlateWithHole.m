@@ -135,7 +135,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'PlateWithHole.msh';
+            meshFileName = 'PlateWithHoleQ9.msh';
             % number of space dimensions 
             nsd = 2;
             
@@ -201,11 +201,16 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         t = 10e3; % uniform tensile stress applied to right edge
         Fright = t*max(Mesh.x(:,2))/((length(Mesh.right_nodes) - 1)/2);
         BC.traction_force_value = zeros(length(BC.traction_force_node),2);
-        for n = 1:length(BC.traction_force_node)
-                if any( BC.traction_force_node(n) == Mesh.conn(:,1:4),'all') % then node is a corner node
-                    BC.traction_force_value(n,:) = [Fright/3, 0];
-                else % then node is a midside node
-                    BC.traction_force_value(n,:) = [Fright*2/3,0];
+        switch Mesh.type
+            case 'Q4'
+                BC.traction_force_value = [Fright/2 *ones(size(Mesh.right_nodes)),     zeros(size(Mesh.right_nodes))];
+            case 'Q9'
+                for n = 1:length(BC.traction_force_node)
+                        if any( BC.traction_force_node(n) == Mesh.conn(:,1:4),'all') % then node is a corner node
+                            BC.traction_force_value(n,:) = [Fright/3, 0];
+                        else % then node is a midside node
+                            BC.traction_force_value(n,:) = [Fright*2/3,0];
+                        end
                 end
         end
 
