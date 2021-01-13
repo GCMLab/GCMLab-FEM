@@ -26,8 +26,9 @@
     addpath(genpath(FuncDir));
     addpath(genpath(ConfigDir));
        
-    % number of tests
-    ntests = 13;
+    % number of tests - Update when new tests added!
+    ntests = 13; 
+    
     nameslist = {};
     testnum = 0;
     % initialize test summary

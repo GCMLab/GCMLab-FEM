@@ -8,8 +8,8 @@
 %
 
         testnum = testnum + 1;
-        testname = 'Test name and description';
-        nameslist{testnum} = testname;
+        testname = 'Test name and description'; % Update!
+        nameslist{testnum} = testname;          
        
         % Create test VTK folder
         if plot2vtk
@@ -23,13 +23,13 @@
         
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        config_name = '[Test config file name]';
+        config_name = '[Test config file name]'; % Update!
         main  % Runs calculation
         
         % Step 2 - Check results
         % run check file, script is specific to each test
-        some_error_check = test_check();
-        if some_error_check < some_test_condtion
+        some_error_check = test_check(d);            % Update!
+        if some_error_check < some_test_condtion    % Update!
             test_pass = 1;
         else
             test_pass = 0;
