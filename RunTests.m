@@ -26,7 +26,7 @@
     addpath(genpath(ConfigDir));
     
     % number of tests
-    ntests = 6;
+    ntests = 7;
     % initialize test summary
     testpasssummary = zeros(ntests,1);
     

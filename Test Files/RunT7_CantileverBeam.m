@@ -30,8 +30,9 @@
         
         % Step 2 - Check results
         % run check file, script is specific to each test
-        [error_nodal, error_L2] = PlateWithHole_check(Mesh,stress_nodal,stress_L2);
-        if error_L2 < error_nodal
+        [disp_er] = CantileverBeam_check(d, Material, BC, Mesh);
+        tolerance_er = 1e-3;
+        if disp_er < tolerance_er
             test_pass = 1;
         else
             test_pass = 0;
@@ -44,7 +45,7 @@
         else
             fprintf('\nFAIL')
         end
-        testpasssummary(6) = test_pass;
+        testpasssummary(7) = test_pass;
           
 
         % Step 4 - Cleanup
