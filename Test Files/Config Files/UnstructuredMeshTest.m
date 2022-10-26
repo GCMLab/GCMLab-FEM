@@ -1,37 +1,39 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
+function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progress_on)
 
 %% Mesh Properties
-    disp([num2str(toc),': Building Mesh...']);
+    if progress_on
+        disp([num2str(toc),': Building Mesh...']);
+    end
     
     % Mesh format - 'STRUCTURED', 'UNSTRUCTURED'
-    MeshType = 'UNSTRUCTURED';        
-
+    MeshType = 'GMSH';        
     
     switch MeshType
-        case 'STRUCTURED'
+        case 'MANUAL'
             % location of initial node [m] [x0;y0;z0] 
-            Mesh.x1 = [0;0;0];
+            x1 = [0;0;0];
             % number of space dimensions 
-            Mesh.nsd = 2;
+            nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            Mesh.L = [1;1];
+            L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            Mesh.nex = [2;2]*20;
+            nex = [2;2]*20;
             % element type ('Q4')
-            Mesh.type = 'Q4';
+            type = 'Q4';
             
-            Mesh = BuildMesh_structured(Mesh);
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type);
         case 'UNSTRUCTURED'
+        case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            Mesh.MeshFileName = 'Unstructured_sample.msh';
+            meshFileName = 'Unstructured_sample.msh';
             % number of space dimensions 
-            Mesh.nsd = 2;
-            
-            Mesh = BuildMesh_unstructured(Mesh, Control);            
+            nsd = 2;
+          
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
     end    
     
 
@@ -116,12 +118,9 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
         % quadrature order
         Control.qo = 2;
 
-        % displacement magnification coefficient (for visualization)
-        Control.MagCoef = 1;
-
         % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal'
-        Control.contour = 'nodal';
+        % 'none', 'nodal', 'center'
+        Control.stress_calc = 'center';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
