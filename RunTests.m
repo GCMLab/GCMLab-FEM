@@ -26,7 +26,7 @@
     addpath(genpath(ConfigDir));
     
     % number of tests
-    ntests = 6;
+    ntests = 7;
     % initialize test summary
     testpasssummary = zeros(ntests,1);
     
@@ -59,6 +59,11 @@
 %  averaged stresses
       run('Test Files/RunT6_PlateWHole')
         
+%% Test 7: Cantilever Beam
+%  Pass Condition: Shear locking is prevented and error in displacement is
+%  acceptable
+      run('Test Files/RunT7_CantileverBeam')
+      
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
 %       run('Test Files/RunTestX')
