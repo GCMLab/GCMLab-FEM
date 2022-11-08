@@ -26,7 +26,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 13; 
+    ntests = 19; 
     
     nameslist = {};
     testnum = 0;
@@ -86,18 +86,35 @@
 %   Pass condition: L2-norm converges at a rate of at least h^2
 %                    e-norm converges at a rate of at least h
          run('Test Files/RunManSolT3')
+         
+%% Test 13: Patch Test A - All nodal displacements prescribed T6
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunPatchTestAT6')
+
+%% Test 14: Patch Test B - Dirichlet-Dirichlet BC T6
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunPatchTestBT6')
+
+%% Test 15: Patch Test C - Dirichlet-Neumann BC T6
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunPatchTestCT6')
+
+%% Test 16: Manufactured Solution - T6 element convergence
+%   Pass condition: L2-norm converges at a rate of at least h^2
+%                    e-norm converges at a rate of at least h
+         run('Test Files/RunManSolT6')
         
-%% Test 13: Manufactured Solution - Plane Strain check
+%% Test 17: Manufactured Solution - Plane Strain check
 %   Pass condition: L2-norm converges at a rate of at least h^2
 %                    e-norm converges at a rate of at least h
         run('Test Files/RunPstrain')
         
-%% Test 6: Plate with Hole under tension
+%% Test 18: Plate with Hole under tension
 %  Pass Condtion: error of L2 projected stresses is less than nodal
 %  averaged stresses
       run('Test Files/RunT6_PlateWHole')
         
-%% Test 7: Cantilever Beam
+%% Test 19: Cantilever Beam
 %  Pass Condition: Shear locking is prevented and error in displacement is
 %  acceptable
       run('Test Files/RunT7_CantileverBeam')
