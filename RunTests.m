@@ -16,7 +16,6 @@
     % Current directory
     curDir = pwd;
     DirFolder = 'Test Files';
-    ConfigDir = fullfile(curDir, DirFolder);
 
 %% Directories
     FuncDir = fullfile(curDir, 'Functions');
@@ -31,6 +30,7 @@
     
     nameslist = {};
     testnum = 0;
+
     % initialize test summary
     testpasssummary = zeros(ntests,1);
     
@@ -92,6 +92,16 @@
 %                    e-norm converges at a rate of at least h
         run('Test Files/RunPstrain')
         
+%% Test 6: Plate with Hole under tension
+%  Pass Condtion: error of L2 projected stresses is less than nodal
+%  averaged stresses
+      run('Test Files/RunT6_PlateWHole')
+        
+%% Test 7: Cantilever Beam
+%  Pass Condition: Shear locking is prevented and error in displacement is
+%  acceptable
+      run('Test Files/RunT7_CantileverBeam')
+      
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
 %       run('Test Files/RunTestX')

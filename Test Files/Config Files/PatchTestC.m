@@ -113,7 +113,6 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         
         BC.traction_force_node = [Mesh.right_nodes(index_right);  Mesh.top_nodes(index_top); toprightnode];
         
-
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         %t = 4;
         if strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T3')
