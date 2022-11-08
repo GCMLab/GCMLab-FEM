@@ -67,8 +67,8 @@
             
             convergence_tolerance = 0.1;
             % allow higher tolerance for T6 elements, will converge to
-            % L2-norm convergence rate of 2 with sufficiently refined mesh
-            if m_L2 >= (4 - convergence_tolerance) && m_e >= (2 - convergence_tolerance)
+            % L2-norm convergence rate of 4 with sufficiently refined mesh
+            if m_L2 >= (3 - convergence_tolerance) && m_e >= (2 - convergence_tolerance)
                 test_pass = 1;
             else
                 test_pass = 0;
