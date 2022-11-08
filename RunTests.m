@@ -130,7 +130,7 @@ for test = 1:ntests
    if testpasssummary(test)
        fprintf('\n%-10d%-10s%-20s', test, 'PASS',nameslist{test})
    else
-      fprintf('\n%-10d%-10s%-20s', test, 'FAIL',nameslist{test})
+      fprintf('\n%-10d%-10s%-20s', test, '! - FAIL',nameslist{test})
    end
 end
 fprintf('\n\n')

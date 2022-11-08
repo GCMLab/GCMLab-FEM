@@ -48,7 +48,7 @@
         else
             fprintf('\nFAIL')
         end
-        testpasssummary(7) = test_pass;
+        testpasssummary(testnum) = test_pass;
           
 
         % Step 4 - Cleanup
