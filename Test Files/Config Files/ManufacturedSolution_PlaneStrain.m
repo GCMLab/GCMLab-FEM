@@ -130,13 +130,19 @@ global meshfilename quadorder E nu
 
         % quadrature order
         Control.qo = quadorder;
+        
+        % Calculation of values for discontinuous variables 
+        % (i.e. stress/strain)
+        % 'none': calculated at each node for each element separately; 
+        %           no output in vtk
+        % 'nodal': averaged at each node for all elements attached to 
+        %           the node; output as nodal values in vtk
+        % 'center': calculated at the center of each element; output as 
+        %           single value for each element in vtk
+        % 'L2projection': Least squares projection of stress and strain,
+        %           output as nodal values
+        Control.stress_calc = 'nodal';
 
-        % displacement magnification coefficient (for visualization)
-        Control.MagCoef = 1;
-
-        % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal'
-        Control.contour = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
