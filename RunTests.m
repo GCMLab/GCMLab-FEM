@@ -112,12 +112,12 @@
 %% Test 18: Plate with Hole under tension
 %  Pass Condtion: error of L2 projected stresses is less than nodal
 %  averaged stresses
-      run('Test Files/RunT6_PlateWHole')
+      run('Test Files/RunPlatewHole')
         
 %% Test 19: Cantilever Beam
 %  Pass Condition: Shear locking is prevented and error in displacement is
 %  acceptable
-      run('Test Files/RunT7_CantileverBeam')
+      run('Test Files/RunCantileverBeam')
       
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
