@@ -116,12 +116,8 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         Control.qo = 2;
     end
 
-    if ~isfield(Control, 'MagCoef')
-        Control.MagCoef = 1;
-    end
-
-    if ~isfield(Control, 'contour')
-        Control.contour = 'nodal';
+    if ~isfield(Control, 'stress_calc')
+        Control.stress_calc = 'center';
     end
 
     if ~isfield(Control, 'LinearSolver')

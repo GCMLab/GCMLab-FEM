@@ -118,12 +118,9 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         % quadrature order
         Control.qo = 2;
 
-        % displacement magnification coefficient (for visualization)
-        Control.MagCoef = 1;
-
         % Nodal averaging for discontinuous variables (stress/strain)
         % 'none', 'nodal', 'center'
-        Control.contour = 'center';
+        Control.stress_calc = 'center';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3

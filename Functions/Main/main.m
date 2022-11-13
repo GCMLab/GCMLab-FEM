@@ -1,6 +1,6 @@
 % Static solid deformation of linear elastic material
 
-% Acknowledgements: Matin Parchei Esfahani, Endrina Rivas
+% Acknowledgements: Matin Parchei Esfahani
 
 
 %% Delete past vtk files (so don't overwrite any)
@@ -66,7 +66,7 @@
     Fext(BC.fixed) = f_fixed;
 
 % Strain
-    [strain, stress] = getStrain(d, Mesh, Material, Control.contour);   
+    [strain, stress] = getStrain(d, Mesh, Material, Control.stress_calc, Quad);   
 
 % Force vectors
     Fint = K*d;
@@ -77,4 +77,6 @@
                         Fint, Fext);
     end
     
-disp('done')
+    if progress_on
+        disp('done')
+    end

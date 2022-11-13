@@ -1,7 +1,10 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
+function [Mesh, Material, BC, Control] = ManufacturedSolution(config_dir, progress_on)
+global meshfilename quadorder E nu
 
 %% Mesh Properties
-    disp([num2str(toc),': Building Mesh...']);
+    if progress_on
+        disp([num2str(toc),': Building Mesh...']);
+    end
     
     % Mesh formats: 
     %   'MANUAL'    - In-house structured meshing
@@ -12,28 +15,29 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
     switch MeshType
         case 'MANUAL'
             % location of initial node [m] [x0;y0;z0] 
-            Mesh.x1 = [0;0;0];
+            x1 = [0;0;0];
             % number of space dimensions 
-            Mesh.nsd = 2;
+            nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            Mesh.L = [1;1];
+            L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            Mesh.nex = [2;2]*20;
+            nex = [2;2]*20;
             % element type ('Q4')
-            Mesh.type = 'Q4';
+            type = 'Q4';
             
-            Mesh = BuildMesh_structured(Mesh);
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
         case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            Mesh.MeshFileName = 'Manufactured_sample_finer.msh';
+            meshFileName = meshfilename;
+
             % number of space dimensions 
-            Mesh.nsd = 2;
+            nsd = 2;
             
-            Mesh = BuildMesh_unstructured(Mesh, Control);            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);              
     end    
     
 
@@ -48,7 +52,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
         % otherwise, quadrature order must be increased significantly
 
     % Young's modulus [Pa]
-    Material.E = @(x) 1000;  
+    Material.E = @(x) E;  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -57,7 +61,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) 0;
+    Material.nu = @(x) nu;
 
     % Alternatively, import a material file
     % Material = Material_shale();
@@ -113,25 +117,23 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(Control)
 
         % magnitude of distributed body force [N/m] [bx;by] according to
         % the manufactured solution:
-        % bx = -0.5*E*(20*x^3+20*x^3+3*y^2+6*x*y-30*y^4)
-        % by = -0.5*E*(3*y^2+6*x*y-30*y^4+6*x*y-30*y^4+20*x^3)
+        % bx = -E / (1-v^2) * ( 20x^3 + 3vy^2          + (1-v)/2*[ 6xy - 30y^4 + 3y^2 ])
+        % by = -E/  (1-v^2) * ( (1-v)/2*[3y^2 + 20x^3] +           3vy^2 + 6xy - 30y^4 )
             % 1D: [N/m], 2D: [N/m2]
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[-0.5.*Material.E(x)*(20.*x(1).^3+20.*x(1).^3+3.*x(2).^2+6.*x(1).*x(2)-30.*x(2).^4);-0.5.*Material.E(x).*(3.*x(2).^2+6.*x(1).*x(2)-30.*x(2).^4+6.*x(1).*x(2)-30.*x(2).^4+20.*x(1).^3)];    
+        BC.b = @(x)[-E / (1-nu^2)  * ( 20*x(1).^3 + 3*nu*x(2).^2              + (1-nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2));
+                    -E / (1-nu^2)  * ( (1-nu)/2*( 3*x(2).^2  + 20*x(1).^3)    + 3*nu*x(2).^2 + 6*x(1).*x(2) - 30*x(2).^4 )];
 
 %% Computation controls
 
         % quadrature order
-        Control.qo = 2;
-
-        % displacement magnification coefficient (for visualization)
-        Control.MagCoef = 1;
+        Control.qo = quadorder;
 
         % Nodal averaging for discontinuous variables (stress/strain)
         % 'none', 'nodal'
-        Control.contour = 'nodal';
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
