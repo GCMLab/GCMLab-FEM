@@ -1,4 +1,4 @@
-function [d, fE] = LinearSolver1(K, F, dfixed, free, fixed)
+function [d, fE] = LinearSolver1(K, F, dfixed, free, fixed, parallel)
 %LINEARSOLVER1 Solves for unknown vector using partition method
 % 	d = LINEARSOLVER1(K, F, dfixed, free, fixed) is the displacement 
 % 	vector for a given stiffness matrix, K, and external force vector, F.
@@ -41,9 +41,9 @@ dE = dfixed;
 % This if statement allows for problems that do not have any fixed boundary
 % conditions
 if isempty(dE)
-    dF = KFF\(fF);
+    dF = MatrixInvert(KFF,fF,parallel);
 else
-    dF = KFF\(fF-KFE*dE);
+    dF = MatrixInvert(KFF,fF-KFE*dE,parallel);
 end
 
 % Update displacement vector

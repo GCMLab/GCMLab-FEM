@@ -16,10 +16,18 @@ function [d] = MatrixInvert(K,f,parallel_number)
 %                             as you have access to.
  
 if parallel_number == 1
+    tic
     d = K\f;
+    toc
 else
+    % Check if < 200k dofs
+        if length(f) < 2e5
+            fprintf(' Careful! Matrix is being inverted in parallel at < 2e5 degrees of freedom. \n At < 2e5 degrees of freedom, single core is generally more efficient.\n')
+        end
     % Create parallel processing pool
-        parpool(parallel_number);
+        if isempty(gcp('nocreate'))
+            parpool(parallel_number);
+        end
     % distribute to pool
         K = distributed(K);
         f = distributed(f);
