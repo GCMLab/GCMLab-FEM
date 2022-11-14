@@ -16,9 +16,7 @@ function [d] = MatrixInvert(K,f,parallel_number)
 %                             as you have access to.
  
 if parallel_number == 1
-    tic
     d = K\f;
-    toc
 else
     % Check if < 200k dofs
         if length(f) < 2e5

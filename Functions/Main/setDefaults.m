@@ -119,6 +119,11 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     if ~isfield(Control, 'LinearSolver')
         Control.LinearSolver = 'LinearSolver1';
     end
+    
+    if ~isfield(Control, 'parallel')
+        Control.parallel = 1;
+    end
+    
 
     if strcmp(Control.LinearSolver, 'LinearSolver3') ...
     	&& ~isfield(Control, 'beta')
