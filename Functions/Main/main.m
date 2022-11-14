@@ -55,13 +55,13 @@
     switch Control.LinearSolver
         case 'LinearSolver1'
             [d, f_fixed] = LinearSolver1(K, Fext, BC.fix_disp_value, ...
-                                            BC.free, BC.fixed);
+                                            BC.free, BC.fixed, Control.parallel);
         case 'LinearSolver2'
             [d, f_fixed] = LinearSolver2(K,Fext,BC.fix_disp_value, ...
-                                            BC.free, BC.fixed);
+                                            BC.free, BC.fixed, Control.parallel);
         case 'LinearSolver3'
             [d, f_fixed] = LinearSolver3(K, Fext, BC.fix_disp_value, ...
-                                            BC.free, BC.fixed, Control.beta);
+                                            BC.free, BC.fixed, Control.beta, Control.parallel);
     end
     Fext(BC.fixed) = f_fixed;
 
