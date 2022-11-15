@@ -97,7 +97,7 @@ for e = 1:Mesh.ne
             % for 2D, volume integral includes the thickness
             switch Mesh.nsd 
                 case 1
-                    L = Material.A(Xi);
+                    L = Material.t(Xi);
                 case 2
                     L = Material.t(Xi);
                 case 3
