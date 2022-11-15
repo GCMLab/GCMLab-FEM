@@ -30,7 +30,7 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         nu_nodes = Material.nu(Mesh.x);
         if any(nu_nodes >= 0.5, 'all')
             err_count = err_count+1;
-            err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu > 0.5 was found'\n',err_mat,err_count);
+            err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu > 0.5 was found\n',err_mat,err_count);
         end
         if any(nu_nodes <= -1, 'all')
             err_count = err_count+1;
