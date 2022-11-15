@@ -26,7 +26,7 @@
     addpath(genpath(ConfigDir));
     
     % number of tests
-    ntests = 7;
+    ntests = 8;
     % initialize test summary
     testpasssummary = zeros(ntests,1);
     
@@ -63,6 +63,10 @@
 %  Pass Condition: Shear locking is prevented and error in displacement is
 %  acceptable
       run('Test Files/RunT7_CantileverBeam')
+      
+%% Test 8: One Dimensional Problem
+%  Pass Condition: FEA solution displacements are exact
+      run('Test Files/RunT8_Test1D')
       
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
