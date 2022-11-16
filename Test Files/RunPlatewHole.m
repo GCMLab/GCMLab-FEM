@@ -5,17 +5,20 @@
 % tutorial problem: https://www.openfoam.com/documentation/tutorial-guide/tutorialse9.php
 % TODO: Add description of test case to Wiki
 
-
-
+        testnum = testnum + 1;
+        testname = 'Plate with hole under tension';
+        nameslist{testnum} = testname;
+       
         % Create test VTK folder
         if plot2vtk
-            vtk_dir = fullfile(VTKFolder,'\Test6');
+            folname = ['\Test',num2str(testnum)];
+            vtk_dir = fullfile(VTKFolder,folname);
             if ~isfolder(vtk_dir) 
                 mkdir(vtk_dir)
             end
         end
-
-        fprintf('\n\n Test 6: Plate with Hole')
+    
+        fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
         global calc_type
             config_name = 'PlateWithHole';
@@ -47,10 +50,10 @@
         else
             fprintf('\nFAIL')
         end
-        testpasssummary(6) = test_pass;
+        testpasssummary(testnum) = test_pass;
           
 
         % Step 4 - Cleanup
         clearvars -except  curDir  ConfigDir ...
-                      ntests testpasssummary...
+                      ntests testpasssummary testnum nameslist...
                       plot2vtk VTKFolder progress_on

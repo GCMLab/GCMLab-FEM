@@ -6,19 +6,22 @@
 % the right edge by sigma(y) = -4e5. Then, in order to check shear locking,
 % the error between the FEA and theoretical solutions is then calculated.
 % The FEA approximate solution should be close to theoretical solution.
-% TODO: Add description of test case to Wiki
 
+        testnum = testnum + 1;
+        testname = 'Cantilever Beam - Q4 elements';
+        nameslist{testnum} = testname;
 
 
         % Create test VTK folder
         if plot2vtk
-            vtk_dir = fullfile(VTKFolder,'\Test7');
+            folname = ['\Test',num2str(testnum)];
+            vtk_dir = fullfile(VTKFolder,folname);
             if ~isfolder(vtk_dir) 
                 mkdir(vtk_dir)
             end
         end
 
-        fprintf('\n\n Test 7: Cantilever Beam')
+        fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
         global  E nu t
         t = -4e5; % applied traction
@@ -45,10 +48,10 @@
         else
             fprintf('\nFAIL')
         end
-        testpasssummary(7) = test_pass;
+        testpasssummary(testnum) = test_pass;
           
 
         % Step 4 - Cleanup
         clearvars -except  curDir  ConfigDir ...
-                      ntests testpasssummary...
+                      ntests testpasssummary testnum nameslist...
                       plot2vtk VTKFolder progress_on
