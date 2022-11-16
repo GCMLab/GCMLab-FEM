@@ -62,8 +62,8 @@
                 stress_coarse, stress_fine, stress_finer, strain_coarse, strain_fine, ...
                 strain_finer, Mesh_coarse, Mesh_fine, Mesh_finer);
             
-            fprintf('\nQ4 L2-norm converges at a rate of %.2f',m_L2)
-            fprintf('\nQ4  e-norm converges at a rate of %.2f',m_e)
+            fprintf('\nT6 L2-norm converges at a rate of %.2f',m_L2)
+            fprintf('\nT6  e-norm converges at a rate of %.2f',m_e)
             
             convergence_tolerance = 0.1;
             % allow higher tolerance for T6 elements, will converge to

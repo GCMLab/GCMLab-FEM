@@ -39,9 +39,9 @@
         % Step 2 - Check results
         [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Mesh);
         
-        fprintf('\nQ4-patch test C: Displacement error is %.2f',disp_er)
-        fprintf('\nQ4-patch test C: Stress error is %.2f',stress_er)
-        fprintf('\nQ4-patch test C: Reaction forces error is %.2f',reaction_er)
+        fprintf('\nT6-patch test C: Displacement error is %.2f',disp_er)
+        fprintf('\nT6-patch test C: Stress error is %.2f',stress_er)
+        fprintf('\nT6-patch test C: Reaction forces error is %.2f',reaction_er)
         
         convergence_tolerance = 1e-10;
         if disp_er <= convergence_tolerance && stress_er <= convergence_tolerance && reaction_er <= convergence_tolerance 
