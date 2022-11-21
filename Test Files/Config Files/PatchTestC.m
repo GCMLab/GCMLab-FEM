@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
-
+    global E nu t quadorder meshfilename
 %% Mesh Properties
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
@@ -30,7 +30,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Mesh Files\PatchTest.msh';
+            meshFileName = meshfilename;
             % number of space dimensions 
             nsd = 2;
             
@@ -39,7 +39,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
     
 
 %% Material Properties (Solid)
-    global E nu t
+
 
     % NOTES-------------------------------------------------------------
                                 
@@ -113,21 +113,53 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         
         BC.traction_force_node = [Mesh.right_nodes(index_right);  Mesh.top_nodes(index_top); toprightnode];
         
-
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         %t = 4;
-        Fright = t*max(Mesh.x(:,2))/(length(Mesh.right_nodes) - 1);
-        Ftop   = t*max(Mesh.x(:,1))/(length(Mesh.top_nodes)   - 1);
-        BC.traction_force_value =       [   Fright*ones(size(Mesh.right_nodes(index_right))),     zeros(size(Mesh.right_nodes(index_right)));      % right side nodes
-                                            zeros(size(Mesh.top_nodes(index_top))),               Ftop*ones(size(Mesh.top_nodes(index_top)));           % top side nodes
-                                            Fright*1/2,                                           Ftop*1/2                                           ]; % top right node
-        
-        % find the nodes in the top left and bottom right corners
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        topleftnode  = find(Mesh.x(BC.traction_force_node,1) == min(Mesh.x(:,1)));
-        
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        BC.traction_force_value(topleftnode,2) = BC.traction_force_value(topleftnode,2)/2;
+        if strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T3')
+            Fright = t*max(Mesh.x(:,2))/(length(Mesh.right_nodes) - 1); % traction * 1 element length (assumed evenly distributed)
+            Ftop   = t*max(Mesh.x(:,1))/(length(Mesh.top_nodes)   - 1); % traction * 1 element length (assumed evenly distributed)
+            BC.traction_force_value =       [   Fright*ones(size(Mesh.right_nodes(index_right))),     zeros(size(Mesh.right_nodes(index_right)));      % right side nodes
+                                                zeros(size(Mesh.top_nodes(index_top))),               Ftop*ones(size(Mesh.top_nodes(index_top)));           % top side nodes
+                                                Fright*1/2,                                           Ftop*1/2                                           ]; % top right node
+
+            % find the nodes in the top left and bottom right corners
+            botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
+            topleftnode  = find(Mesh.x(BC.traction_force_node,1) == min(Mesh.x(:,1)));
+
+            BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
+            BC.traction_force_value(topleftnode,2) = BC.traction_force_value(topleftnode,2)/2;
+        elseif strcmp(Mesh.type, 'Q9') || strcmp(Mesh.type, 'T6')
+            Fright = t*max(Mesh.x(:,2))/((length(Mesh.right_nodes) - 1)/2);
+            Ftop   = t*max(Mesh.x(:,1))/((length(Mesh.top_nodes)   - 1)/2);
+            BC.traction_force_value = zeros(length(BC.traction_force_node),2);
+            for n = 1:length(BC.traction_force_node)
+                if n <= length(Mesh.right_nodes(index_right)) % then node is on the right edge
+                    if any( BC.traction_force_node(n) == Mesh.conn(:,1:4),'all') % then node is a corner node
+                        BC.traction_force_value(n,:) = [Fright/3, 0];
+                    else % then node is a midside node
+                        BC.traction_force_value(n,:) = [Fright*2/3,0];
+                    end
+                elseif n == length(BC.traction_force_node) % then node is the top right node
+                        BC.traction_force_value(n,:) = [Fright/6, Ftop/6];
+                else % then node is on the top edge
+                    if any( BC.traction_force_node(n) == Mesh.conn(:,1:4),'all') % then node is a corner node
+                        BC.traction_force_value(n,:) = [0, Ftop/3];
+                    else % then node is a midside node
+                        BC.traction_force_value(n,:) = [0, Ftop*2/3];
+                    end
+                end
+            end
+            
+            % find the nodes in the top left and bottom right corners
+            botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
+            topleftnode  = find(Mesh.x(BC.traction_force_node,1) == min(Mesh.x(:,1)));
+
+            BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
+            BC.traction_force_value(topleftnode,2) = BC.traction_force_value(topleftnode,2)/2;
+            
+        else
+            error('Unsupported element type')
+        end
   
         
     
@@ -144,7 +176,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
 %% Computation controls
 
         % quadrature order
-        Control.qo = 2;
+        Control.qo = quadorder;
 
         % Nodal averaging for discontinuous variables (stress/strain)
         % 'none', 'nodal', 'center'
