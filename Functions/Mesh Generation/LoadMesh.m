@@ -97,6 +97,13 @@ for i = 1:nelem
             else
                 edg = 1;
             end
+        case 9          % T6 element
+            nne = 6;
+            if nsd == 2
+                edg = 0;
+            else
+                edg = 1;
+            end
     end
     
     if ~edg

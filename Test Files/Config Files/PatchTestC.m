@@ -113,14 +113,29 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         
         BC.traction_force_node = [Mesh.right_nodes(index_right);  Mesh.top_nodes(index_top); toprightnode];
         
-
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         %t = 4;
-        Fright = t*max(Mesh.x(:,2))/(length(Mesh.right_nodes) - 1);
-        Ftop   = t*max(Mesh.x(:,1))/(length(Mesh.top_nodes)   - 1);
+        switch Mesh.type 
+            case 'Q4'
+                Fright = t*max(Mesh.x(:,2))/((length(Mesh.right_nodes) - 1));
+                Ftop   = t*max(Mesh.x(:,1))/((length(Mesh.top_nodes)   - 1));
+            case 'T6'
+                Fright = t*max(Mesh.x(:,2))/((length(Mesh.right_nodes) - 1)/2);
+                Ftop   = t*max(Mesh.x(:,1))/((length(Mesh.top_nodes)   - 1)/2);
+        end
         BC.traction_force_value =       [   Fright*ones(size(Mesh.right_nodes(index_right))),     zeros(size(Mesh.right_nodes(index_right)));      % right side nodes
                                             zeros(size(Mesh.top_nodes(index_top))),               Ftop*ones(size(Mesh.top_nodes(index_top)));           % top side nodes
                                             Fright*1/2,                                           Ftop*1/2                                           ]; % top right node
+        switch Mesh.type 
+            case 'T6'
+                for n = 1:length(BC.traction_force_value)
+                    if any(BC.traction_force_node(n) == Mesh.conn(:,1:3),'all') % then node is a corner node
+                        BC.traction_force_value(n,:) = BC.traction_force_value(n,:)/3;
+                    else % then node is a midside node
+                        BC.traction_force_value(n,:) = BC.traction_force_value(n,:)*2/3;
+                    end
+                end
+        end
         
         % find the nodes in the top left and bottom right corners
         botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));

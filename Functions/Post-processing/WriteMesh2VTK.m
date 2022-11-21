@@ -110,6 +110,10 @@ else
         outputformat = '%d %d %d %d \n';
         conn = [nne*ones(ne,1),conn-ones(ne,nne)];
         cell_type = 5;
+    elseif nsd==2 && nne == 6 % T6
+        outputformat = '%d %d %d %d %d %d %d \n';
+        conn = [nne*ones(ne,1),conn-ones(ne,nne)];
+        cell_type = 22;
     elseif nsd == 2 && nne == 4 % Q4 
         outputformat = '%d %d %d %d %d \n';
         conn = [4*ones(ne,1),conn(:,1:4)-ones(ne,4)];
