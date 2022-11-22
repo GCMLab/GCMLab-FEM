@@ -48,7 +48,8 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         % otherwise, quadrature order must be increased significantly
 
     % Young's modulus [Pa]
-    Material.E = @(x) 4;  
+    E = 4;
+    Material.E = E*ones(Mesh.ne,1);  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStrain'; 
@@ -57,7 +58,8 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) 0;
+    nu = 0;
+    Material.nu = nu*ones(Mesh.ne,1);
 
     % Alternatively, import a material file
     % Material = Material_shale();

@@ -50,7 +50,7 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
         % otherwise, quadrature order must be increased significantly
 
     % Young's modulus [Pa]
-    Material.E = @(x) E;  
+    Material.E = E*ones(Mesh.ne,1);  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -59,7 +59,7 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) nu;
+    Material.nu = nu*ones(Mesh.ne,1);
 
     % Alternatively, import a material file
     % Material = Material_shale();
