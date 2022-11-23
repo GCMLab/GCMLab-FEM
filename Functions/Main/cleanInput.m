@@ -50,7 +50,7 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         % Material.nu is a constant
         if Material.nu >= 0.5
             err_count = err_count+1;
-            err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu > 0.5 was found'\n',err_mat,err_count);
+            err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu > 0.5 was found\n',err_mat,err_count);
         end
         if Material.nu <= -1
             err_count = err_count+1;
