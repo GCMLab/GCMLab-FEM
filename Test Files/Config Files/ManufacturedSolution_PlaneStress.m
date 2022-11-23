@@ -1,5 +1,5 @@
-function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
-    global E nu t quadorder meshfilename
+function [Mesh, Material, BC, Control] = ManufacturedSolution_PlaneStress(config_dir, progress_on)
+global meshfilename quadorder E nu
 
 %% Mesh Properties
     if progress_on
@@ -33,10 +33,11 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
             meshFileName = meshfilename;
+
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);              
     end    
     
 
@@ -75,21 +76,25 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
 
-    % Dirichlet boundary conditions (essential) according to exact solution
-    % ux = (1-nu)*t/E*x
-    % uy = (1-nu)*t/E*y
+    % Dirichlet boundary conditions (essential) according to manufactured
+    % solution
+    % ux = x^5 + x*y^3 - y^6
+    % uy = x^5 + x*y^3 - y^6
     % -----------------------------------------------------------------
-        
-        BC.UU = @(x) (1-nu)*t/E*x(:,1);
-        BC.VV = @(x) (1-nu)*t/E*x(:,2);
-        
+        BC.UU = @(x) x(:,1).^5 + x(:,1).*x(:,2).^3 - x(:,2).^6;
+        BC.VV = @(x) x(:,1).^5 + x(:,1).*x(:,2).^3 - x(:,2).^6;
+
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = 1:Mesh.nDOF;
+        BC.fix_disp_dof1 = Mesh.left_dof;
+        BC.fix_disp_dof2 = Mesh.right_dof;
+        BC.fix_disp_dof3 = Mesh.bottom_dof;
+        BC.fix_disp_dof4 = Mesh.top_dof;
+        BC.fix_disp_dof = unique([BC.fix_disp_dof1;BC.fix_disp_dof2;BC.fix_disp_dof3;BC.fix_disp_dof4]);
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
-        BC.fix_disp_value(1:2:end) = BC.UU(Mesh.x);
-        BC.fix_disp_value(2:2:end) = BC.VV(Mesh.x);  
+        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
+        BC.fix_disp_value(1:2:end) = BC.UU([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
+        BC.fix_disp_value(2:2:end) = BC.VV([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -106,23 +111,20 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         Fnode = 1/(length(BC.traction_force_node) - 1);
         BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
-        % magnitude of distributed body force [N/m] [bx;by]
+        % magnitude of distributed body force [N/m] [bx;by] according to
+        % the manufactured solution:
+        % bx = -E / (1-v^2) * ( 20x^3 + 3vy^2          + (1-v)/2*[ 6xy - 30y^4 + 3y^2 ])
+        % by = -E/  (1-v^2) * ( (1-v)/2*[3y^2 + 20x^3] +           3vy^2 + 6xy - 30y^4 )
             % 1D: [N/m], 2D: [N/m2]
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[];    
+        BC.b = @(x)[-E / (1-nu^2)  * ( 20*x(1).^3 + 3*nu*x(2).^2              + (1-nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2));
+                    -E / (1-nu^2)  * ( (1-nu)/2*( 3*x(2).^2  + 20*x(1).^3)    + 3*nu*x(2).^2 + 6*x(1).*x(2) - 30*x(2).^4 )];
 
 %% Computation controls
 
@@ -130,7 +132,7 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
         Control.qo = quadorder;
 
         % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal', 'center'
+        % 'none', 'nodal'
         Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
