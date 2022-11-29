@@ -1,4 +1,5 @@
 function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
+    global E nu t quadorder meshfilename
 
 %% Mesh Properties
     if progress_on
@@ -30,7 +31,7 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Mesh Files\PatchTest.msh';
+            meshFileName = meshfilename;
             % number of space dimensions 
             nsd = 2;
             
@@ -39,7 +40,6 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
     
 
 %% Material Properties (Solid)
-    global E nu t
 
     % NOTES-------------------------------------------------------------
                                 
@@ -130,7 +130,7 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
 %% Computation controls
 
         % quadrature order
-        Control.qo = 2;
+        Control.qo = quadorder;
 
         % Nodal averaging for discontinuous variables (stress/strain)
         % 'none', 'nodal', 'center'
