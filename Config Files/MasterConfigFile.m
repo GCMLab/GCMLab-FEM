@@ -158,10 +158,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStrain'; 
 
-    % Cross-sectional area - required for 1D problems (set as default to 1)
-    Material.A = @(x) 1;
-
-    % Thickness - required for 2D problems (set as default to 1)
+    % Thickness (set as default to 1)
+    % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
