@@ -119,7 +119,7 @@
 %  acceptable
       run('Test Files/RunCantileverBeam')
       
-%% Test 8: One Dimensional Problem
+%% Test 20: One Dimensional Problem
 %  Pass Condition: FEA solution displacements are exact
       run('Test Files/RunT8_Test1D')
       
