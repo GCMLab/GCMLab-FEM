@@ -26,7 +26,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 19; 
+    ntests = 20; 
     
     nameslist = {};
     testnum = 0;
@@ -121,7 +121,7 @@
       
 %% Test 20: One Dimensional Problem
 %  Pass Condition: FEA solution displacements are exact
-      run('Test Files/RunT8_Test1D')
+      run('Test Files/RunTest1D')
       
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
