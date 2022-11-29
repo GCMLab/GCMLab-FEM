@@ -21,15 +21,13 @@
 
         fprintf('\n\n Test 8: One Dimensional Problem')
         % Step 1 - Run Simulation
-        global  E nu t b calc_type
+        global  E nu t b
         t = 6e9; % applied traction [N]
         b = 2e9; % applied body force [N/m]
         E = 2e11;  % elastic modulus [Pa]
         nu = 0;  % poisson's ratio
         
         config_name = 'Test1D';
-        % run with nodal averaging
-        calc_type = 'nodal';
         main
         
         % Step 2 - Check results

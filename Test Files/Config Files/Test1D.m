@@ -230,8 +230,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        global calc_type
-        Control.stress_calc = calc_type;
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
