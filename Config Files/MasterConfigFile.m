@@ -224,14 +224,6 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % quadrature order
         Control.qo = 2;
 
-<<<<<<< HEAD
-        % displacement magnification coefficient (for visualization)
-        Control.MagCoef = 1;
-
-        % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal', 'center'
-        Control.contour = 'nodal';
-=======
         % Calculation of values for discontinuous variables 
         % (i.e. stress/strain)
         % 'none': calculated at each node for each element separately; 
@@ -243,7 +235,6 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
         Control.stress_calc = 'L2projection';
->>>>>>> develop
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
