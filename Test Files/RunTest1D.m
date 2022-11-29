@@ -9,17 +9,21 @@
 % analytical one.
 % TODO: Add description of test case to Wiki
 
-
+        testnum = testnum + 1;
+        testname = 'One Dimensional Problem - 1D elements';
+        nameslist{testnum} = testname;
+        
 
         % Create test VTK folder
         if plot2vtk
-            vtk_dir = fullfile(VTKFolder,'\Test8');
+            folname = ['\Test',num2str(testnum)];
+            vtk_dir = fullfile(VTKFolder,folname);
             if ~isfolder(vtk_dir) 
                 mkdir(vtk_dir)
             end
         end
 
-        fprintf('\n\n Test 8: One Dimensional Problem')
+        fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
         global  E nu t b
         t = 6e9; % applied traction [N]
@@ -47,10 +51,10 @@
         else
             fprintf('\nFAIL')
         end
-        testpasssummary(8) = test_pass;
+        testpasssummary(testnum) = test_pass;
           
 
         % Step 4 - Cleanup
         clearvars -except  curDir  ConfigDir ...
-                      ntests testpasssummary...
+                      ntests testpasssummary testnum nameslist...
                       plot2vtk VTKFolder progress_on
