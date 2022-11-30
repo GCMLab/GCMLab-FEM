@@ -26,7 +26,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 19; 
+    ntests = 20; 
     
     nameslist = {};
     testnum = 0;
@@ -118,6 +118,10 @@
 %  Pass Condition: Shear locking is prevented and error in displacement is
 %  acceptable
       run('Test Files/RunCantileverBeam')
+      
+%% Test 20: One Dimensional Problem
+%  Pass Condition: FEA solution displacements are exact
+      run('Test Files/RunTest1D')
       
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
