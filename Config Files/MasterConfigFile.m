@@ -242,8 +242,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         
         % parallel inversion
         % Use parallel processing to invert the matrix.
-        % Usually more efficient at x dofs
-        Control.parallel = 6;
+        % Usually more efficient at 2e5 dofs
+        Control.parallel = 1;
 
         % method used for solving linear problem:
         % 'LinearSolver1': Partitioning
