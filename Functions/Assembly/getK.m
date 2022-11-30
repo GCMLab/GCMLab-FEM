@@ -59,7 +59,8 @@ for e = 1:Mesh.ne
         nq = Quad.nq;
 
     %% Constitutive matrix
-        D = getD(Material.E(e), Material.nu(e), Mesh.nsd, Material.Dtype);   
+        nMat = Material.Type(e); % element material type
+        D = getD(Material.List(nMat).E, Material.List(nMat).nu, Mesh.nsd, Material.Dtype);   
         
     %% Assemble stiffness matrix
     
