@@ -67,11 +67,15 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     end
 
 %% Material
- 
-    if ~isfield(Material, 'E')
-        error('Elastic modulus is not defined - Define Material.E');
+
+    if ~isfield(Material, 'Type')
+        error('Material properties are not defined - Define Material.Type');
     end
 
+    if ~isfield(Material, 'List')
+        error('Material properties are not assigned to elements - Define Material.List');
+    end
+    
     if ~isfield(Material, 'Dtype')
         error(['Two-dimensional approximation is not defined -', ...
                 ' Define Material.Dtype']);
@@ -79,10 +83,6 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
 
     if ~isfield(Material, 't')
         error('Model thickness is not defined - Define Material.t');
-    end
-
-    if ~isfield(Material, 'nu')
-        error('Poisson''s ratio is not defined - Define Material.nu');
     end
    
 %% Boundary conditions
