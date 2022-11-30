@@ -110,7 +110,8 @@ else
                 de = d(dofE);
             
             %% Constitutive matrix
-                D = getD(Material.E(e), Material.nu(e), Mesh.nsd, Material.Dtype);
+                nMat = Material.Type(e); % element material type
+                D = getD(Material.List(nMat).E, Material.List(nMat).nu, Mesh.nsd, Material.Dtype);
                 
         switch calc_type
             case 'center'
