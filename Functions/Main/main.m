@@ -22,6 +22,13 @@
 %% Set Default Values
     [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
 
+%% Check for valid inputs
+    if progress_on
+        fprintf('%.2f: Checking for valid inputs...\n', toc);
+    end
+    [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control);
+
+
 %% Identify free and fixed dofs
     BC.fixed = BC.fix_disp_dof;
     BC.free = setdiff(Mesh.DOF, BC.fixed)';

@@ -1,15 +1,13 @@
-% RunTest_template 
-% Template file to add runs of new unit tests
-
 % ------------------------------------------------------------------------
-% Runs unit Test X - [Test Name] as part of RunTests
+% Runs unit Test 6 - Plate with Hole as part of RunTests
 % ------------------------------------------------------------------------
-% [Summary of test details]
-%
+% Runs plate case of Plate with hole under tension. Adapted from OpenFOAM
+% tutorial problem: https://www.openfoam.com/documentation/tutorial-guide/tutorialse9.php
+% TODO: Add description of test case to Wiki
 
         testnum = testnum + 1;
-        testname = 'Test name and description'; % Update!
-        nameslist{testnum} = testname;          
+        testname = 'Plate with hole under tension';
+        nameslist{testnum} = testname;
        
         % Create test VTK folder
         if plot2vtk
@@ -19,17 +17,27 @@
                 mkdir(vtk_dir)
             end
         end
-
-        
+    
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        config_name = '[Test config file name]'; % Update!
-        main  % Runs calculation
+        global calc_type
+            config_name = 'PlateWithHole';
+            % run with nodal averaging
+            calc_type = 'nodal';
+            main
+           
+            stress_nodal = stress;
+
+            % run with L2 projection
+            calc_type = 'L2projection';
+            main
+
+            stress_L2 = stress;
         
         % Step 2 - Check results
         % run check file, script is specific to each test
-        some_error_check = test_check(d);            % Update!
-        if some_error_check < some_test_condtion    % Update!
+        [error_nodal, error_L2] = PlateWithHole_check(Mesh,stress_nodal,stress_L2);
+        if error_L2 < error_nodal
             test_pass = 1;
         else
             test_pass = 0;
@@ -43,8 +51,8 @@
             fprintf('\nFAIL')
         end
         testpasssummary(testnum) = test_pass;
+          
 
-        
         % Step 4 - Cleanup
         clearvars -except  curDir  ConfigDir ...
                       ntests testpasssummary testnum nameslist...
