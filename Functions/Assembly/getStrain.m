@@ -192,7 +192,7 @@ else
                     % convert B matrix to Voigt form
                     Bv = getBv(B', Mesh.nsd);
 
-                    D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
+                    D = getD(Material.E(Xi'), Material.nu(Xi'), Mesh.nsd, Material.Dtype);    
 
                     % calculate stress and strain at quadrature point
                     strain_q = Bv'*de;
