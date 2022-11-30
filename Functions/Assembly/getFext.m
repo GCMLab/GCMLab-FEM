@@ -126,32 +126,54 @@ for e = 1:Mesh.ne
     %% Calculate element traction force vector
 	    % initialize element traction force vector
 	    Fte = zeros(ndofE, 1);   
-
-	    % loop through all tractions
-        for i = 1:length(traction_force_node)  
-
-	        % check whether traction is applied to the element
-	        if ~isempty(find(enodes == BC.traction_force_node(i), 1)) ...
-	                && t_count(i) == 0 
-
-	            % local node number at traction location
-	            t_node = find(enodes == BC.traction_force_node(i),1); 
-	            % parent coordinates of traction location
-	            xi = getXI(t_node,Mesh.type);
-	            % Shape function at traction location
-                [N,dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
-                Nv = getNv(N, Mesh.nsd);
-
-	            Fte = Fte + Nv*traction_value(i,:)';
-
-	            t_count(i) = 1;
-	        end
-    	end
+%         
+%----  Saving code for possible future adaption to edge element
+%integration-----
+%
+% 	    % loop through all tractions
+%         for i = 1:length(traction_force_node)  
+% 
+% 	        % check whether traction is applied to the element
+% 	        if ~isempty(find(enodes == BC.traction_force_node(i), 1)) ...
+% 	                && t_count(i) == 0 
+% 
+% 	            % local node number at traction location
+% 	            t_node = find(enodes == BC.traction_force_node(i),1); 
+% 	            % parent coordinates of traction location
+% 	            xi = getXI(t_node,Mesh.type);
+% 	            % Shape function at traction location
+%                 [N,dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+%                 Nv = getNv(N, Mesh.nsd);
+% 
+% 	            Fte = Fte + Nv*traction_value(i,:)';
+% 
+% 	            t_count(i) = 1;
+% 	        end
+%     	end
 
     %% Assemble element forces
     	F(dofE) = F(dofE) + Fbe + Fte;
 end
 
+%% Apply pre-integrated boundary node point forces
+switch Mesh.nsd
+    case 1
+        F(BC.traction_force_node) = F(BC.traction_force_node) + traction_value(:,1);
+    case 2
+        traction_xdofs = 2*BC.traction_force_node-1;
+        traction_ydofs = 2*BC.traction_force_node;
+
+        F(traction_xdofs) = F(traction_xdofs) + traction_value(:,1);
+        F(traction_ydofs) = F(traction_ydofs) + traction_value(:,2);
+    case 3
+        traction_xdofs = 3*BC.traction_force_node-2;
+        traction_ydofs = 3*BC.traction_force_node-1;
+        traction_zdofs = 3*BC.traction_force_node;
+
+        F(traction_xdofs) = F(traction_xdofs) + traction_value(:,1);
+        F(traction_ydofs) = F(traction_ydofs) + traction_value(:,2);
+        F(traction_zdofs) = F(traction_zdofs) + traction_value(:,3);
+end
 %% Add forces prescribed at dofs
     F(BC.traction_force_dof) = F(BC.traction_force_dof) ...
                                     + BC.traction_force_dof_value;
