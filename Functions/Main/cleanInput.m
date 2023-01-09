@@ -18,41 +18,19 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
     err_mat = sprintf('\t\tMat \n');
     war_mat = sprintf('\t\tMat \n');
     
-    if class(Material.E) == 'function_handle'
-        if isfield(Material, 'E')
-            E_nodes = Material.E(Mesh.x);
-            if any(E_nodes < 0, 'all')
-                err_count = err_count+1;
-                err_mat = sprintf('%s\t\t\tError #%d\t:\t The elastic modulus is non-positive inside the domain\n',err_mat,err_count);
-            end
-        end
-    else
-        % Material.E is a constant
-        if Material.E < 0
+    if isfield(Material.Prop, 'E')
+        if any(Material.Prop(:).E < 0, 'all')
             err_count = err_count+1;
             err_mat = sprintf('%s\t\t\tError #%d\t:\t The elastic modulus is non-positive inside the domain\n',err_mat,err_count);
         end
     end
-    
-    if class(Material.nu) == 'function_handle'
-        if isfield(Material, 'nu')
-            nu_nodes = Material.nu(Mesh.x);
-            if any(nu_nodes >= 0.5, 'all')
-                err_count = err_count+1;
-                err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu > 0.5 was found\n',err_mat,err_count);
-            end
-            if any(nu_nodes <= -1, 'all')
-                err_count = err_count+1;
-                err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu < -1 was found\n',err_mat,err_count);
-            end
-        end
-    else
-        % Material.nu is a constant
-        if Material.nu >= 0.5
+
+    if isfield(Material.Prop, 'nu')
+        if any(Material.Prop(:).nu >= 0.5, 'all')
             err_count = err_count+1;
             err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu > 0.5 was found\n',err_mat,err_count);
         end
-        if Material.nu <= -1
+        if any(Material.Prop(:).nu <= -1, 'all')
             err_count = err_count+1;
             err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu < -1 was found\n',err_mat,err_count);
         end
