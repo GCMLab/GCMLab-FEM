@@ -144,15 +144,15 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
     
 %% Material Properties (Solid)
 
+    % Properties material 1
+    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    
     % type of material per element
-    Material.Type = zeros(Mesh.ne, 1, 'int8');
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
-    % properties material 1
-    Material.List(1).E = 2e11;
-    Material.List(1).nu = 0.3;
-    
-    % assign material to elements
-    Material.Type(:) = 1;
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 

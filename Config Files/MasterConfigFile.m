@@ -152,8 +152,15 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
 
-    % Young's modulus [Pa]
-    Material.E = @(x) x(:,1) + 4*x(:,2);  
+    % Properties material 1
+    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStrain'; 
