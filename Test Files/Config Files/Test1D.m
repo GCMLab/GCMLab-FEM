@@ -155,8 +155,15 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
 
-    % Young's modulus [Pa]
-    Material.E = @(x) E;  
+    % Properties material 1
+    Material.Prop(1).E = E; % Young's modulus [Pa]
+    Material.Prop(1).nu = nu; % Poisson's ratio
+    
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = ''; 
@@ -164,9 +171,6 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
-
-    % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) nu;
 
     % Alternatively, import a material file
     % Material = Material_shale();

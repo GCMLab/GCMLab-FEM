@@ -47,19 +47,21 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
 
-    % Young's modulus [Pa]
-    E = 4;
-    Material.E = E*ones(Mesh.ne,1);  
+    % Properties material 1
+    Material.Prop(1).E = 4; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0; % Poisson's ratio
+    
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStrain'; 
 
     % Thickness (set as default to 1)
     Material.t = @(x) 1;
-
-    % Poisson's ratio (set as default to 0.3)
-    nu = 0;
-    Material.nu = nu*ones(Mesh.ne,1);
 
     % Alternatively, import a material file
     % Material = Material_shale();
