@@ -55,8 +55,8 @@ for e = 1:Mesh.ne
         ndofE = numel(dofE);
         
     %% Constitutive matrix
-        nMat = Material.Type(e); % element material type
-        D = getD(Material.List(nMat).E, Material.List(nMat).nu, Mesh.nsd, Material.Dtype);
+        nMat = Mesh.MatList(e); % element material type
+        D = getD(Material.Prop(nMat).E, Material.Prop(nMat).nu, Mesh.nsd, Material.Dtype);
         
     %% Shape functions and derivatives in parent coordinates
         W = Quad.W;
