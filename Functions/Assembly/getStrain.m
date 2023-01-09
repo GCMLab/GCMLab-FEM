@@ -108,18 +108,16 @@ else
                 dofE = reshape(dofE',Mesh.nDOFe,[]);
                 % local displacement vector
                 de = d(dofE);
-            
-            %% Constitutive matrix
-                nMat = Material.Type(e); % element material type
-                D = getD(Material.List(nMat).E, Material.List(nMat).nu, Mesh.nsd, Material.Dtype);
-                
+
         switch calc_type
             case 'center'
                 xi = zeros(1,Mesh.nsd);
-                [~, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+                [N, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+                Xi = xI'*N;
                 Je = dNdxi'*xI;
                 B = Je\(dNdxi');
                 Bv = getBv(B', Mesh.nsd);
+                D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);
                 strain(:, e) = Bv'*de;
                 stress(:, e) = D*strain(:, e);
             case 'nodal'
@@ -134,7 +132,10 @@ else
                     xi = getXI(n, Mesh.type);  
 
                     % Shape function and derivatives in parent coordinates
-                    [~, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+                    [N, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+
+                    % quadrature point in physical coordinates
+                    Xi = xI'*N;
 
                     % Jacobian of the transformation between parent and global 
                     % coordinates
@@ -147,6 +148,8 @@ else
 
                     % convert B matrix to Voigt form
                     Bv = getBv(B', Mesh.nsd);
+
+                    D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
 
                     % strain_e = [strainx_n1  strainx_n2...;
                                  %strainy_n1  strainy_n2...;
@@ -171,6 +174,9 @@ else
                     N = Quad.Nq{q}';
                     dNdxi = Quad.dNdxiq{q};
 
+                    % quadrature point in physical coordinates
+                    Xi = xI'*N';
+
                     % Jacobian of the transformation between parent and global 
                     % coordinates
                     Je = dNdxi'*xI;
@@ -185,6 +191,8 @@ else
 
                     % convert B matrix to Voigt form
                     Bv = getBv(B', Mesh.nsd);
+
+                    D = getD(Material.E(Xi'), Material.nu(Xi'), Mesh.nsd, Material.Dtype);    
 
                     % calculate stress and strain at quadrature point
                     strain_q = Bv'*de;
