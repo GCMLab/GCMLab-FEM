@@ -58,6 +58,11 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         err_mesh = sprintf('%s\t\t\tError #%d\t:\t Element neighbours not defined - Define Mesh.eneighbours\n',err_mesh,err_count);
     end
 
+    if ~isfield(Mesh, 'MatList')
+        err_count = err_count+1;
+        err_mesh = sprintf('%s\t\t\tError #%d\t:\t Material assigned to elements not defined - Define Mesh.MatList\n',err_mesh,err_count);
+    end
+    
     if ~isfield(Mesh, 'nsd')
         war_count = war_count+1;
         war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nsd not defined - set as Mesh.nsd = size(Mesh.x, 2)\n',war_mesh,war_count);
@@ -98,9 +103,9 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     err_mat = sprintf('\t\tMat \n');
     war_mat = sprintf('\t\tMat \n');
 
-    if ~isfield(Material, 'E')
+    if ~isfield(Material, 'Prop')
         err_count = err_count+1;
-        err_mat = sprintf('%s\t\t\tError #%d\t:\t Elastic modulus is not defined - Define Material.E\n',err_mat,err_count);
+        err_mat = sprintf('%s\t\t\tError #%d\t:\t Material properties are not defined - Define Material.Prop\n',err_mat,err_count);
     end
 
     if ~isfield(Material, 'Dtype')
@@ -111,11 +116,6 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     if ~isfield(Material, 't')
         err_count = err_count+1;
         err_mat = sprintf('%s\t\t\tError #%d\t:\t Model thickness is not defined - Define Material.t\n',err_mat,err_count);
-    end
-
-    if ~isfield(Material, 'nu')
-        err_count = err_count+1;
-        err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio is not defined - Define Material.nu\n',err_mat,err_count);
     end
    
 %% Boundary conditions
