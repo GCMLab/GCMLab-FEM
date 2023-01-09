@@ -54,6 +54,7 @@ function [N, dNdxi, Nv] = lagrange_basis(type, coord, dim)
 %   [4] Belytschko, T., Liu, W. K., Moran, B., & Elkhodary, K. (2014). 
 %       Nonlinear Finite Elements for Continua and Structures. John Wiley &
 %       Sons.
+%   [5] J. N. Reddy  (2006). AN Introduction to the Finite Element Meethod.
 
 % Acknowledgements: Jack Chessa
 
@@ -239,6 +240,72 @@ switch type
                         1+eta,      1+xi;
                         -(1+eta),   1-xi];
         end
+        
+    case 'Q8'
+    %%%%%%%%%%%% Q8 NINE NODE QUADRILATERIAL ELEMENT %%%%%%%%%%%%%
+    %
+    %    4---------7----------3
+    %    |                    |
+    %    |                    |
+    %    |                    |
+    %    |                    |
+    %    8                    6
+    %    |                    |
+    %    |                    |
+    %    |                    |
+    %    |                    |
+    %    1----------5---------2   
+        if size(coord,2) < 2
+            error('Error: two coordinates needed for the Q8 element')
+        else
+            xi = coord(1); 
+            eta = coord(2);
+            % In this case, nodes are numbered as in % Ref. [5] pg. 537 
+            % Ref [5] → sketch
+            % 1 → 1
+            % 2 → 5
+            % 3 → 2
+            % 4 → 8
+            % 5 → 6
+            % 6 → 4
+            % 7 → 7
+            % 8 → 3
+%             N = [-1/4*(1 - xi)*(1 - eta)*(1 + xi - eta);        
+%                     1/2*(-xi^2 + 1)*(1 - eta);         
+%                     1/4*(1 + xi)*(1 - eta)*(-1 + xi - eta);
+%                     1/2*(1 - xi)*(-eta^2 + 1);
+%                     1/2*(1 + xi)*(-eta^2 + 1);
+%                     1/4*(1 - xi)*(1 + eta)*(-1 - xi + eta);
+%                     1/2*(-xi^2 + 1)*(1 + eta);
+%                     1/4*(1 + xi)*(1 + eta)*(-1 + xi + eta)];
+%             dNdxi = [((1 - eta)*(1 + xi - eta))/4 - (1/4 - xi/4)*(1 - eta), (1/4 - xi/4)*(1 + xi - eta) + (1/4 - xi/4)*(1 - eta);        
+%                     -xi*(1 - eta), xi^2/2 - 1/2;  
+%                     ((1 - eta)*(-1 + xi - eta))/4 + ((1 + xi)*(1 - eta))/4, -((1 + xi)*(-1 + xi - eta))/4 - ((1 + xi)*(1 - eta))/4 ;  
+%                     eta^2/2 - 1/2, -(1 - xi)*eta;  
+%                     -eta^2/2 + 1/2, -(1 + xi)*eta ;  
+%                     -((1 + eta)*(-1 - xi + eta))/4 - ((1 - xi)*(1 + eta))/4, ((1 - xi)*(-1 - xi + eta))/4 + ((1 - xi)*(1 + eta))/4;  
+%                     -xi*(1 + eta), -xi^2/2 + 1/2;  
+%                     ((1 + eta)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4,  ((1 + xi)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4 ];
+            % In this case, nodes are numbered as in the sketch 
+            
+            N = [-1/4*(1 - xi)*(1 - eta)*(1 + xi - eta); 
+                    1/4*(1 + xi)*(1 - eta)*(-1 + xi - eta);
+                    1/4*(1 + xi)*(1 + eta)*(-1 + xi + eta);
+                    1/4*(1 - xi)*(1 + eta)*(-1 - xi + eta);
+                    1/2*(-xi^2 + 1)*(1 - eta);         
+                    1/2*(1 + xi)*(-eta^2 + 1);
+                    1/2*(-xi^2 + 1)*(1 + eta);
+                    1/2*(1 - xi)*(-eta^2 + 1)];
+            dNdxi = [((1 - eta)*(1 + xi - eta))/4 - (1/4 - xi/4)*(1 - eta), (1/4 - xi/4)*(1 + xi - eta) + (1/4 - xi/4)*(1 - eta);        
+                    ((1 - eta)*(-1 + xi - eta))/4 + ((1 + xi)*(1 - eta))/4, -((1 + xi)*(-1 + xi - eta))/4 - ((1 + xi)*(1 - eta))/4 ;  
+                    ((1 + eta)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4,  ((1 + xi)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4;
+                    -((1 + eta)*(-1 - xi + eta))/4 - ((1 - xi)*(1 + eta))/4, ((1 - xi)*(-1 - xi + eta))/4 + ((1 - xi)*(1 + eta))/4;
+                    -xi*(1 - eta), xi^2/2 - 1/2;  
+                    -eta^2/2 + 1/2, -(1 + xi)*eta ;
+                    -xi*(1 + eta), -xi^2/2 + 1/2;
+                    eta^2/2 - 1/2, -(1 - xi)*eta];      
+        end
+    
 
     case 'Q9'
     %%%%%%%%%%%% Q9 NINE NODE QUADRILATERIAL ELEMENT %%%%%%%%%%%%%

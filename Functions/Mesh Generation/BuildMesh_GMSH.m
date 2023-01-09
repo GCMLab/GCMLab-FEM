@@ -99,7 +99,12 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on)
         case 9
             Mesh.type = 'Q9';
         case 8
-            Mesh.type = 'B8';
+            switch nsd
+                case 2 % 2D → Q8 with reduced integration
+                    Mesh.type = 'Q8';
+                case 3 % 3D
+                    Mesh.type = 'B8';
+            end
     end
             
 %% Nodal DOFs
