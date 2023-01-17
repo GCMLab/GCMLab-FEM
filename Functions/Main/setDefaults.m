@@ -170,6 +170,11 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.LinearSolver  not defined - set as ''LinearSolver1''\n',war_control,war_count);
         Control.LinearSolver = 'LinearSolver1';
     end
+    
+    if ~isfield(Control, 'parallel')
+        Control.parallel = 1;
+    end
+    
 
     if strcmp(Control.LinearSolver, 'LinearSolver3') ...
     	&& ~isfield(Control, 'beta')
