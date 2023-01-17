@@ -123,6 +123,10 @@
 %  Pass Condition: FEA solution displacements are exact
       run('Test Files/RunTest1D')
       
+%% Test 21: Circular Inclusion Problem
+%  Pass Condition: FEA solution stresses are close to analytical solution
+      run('Test Files/RunCircularInclusion')
+      
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
 %       run('Test Files/RunTestX')
