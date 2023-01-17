@@ -169,9 +169,6 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
 
-    % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) x(:,1)/2.5;
-
     % Alternatively, import a material file
     % Material = Material_shale();
 
