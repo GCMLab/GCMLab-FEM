@@ -145,7 +145,7 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
             % number of space dimensions
             nsd = 2;
             
-            Mesh = BuildMesh_manual(meshFileName, nsd, config_dir, progress_on);
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
     end    
     
 %% Material Properties (Solid)
