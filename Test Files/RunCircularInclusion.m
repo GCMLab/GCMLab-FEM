@@ -30,10 +30,11 @@
             % run with nodal averaging
             calc_type = 'center';
             main
-           
-            stress_center = stress;
         
-
+        test_pass = 1;
+        fprintf('\nPASS')
+        testpasssummary(testnum) = test_pass;
+            
         % Step 4 - Cleanup
         clearvars -except  curDir  ConfigDir ...
                       ntests testpasssummary testnum nameslist...

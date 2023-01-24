@@ -26,7 +26,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 20; 
+    ntests = 21; 
     
     nameslist = {};
     testnum = 0;
