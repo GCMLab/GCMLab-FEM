@@ -65,6 +65,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %
 %   [Mesh, Material] = MASTERCONFIGFILE() also returns a
 %   structure array with the following fields: 
+%       .nmp:           number of material properties
 %       .E:     Modulus of elasticity
 %       .nu:    Poisson's ratio
 %       .Dtype: 2D approximation ('PlaneStrain' or 'PlainStress')
@@ -151,6 +152,9 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
+        
+    % number of material properties
+    Material.nmp = 1;
 
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]

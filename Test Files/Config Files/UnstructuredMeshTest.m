@@ -47,6 +47,9 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
 
+    % number of material properties
+    Material.nmp = 1;
+        
     % Properties material 1
     Material.Prop(1).E = 4; % Young's modulus [Pa]
     Material.Prop(1).nu = 0; % Poisson's ratio

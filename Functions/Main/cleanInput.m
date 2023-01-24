@@ -19,20 +19,24 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
     war_mat = sprintf('\t\tMat \n');
     
     if isfield(Material.Prop, 'E')
-        if any(Material.Prop(:).E < 0, 'all')
-            err_count = err_count+1;
-            err_mat = sprintf('%s\t\t\tError #%d\t:\t The elastic modulus is non-positive inside the domain\n',err_mat,err_count);
+        for ii = 1 : Material.nmp
+            if any(Material.Prop(ii).E < 0, 'all')
+                err_count = err_count+1;
+                err_mat = sprintf('%s\t\t\tError #%d\t:\t The elastic modulus is non-positive inside the domain\n',err_mat,err_count);
+            end
         end
     end
 
     if isfield(Material.Prop, 'nu')
-        if any(Material.Prop(:).nu >= 0.5, 'all')
-            err_count = err_count+1;
-            err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu > 0.5 was found\n',err_mat,err_count);
-        end
-        if any(Material.Prop(:).nu <= -1, 'all')
-            err_count = err_count+1;
-            err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu < -1 was found\n',err_mat,err_count);
+        for ii = 1 : Material.nmp
+            if any(Material.Prop(ii).nu >= 0.5, 'all')
+                err_count = err_count+1;
+                err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu > 0.5 was found\n',err_mat,err_count);
+            end
+            if any(Material.Prop(ii).nu <= -1, 'all')
+                err_count = err_count+1;
+                err_mat = sprintf('%s\t\t\tError #%d\t:\t Poisson''s ratio must fall within the range -1 < nu < 0.5 within the domain - nu < -1 was found\n',err_mat,err_count);
+            end
         end
     end
         

@@ -65,6 +65,7 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
 %
 %   [Mesh, Material] = MASTERCONFIGFILE() also returns a
 %   structure array with the following fields: 
+%       .nmp:           number of material properties
 %       .E:     Modulus of elasticity
 %       .nu:    Poisson's ratio
 %       .Dtype: 2D approximation ('PlaneStrain' or 'PlainStress')
@@ -157,6 +158,9 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
 
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
+        
+    % number of material properties
+    Material.nmp = 2;
 
     % Properties material 1
     Material.Prop(1).E = 1; % Young's modulus [Pa]

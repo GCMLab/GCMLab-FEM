@@ -49,6 +49,9 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
 
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
+        
+    % number of material properties
+    Material.nmp = 1;
 
     % Properties material 1
     Material.Prop(1).E = E; % Young's modulus [Pa]
