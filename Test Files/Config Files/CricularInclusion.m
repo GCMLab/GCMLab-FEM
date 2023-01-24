@@ -226,8 +226,8 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
         % magnitude of prescribed tractions [N]
         BC.traction_force_dof_value = [];
 
-        BC.traction_force_node = 11;
-        BC.traction_force_value = [0 0];
+        BC.traction_force_node = [];
+%         BC.traction_force_value = [0 0];
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
