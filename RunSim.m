@@ -13,6 +13,9 @@
     % Config files to run. Choose either 'all' or give the file name.
     FileList = 'MasterConfigFile';
     
+    % Analysis Type (Static / Quasi-Static) 
+    AnalysisType = 'Quasi-Static';
+    
     % Directory for VTK Files (end with \)
     if ispc
         VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
@@ -75,7 +78,12 @@ try
         
         % run and time the simulation
         start_time = toc;
-        run('Functions/Main/main');
+        switch AnalysisType
+            case 'Static'
+                run('Functions/Main/main_static');
+            case 'Quasi-Static'
+                run('Functions/Main/main_quasistatic')
+        end
         end_time = toc;
 
         disp(['run time: ' num2str(end_time - start_time)])
