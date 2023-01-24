@@ -159,8 +159,8 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
         % otherwise, quadrature order must be increased significantly
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    Material.Prop(1).E = 1; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
     
     % Properties material 2
     Material.Prop(2).E = 10; % Young's modulus [Pa]
@@ -173,7 +173,7 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
     Mesh.MatList = readmatrix(meshFileName,'Sheet','MatList');
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
+    Material.Dtype = 'PlaneStrain'; 
 
     % Thickness (set as default to 1)
     Material.t = @(x) 1;
