@@ -120,6 +120,10 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on, Q8_re
 
 %% Element neighbours 
     if strcmp(Mesh.type,'Q4')% NOTE: Only works for Q4 elements at the moment
+        
+        % list of elements connected to each node
+        Mesh.nodeconn = NodalConn(Mesh);
+        
         Mesh.eneighbours = zeros(Mesh.ne,4);  % element neighbours (share an edge)
         for e = 1:Mesh.ne
             % list of elements which share at least one node with element e       
@@ -165,10 +169,11 @@ switch Mesh.type
         Mesh.nDOF = Mesh.nDOF - length(middlenodes)* nsd;
         Mesh.x(middlenodes,:) = [];
 
-        % remove middle nodes from Mesh.DOF
-        DOF_temp = Mesh.DOF;
-        DOF_temp(middlenodes,:) = [];
-        Mesh.DOF = DOF_temp;
+        % Update Mesh.DOF
+        Mesh.DOF = zeros(Mesh.nn, Mesh.nsd); 
+        for sd = 1:Mesh.nsd
+           Mesh.DOF(:,sd) = (sd : Mesh.nsd : (Mesh.nDOF-(Mesh.nsd-sd)))';
+        end
 
         % remove middle nodes from connectivity
         middlenodes = sort(middlenodes,'ascend');
@@ -177,9 +182,7 @@ switch Mesh.type
             conn(conn>middlenodes(i)) = conn(conn>middlenodes(i))-1;
             middlenodes(middlenodes>middlenodes(i)) = middlenodes(middlenodes>middlenodes(i))-1;
         end
-
-        conn = conn-ones(Mesh.ne,Mesh.nne);
-
+        
         % Update Mesh.nodeconn
         Mesh.conn = conn;
     otherwise
@@ -189,7 +192,15 @@ end
 
 %% Nodal Connectivity
     % list of elements connected to each node
-    Mesh.nodeconn = NodalConn(Mesh);
+    switch Mesh.type
+        case 'Q4'
+            %This was already done in line 125
+        case 'Q8'
+            %This has not been implemented for Q8s with reduced integration
+            Mesh.nodeconn = [];
+        otherwise
+            Mesh.nodeconn = NodalConn(Mesh);
+    end
 
 %% Node sets
     Mesh = NodeSets(Mesh);
