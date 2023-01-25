@@ -24,7 +24,7 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         || ~isfield(Mesh, 'ydofs') ...
         || ~isfield(Mesh, 'zdofs')
         war_count = war_count+1;
-        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh not defined - set as Mesh = MeshNodeSets(Mesh)\n',war_mesh,war_count);
+        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh not defined - has been set as Mesh = MeshNodeSets(Mesh)\n',war_mesh,war_count);
         Mesh = NodeSets(Mesh);
     end
     
@@ -60,37 +60,37 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
 
     if ~isfield(Mesh, 'nsd')
         war_count = war_count+1;
-        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nsd not defined - set as Mesh.nsd = size(Mesh.x, 2)\n',war_mesh,war_count);
+        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nsd not defined - has been set as Mesh.nsd = size(Mesh.x, 2)\n',war_mesh,war_count);
         Mesh.nsd = size(Mesh.x, 2);
     end
 
     if ~isfield(Mesh, 'ne')
         war_count = war_count+1;
-        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.ne not defined - set as Mesh.ne = size(Mesh.conn, 1)\n',war_mesh,war_count);
+        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.ne not defined - has been set as Mesh.ne = size(Mesh.conn, 1)\n',war_mesh,war_count);
         Mesh.ne = size(Mesh.conn, 1);
     end
 
     if ~isfield(Mesh, 'nne')
         war_count = war_count+1;
-        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nne not defined - set as Mesh.nne = size(Mesh.conn, 2)\n',war_mesh,war_count);
+        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nne not defined - has been set as Mesh.nne = size(Mesh.conn, 2)\n',war_mesh,war_count);
         Mesh.nne = size(Mesh.conn, 2);
     end
 
     if ~isfield(Mesh, 'nn')
         war_count = war_count+1;
-        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nn not defined - set as Mesh.nn = size(Mesh.x, 1)\n',war_mesh,war_count);
+        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nn not defined - has been set as Mesh.nn = size(Mesh.x, 1)\n',war_mesh,war_count);
         Mesh.nn = size(Mesh.x, 1);
     end
 
     if ~isfield(Mesh, 'nDOFe')
         war_count = war_count+1;
-        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nDOFe not defined - set as Mesh.nDOFe = Mesh.nne*Mesh.nsd\n',war_mesh,war_count);
+        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nDOFe not defined - has been set as Mesh.nDOFe = Mesh.nne*Mesh.nsd\n',war_mesh,war_count);
         Mesh.nDOFe = Mesh.nne*Mesh.nsd;
     end
 
     if ~isfield(Mesh, 'nDOF')
         war_count = war_count+1;
-        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nDOF not defined - set as Mesh.nDOF = Mesh.nn*Mesh.nsd\n',war_mesh,war_count);
+        war_mesh = sprintf('%s\t\t\tWarning #%d\t:\t Mesh.nDOF not defined - has been set as Mesh.nDOF = Mesh.nn*Mesh.nsd\n',war_mesh,war_count);
         Mesh.nDOF = Mesh.nn*Mesh.nsd;
     end
 
@@ -124,28 +124,28 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
 
     if ~isfield(BC, 'fix_disp_dof')
         war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.fix_disp_dof and BC.fix_disp_value not defined - set as []\n',war_BC,war_count);
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.fix_disp_dof and BC.fix_disp_value not defined - has been set as []\n',war_BC,war_count);
 	    BC.fix_disp_dof = [];
         BC.fix_disp_value = [];  
     end
 
     if ~isfield(BC, 'traction_force_dof')
         war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.traction_force_dof and BC.traction_force_dof_value not defined - set as []\n',war_BC,war_count);
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.traction_force_dof and BC.traction_force_dof_value not defined - has been set as []\n',war_BC,war_count);
         BC.traction_force_dof = [];
         BC.traction_force_dof_value = [];
     end
 
     if ~isfield(BC, 'traction_force_node')
         war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.traction_force_node and BC.traction_force_node_value not defined - set as []\n',war_BC,war_count);
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.traction_force_node and BC.traction_force_node_value not defined - has been set as []\n',war_BC,war_count);
         BC.traction_force_node = [];  
         BC.traction_force_value = [];
     end
 
     if ~isfield(BC, 'b')    
         war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.b not defined - set as @(x)[]\n',war_BC,war_count);
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.b not defined - has been set as @(x)[]\n',war_BC,war_count);
         BC.b = @(x)[];  
     end  
 
@@ -155,19 +155,19 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     
     if ~isfield(Control, 'qo')
         war_count = war_count+1;
-        war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.qo not defined - set as 2\n',war_control,war_count);
+        war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.qo not defined - has been set as 2\n',war_control,war_count);
         Control.qo = 2;
     end
 
     if ~isfield(Control, 'stress_calc')
         war_count = war_count+1;
-        war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.stress_calc not defined - set as ''center''\n',war_control,war_count);
+        war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.stress_calc not defined - has been set as ''center''\n',war_control,war_count);
         Control.stress_calc = 'center';
     end
 
     if ~isfield(Control, 'LinearSolver')
         war_count = war_count+1;
-        war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.LinearSolver  not defined - set as ''LinearSolver1''\n',war_control,war_count);
+        war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.LinearSolver  not defined - has been set as ''LinearSolver1''\n',war_control,war_count);
         Control.LinearSolver = 'LinearSolver1';
     end
     
@@ -179,7 +179,7 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     if strcmp(Control.LinearSolver, 'LinearSolver3') ...
     	&& ~isfield(Control, 'beta')
         war_count = war_count+1;
-        war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.beta  not defined - set as 10^10\n',war_control,war_count);
+        war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.beta  not defined - has been set as 10^10\n',war_control,war_count);
         Control.beta = 10^10;
     end
     
