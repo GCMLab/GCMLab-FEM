@@ -9,7 +9,9 @@
     
     % Test VTK output
     plot2vtk = 0;
-    VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+%     VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+    VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\GCMLab-FEM';
+    
     % suppress progress messages
     progress_on = 0;
     
@@ -26,7 +28,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 19; 
+    ntests = 22; 
     
     nameslist = {};
     testnum = 0;
@@ -118,7 +120,24 @@
 %  Pass Condition: Shear locking is prevented and error in displacement is
 %  acceptable
       run('Test Files/RunCantileverBeam')
-      
+
+%% Test 20: Patch Test A - All nodal displacements prescribed Q9
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunPatchTestAQ8')
+
+%% Test 21: Patch Test B - Dirichlet-Dirichlet BC Q9
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunPatchTestBQ8')
+
+%% Test 22: Patch Test C - Dirichlet-Neumann BC Q9
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunPatchTestCQ8')
+ 
+% %% Test 8: Manufactured Solution - Q9 element convergence
+% %   Pass condition: L2-norm converges at a rate of at least h^3
+% %                    e-norm converges at a rate of at least h^2
+%         run('Test Files/RunManSolQ9')
+
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
 %       run('Test Files/RunTestX')
