@@ -42,7 +42,7 @@ switch elem_type
         [Quad.W, Quad.Q] = quadrature(qo, 'TRIANGULAR', nsd);
     case 'Q8'
         % For Q8 with reduced integration 
-        [Quad.W, Quad.Q] = quadrature(4, 'GAUSS', nsd);
+        [Quad.W, Quad.Q] = quadrature(2, 'GAUSS', nsd);
     otherwise
         [Quad.W, Quad.Q] = quadrature(qo, 'GAUSS', nsd);
 end
