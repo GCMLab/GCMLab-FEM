@@ -147,7 +147,7 @@ else
      
         conn = [nne*ones(ne,1),conn-ones(ne,nne) ];
         cell_type = 23;   
-    elseif nsd == 2 && nne == 8 %B8
+    elseif nsd == 3 && nne == 8 %B8
         conn = [nne*ones(ne,1),conn-ones(ne,nne)];
         outputformat = '%d %d %d %d %d %d %d %d %d \n';
         cell_type = 12;
