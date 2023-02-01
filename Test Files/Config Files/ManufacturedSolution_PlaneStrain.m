@@ -123,7 +123,7 @@ global meshfilename quadorder E nu
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[-E /(1+nu)/(1-2*nu) * ( (1-nu)*20*x(1).^3                    + nu*3*x(2).^2        + (1-2*nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2 ));
+        BC.b = @(x,t)[-E /(1+nu)/(1-2*nu) * ( (1-nu)*20*x(1).^3                    + nu*3*x(2).^2        + (1-2*nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2 ));
                     -E /(1+nu)/(1-2*nu) * ( (1-2*nu)/2*(3*x(2).^2 + 20*x(1).^3)  + nu*3*x(2).^2        + (1-nu)*(6*x(1).*x(2) - 30*x(2).^4) )];
 
 %% Computation controls

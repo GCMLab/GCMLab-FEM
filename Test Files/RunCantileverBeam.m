@@ -29,7 +29,7 @@
         nu = 0.3;  % poisson's ratio
         
         config_name = 'CantileverBeam';
-        main
+        main_static
         
         % Step 2 - Check results
         % run check file, script is specific to each test

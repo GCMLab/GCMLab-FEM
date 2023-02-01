@@ -32,7 +32,7 @@
             
             % Run coarse mesh
             meshfilename = 'Mesh Files\Manufactured_coarseT3.msh';
-            main
+            main_static
             
             d_coarse = d;
             stress_coarse = stress;
@@ -41,7 +41,7 @@
 
             % Run fine mesh
             meshfilename = 'Mesh Files\Manufactured_fineT3.msh';
-            main
+            main_static
 
             d_fine = d;
             stress_fine = stress;
@@ -50,7 +50,7 @@
 
             % Run finer mesh
             meshfilename = 'Mesh Files\Manufactured_finerT3.msh';
-            main
+            main_static
 
             d_finer = d;
             stress_finer = stress;

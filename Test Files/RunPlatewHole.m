@@ -24,13 +24,13 @@
             config_name = 'PlateWithHole';
             % run with nodal averaging
             calc_type = 'nodal';
-            main
+            main_static
            
             stress_nodal = stress;
 
             % run with L2 projection
             calc_type = 'L2projection';
-            main
+            main_static
 
             stress_L2 = stress;
         

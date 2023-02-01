@@ -213,7 +213,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x) b;    
+        BC.b = @(x,t) b;    
 
 %% Computation controls
 
