@@ -1,4 +1,4 @@
-function F = getFext(Mesh, BC, Quad)
+function F = getFext(Mesh, BC, Quad, t)
 %GETFEXT External forces
 %   F = GETFEXT(Mesh, BC, Quad) is a column vector of external forces 
 %   acting on each degree of freedom (size ndof x 1 in which ndof is the
@@ -54,8 +54,12 @@ function F = getFext(Mesh, BC, Quad)
     if ~isempty(BC.traction_force_node)
         % counter to assess whether point load has been yet accounted for
         t_count = zeros(size(BC.traction_force_node));
-        traction_value = BC.traction_force_value; 
         traction_force_node = BC.traction_force_node;
+        if isa(BC.traction_force_value,'function_handle')
+            traction_value = BC.traction_force_value(t);
+        else
+            traction_value = BC.traction_force_value;
+        end
     else
         traction_force_node = [];
     end
@@ -97,7 +101,7 @@ for e = 1:Mesh.ne
         A = 0;
 
 	    % if there is a body force run through the quadrature loop
-	    if ~strcmp(func2str(BC.b),'@(x)[]')
+	    if ~strcmp(func2str(BC.b),'@(x,t)[]') && ~strcmp(func2str(BC.b),'@(x)[]')
             for q = 1:nq
 
                 % Shape functions and derivatives in parent coordinates
@@ -116,7 +120,7 @@ for e = 1:Mesh.ne
                 dJe = det(Je);
 
                 % Applied body force
-                Fbe = Fbe + W(q)*Nv*BC.b(Xi)*dJe;
+                Fbe = Fbe + W(q)*Nv*BC.b(Xi,t)*dJe;
 
                 % quadrature debug tool
                 A = A + W(q)*dJe; 

@@ -57,7 +57,7 @@
     
     d0 = IC.d0;
     d0(BC.fix_disp_dof) = BC.fix_disp_value;
-    Fext = getFext(Mesh, BC, Quad);
+    Fext = getFext(Mesh, BC, Quad,t);
     
     % Export initial conditions
         % Strain
@@ -82,7 +82,7 @@
     if progress_on
         disp([num2str(toc),': Compute Force Vector...']);
     end
-    Fext = getFext(Mesh, BC, Quad);
+    Fext = getFext(Mesh, BC, Quad, t);
     % Todo: Make the boundary conditions time dependent functions
      
      % Solve linear system of equations

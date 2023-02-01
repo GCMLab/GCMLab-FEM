@@ -206,8 +206,11 @@ function [Mesh, Material, BC, Control, IC] = MasterConfigFile(config_dir, progre
         toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
         botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
         
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1);
+        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
         BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
+        
+        % Make the vector into an anonymous function in time
+        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -217,7 +220,7 @@ function [Mesh, Material, BC, Control, IC] = MasterConfigFile(config_dir, progre
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[];    
+        BC.b = @(x,t)[];    
 
 %% Initial Conditions
         IC.d0 = zeros(Mesh.nsd*Mesh.nn,1);
@@ -256,8 +259,8 @@ function [Mesh, Material, BC, Control, IC] = MasterConfigFile(config_dir, progre
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 1;
-        NumberOfSteps     = 10;
+        Control.EndTime   = 2*pi;
+        NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         
 end
