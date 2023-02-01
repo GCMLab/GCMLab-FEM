@@ -48,6 +48,11 @@ function F = getFext(Mesh, BC, Quad, t)
 
 %% Initialize values
 
+    % Check input arguments
+    if nargin<4
+        t = 0; % Set default time if not specified
+    end
+    
 	% initialize source (body) force vector
 	F = zeros(Mesh.nDOF, 1);       
 
