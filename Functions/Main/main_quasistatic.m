@@ -74,7 +74,8 @@
         step_count = step_count + 1;
         
  %% Solve the time-dependent problem
- while t <= Control.EndTime
+ t_tol = 1e-10; % Tolerance on the final end time
+ while true
     if progress_on
         fprintf(['\n', num2str(toc),': Computing Time = %.2f s, Timestep %d, Progress %.2f percent...\n'], t, step_count, t/Control.EndTime*100);
     end
@@ -117,8 +118,17 @@
                             Fint, Fext, step_count);
         end
      % Update time variables
+     if abs(t-Control.EndTime) < t_tol
+        break
+     end
+     
      t = t + dt;
      step_count = step_count + 1;
+     if t > Control.EndTime
+        t = t - dt;
+        dt = Control.EndTime - t;
+        t = Control.EndTime;
+     end
      
  end
  
