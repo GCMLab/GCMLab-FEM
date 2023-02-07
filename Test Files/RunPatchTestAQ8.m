@@ -1,10 +1,13 @@
 % ------------------------------------------------------------------------
-% Runs unit test - Patch Test A Q9 as part of RunTests
+% Runs unit test - Patch Test A Q8 as part of RunTests
 % ------------------------------------------------------------------------
 % For Patch Test A, all nodes are restrained and nodal displacement values 
 % are specfied according to the exact solution. The error between the FEA
 % and exact solutions is then calculated. The FEA approximate solution
 % should be exact.
+
+% Note: Q8 elements use Q9.msh files and central nodes are eliminated from
+% the mesh
         
         testnum = testnum + 1;
         testname = 'Patch Test A - Q8 elements with reduced integration';

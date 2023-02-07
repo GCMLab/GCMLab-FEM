@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit test - Patch Test C as part of RunTests
+% Runs unit test - Patch Test C Q8 as part of RunTests
 % ------------------------------------------------------------------------
 % Patch Test C is performed with node 1 fully restrained and nodes 4 and 8 
 % restrained only in the x -direction. Nodal forces are applied to nodes 2,
@@ -7,6 +7,9 @@
 % tractions by sigma(x)=2. The error between the FEA
 % and exact solutions is then calculated. The FEA approximate solution
 % should be exact.
+
+% Note: Q8 elements use Q9.msh files and central nodes are eliminated from
+% the mesh
 
        
         testnum = testnum + 1;
