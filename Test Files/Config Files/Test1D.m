@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -91,8 +91,10 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
 %   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
-%       .stress_calc    Calculation of values for discontinous variables
-%                       ('none', 'nodal', 'center')
+%       .MagCoef:       Displacement magnification coefficient
+%                       for visualization
+%       .contour:       Nodal averaging for discontinous variables
+%                       ('none', 'nodal')
 %       .beta:          Penalty parameter  
 %       .LinearSolver   Method used for solving linear problem:
 %                       'LinearSolver1': Partitioning
@@ -113,20 +115,20 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
     % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    MeshType = 'GMSH';        
+    MeshType = 'MANUAL';        
     
     switch MeshType
         case 'MANUAL'
             % location of initial node [m] [x0;y0;z0] 
-            x1 = [0;0;0];
+            x1 = 0;
             % number of space dimensions 
-            nsd = 2;
+            nsd = 1;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = 3.4;
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
-            % element type ('Q4')
-            type = 'Q4';
+            nex = 52;
+            % element type ('L2')
+            type = 'L2';
             
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
         case 'GMSH'
@@ -135,14 +137,15 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Mesh Files\PlateWithHole.msh';
+            meshFileName = 'Mesh Files\Test1D.msh';
             % number of space dimensions 
-            nsd = 2;
+            nsd = 1;
             
             Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
     end    
     
 %% Material Properties (Solid)
+    global E nu t b
 
     % NOTES-------------------------------------------------------------
                                 
@@ -153,16 +156,17 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         % otherwise, quadrature order must be increased significantly
 
     % Young's modulus [Pa]
-    Material.E = @(x) 2e11;  
+    Material.E = @(x) E;  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
+    Material.Dtype = ''; 
 
     % Thickness (set as default to 1)
+    % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
 
     % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) 0.3;
+    Material.nu = @(x) nu;
 
     % Alternatively, import a material file
     % Material = Material_shale();
@@ -180,10 +184,10 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [Mesh.left_dofx; Mesh.bottom_dofy];
+        BC.fix_disp_dof = Mesh.left_dof;
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -198,17 +202,9 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         BC.traction_force_node = Mesh.right_nodes;  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        t = 10e3; % uniform tensile stress applied to right edge
-        Fnode = t*max(Mesh.x(:,2))/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-    
+        % tensile force applied to right edge
+        BC.traction_force_value = t;
+            
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
@@ -217,7 +213,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[];    
+        BC.b = @(x) b;    
 
 %% Computation controls
 
@@ -234,8 +230,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        global calc_type
-        Control.stress_calc = calc_type;
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
@@ -246,11 +241,6 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';       
-
-        % parallel inversion
-        % Use parallel processing to invert the matrix.
-        % Usually more efficient at 2e5 dofs
-        Control.parallel = 2;
-        
+        Control.LinearSolver = 'LinearSolver1';        
+ 
 end

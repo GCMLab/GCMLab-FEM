@@ -83,6 +83,9 @@ for e = 1:Mesh.ne
            
             % determinant of the Jacobian
             dJe = det(Je);
+            if dJe < 0
+               error('Element %d has a negative Jacobian.', e)
+            end
 
             % derivative of shape function in physical coordinates 
             % (tensor form)
@@ -92,10 +95,12 @@ for e = 1:Mesh.ne
             % convert B matrix to Voigt form
             Bv = getBv(B', Mesh.nsd);
 
-            D = getD(Material.E(Xi), Material.nu(Xi), Mesh.nsd, Material.Dtype);    
+            D = getD(Material.E(Xi'), Material.nu(Xi'), Mesh.nsd, Material.Dtype);    
             
             % for 2D, volume integral includes the thickness
             switch Mesh.nsd 
+                case 1
+                    L = Material.t(Xi);
                 case 2
                     L = Material.t(Xi);
                 case 3

@@ -22,6 +22,13 @@
 %% Set Default Values
     [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
 
+%% Check for valid inputs
+    if progress_on
+        fprintf('%.2f: Checking for valid inputs...\n', toc);
+    end
+    [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control);
+
+
 %% Identify free and fixed dofs
     BC.fixed = BC.fix_disp_dof;
     BC.free = setdiff(Mesh.DOF, BC.fixed)';
@@ -55,13 +62,13 @@
     switch Control.LinearSolver
         case 'LinearSolver1'
             [d, f_fixed] = LinearSolver1(K, Fext, BC.fix_disp_value, ...
-                                            BC.free, BC.fixed);
+                                            BC.free, BC.fixed, Control.parallel);
         case 'LinearSolver2'
             [d, f_fixed] = LinearSolver2(K,Fext,BC.fix_disp_value, ...
-                                            BC.free, BC.fixed);
+                                            BC.free, BC.fixed, Control.parallel);
         case 'LinearSolver3'
             [d, f_fixed] = LinearSolver3(K, Fext, BC.fix_disp_value, ...
-                                            BC.free, BC.fixed, Control.beta);
+                                            BC.free, BC.fixed, Control.beta, Control.parallel);
     end
     Fext(BC.fixed) = f_fixed;
 

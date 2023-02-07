@@ -1,4 +1,4 @@
-function [d, fE] = LinearSolver2(K, F, dfixed, free, fixed)
+function [d, fE] = LinearSolver2(K, F, dfixed, free, fixed, parallel)
 %LINEARSOLVER2 Solve for unknown vector by zero-ing rows and columns in 
 %stiffness matrix that correspond to essential boundaries
 % 	d = LINEARSOLVER2(K, F, dfixed, free, fixed) is the displacement 
@@ -35,7 +35,7 @@ K(:,fixed) = 0;
 K(fixed,fixed) = eye(length(fixed));
 
 % solve for unknown displacements
-d = K\F;
+d = MatrixInvert(K,F,parallel);
 
 % apply displacement boundary conditions
 d(fixed) = dfixed;
