@@ -77,8 +77,9 @@ function Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on)
 
 %% Load EXCEL file
     % nodal matrix and member connectivity
-    Mesh.x = readmatrix(meshFileName,'Sheet','node');
-    Mesh.conn = readmatrix(meshFileName,'Sheet','element');
+    filename = fullfile(config_dir, meshFileName);
+    Mesh.x = readmatrix(filename,'Sheet','node');
+    Mesh.conn = readmatrix(filename,'Sheet','element');
 
 %% Mesh properties
     % total number of elements

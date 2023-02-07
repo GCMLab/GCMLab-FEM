@@ -142,7 +142,7 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
             
             Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'Mesh Files\CricularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
