@@ -148,6 +148,12 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.b not defined - set as @(x)[]\n',war_BC,war_count);
         BC.b = @(x)[];  
     end  
+    
+    if ~isfield(BC, 'IC')
+        war_count = war_count+1;
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.IC not defined - set as Mesh.nsd*Mesh.nn\n',war_BC,war_count);
+        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+    end
 
 %% Control parameters
     err_control = sprintf('\t\tControl Parameters \n');
@@ -181,6 +187,19 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         war_count = war_count+1;
         war_control = sprintf('%s\t\t\tWarning #%d\t:\t Control.beta  not defined - set as 10^10\n',war_control,war_count);
         Control.beta = 10^10;
+    end
+    
+    % If these variables are not defined, assume a static analysis
+    if ~isfield(Control, 'StartTime')
+        Control.StartTime = 0;
+    end
+    
+    if ~isfield(Control, 'EndTime')
+        Control.EndTime = 1;
+    end
+    
+    if ~isfield(Control, 'TimeStep')
+        Control.TimeStep = 1;
     end
     
 %% Output

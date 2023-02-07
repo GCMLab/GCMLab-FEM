@@ -16,14 +16,10 @@
     if progress_on
         fprintf('%.2f: Reading config file...\n', toc);
     end
-    [Mesh, Material, BC, Control, IC] = ...
+    [Mesh, Material, BC, Control] = ...
             feval(config_name, ConfigDir, progress_on);
         
-%% Initialize time variables
-    t = Control.StartTime;
-    dt = Control.TimeStep;
-    t = t + dt;
-    step_count = 0;
+
 
 %% Set Default Values
     [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
@@ -34,6 +30,11 @@
     end
     [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control);
 
+%% Initialize time variables
+    t = Control.StartTime;
+    dt = Control.TimeStep;
+    t = t + dt;
+    step_count = 0;
 
 %% Identify free and fixed dofs
     BC.fixed = BC.fix_disp_dof;
@@ -55,7 +56,7 @@
 
 %% Define initial conditions
     
-    d0 = IC.d0;
+    d0 = BC.IC;
     d0(BC.fix_disp_dof) = BC.fix_disp_value;
     Fext = getFext(Mesh, BC, Quad,t);
     
