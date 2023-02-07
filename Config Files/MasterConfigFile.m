@@ -115,6 +115,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
     % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'MANUAL';        
     
     switch MeshType
@@ -141,7 +142,13 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);
+        case 'EXCEL'
+            meshFileName = 'CricularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
     end    
     
 %% Material Properties (Solid)
