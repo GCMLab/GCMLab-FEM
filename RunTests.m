@@ -10,7 +10,7 @@
     % Test VTK output
     plot2vtk = 0;
 %     VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
-    VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\GCMLab-FEM';
+    VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
     
     % suppress progress messages
     progress_on = 0;
@@ -28,7 +28,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 22; 
+    ntests = 23; 
     
     nameslist = {};
     testnum = 0;
@@ -121,17 +121,21 @@
 %  acceptable
       run('Test Files/RunCantileverBeam')
 
-%% Test 20: Patch Test A - All nodal displacements prescribed Q9
+%% Test 20: Patch Test A - All nodal displacements prescribed Q8
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
         run('Test Files/RunPatchTestAQ8')
 
-%% Test 21: Patch Test B - Dirichlet-Dirichlet BC Q9
+%% Test 21: Patch Test B - Dirichlet-Dirichlet BC Q8
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
         run('Test Files/RunPatchTestBQ8')
 
-%% Test 22: Patch Test C - Dirichlet-Neumann BC Q9
+%% Test 22: Patch Test C - Dirichlet-Neumann BC Q8
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
         run('Test Files/RunPatchTestCQ8')
+        
+%% Test 23: Manufactured Solution - Q8 element convergence
+% Pass Condition: FEA solution displacements, stresses, and strains are exact
+        run('Test Files/RunManSolQ8')
  
 % %% Test 8: Manufactured Solution - Q9 element convergence
 % %   Pass condition: L2-norm converges at a rate of at least h^3
