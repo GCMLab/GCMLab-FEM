@@ -13,8 +13,6 @@
     % Config files to run. Choose either 'all' or give the file name.
     FileList = 'MasterConfigFile';
     
-    % Analysis Type (Static / Quasi-Static) 
-    AnalysisType = 'Quasi-Static';
     
     % Directory for VTK Files (end with \)
     if ispc
@@ -53,7 +51,7 @@
     numfiles = length(ConfigFiles);
     
 %% Run
-try                     
+%try                     
     %% Run config files
     % Loop through every configuration file 
     for file = 1:numfiles
@@ -78,25 +76,20 @@ try
         
         % run and time the simulation
         start_time = toc;
-        switch AnalysisType
-            case 'Static'
-                run('Functions/Main/main_static');
-            case 'Quasi-Static'
-                run('Functions/Main/main_quasistatic')
-        end
+        run('Functions/Main/main')
         end_time = toc;
 
         disp(['run time: ' num2str(end_time - start_time)])
         close all
     end
 
-catch err
-    disp(err.message);
-
-    errStack = struct2cell(err.stack);
-    errStackName = errStack(2,:);
-    errStackLine = errStack(3,:);
-
-    disp([errStackName' errStackLine']);
-    disp(err.identifier);
-end
+% catch err
+%     disp(err.message);
+% 
+%     errStack = struct2cell(err.stack);
+%     errStackName = errStack(2,:);
+%     errStackLine = errStack(3,:);
+% 
+%     disp([errStackName' errStackLine']);
+%     disp(err.identifier);
+% end

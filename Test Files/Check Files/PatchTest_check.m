@@ -20,20 +20,20 @@ function [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Me
 %   reaction_er:         Error related to reaction forces
 
 % Patch Test
-% ux = (1-nu)*t/E*x
-% uy = (1-nu)*t/E*y
-%   applied traction of t in both x and y directions
-%   stress = [t*ones(1,Mesh.nn); t*ones(1,Mesh.nn); zeros(1,Mesh.nn)]
+% ux = (1-nu)*traction/E*x
+% uy = (1-nu)*traction/E*y
+%   applied traction of traction in both x and y directions
+%   stress = [traction*ones(1,Mesh.nn); traction*ones(1,Mesh.nn); zeros(1,Mesh.nn)]
 
-global E nu t
+global E nu traction
 
 % Calculate exact solutions
-sigma = t;
+sigma = traction;
 x = Mesh.x(:,1);
 y = Mesh.x(:,2);
 d_exact = zeros(2*Mesh.nn,1);
-d_exact(1:2:end) = (1-nu)*t/E.*x;
-d_exact(2:2:end) = (1-nu)*t/E.*y;
+d_exact(1:2:end) = (1-nu)*traction/E.*x;
+d_exact(2:2:end) = (1-nu)*traction/E.*y;
 stress_exact = [sigma*ones(1,Mesh.nn); sigma*ones(1,Mesh.nn); zeros(1,Mesh.nn)];
 
 % Calculate the error

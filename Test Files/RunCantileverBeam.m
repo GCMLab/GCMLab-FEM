@@ -8,7 +8,7 @@
 % The FEA approximate solution should be close to theoretical solution.
 
         testnum = testnum + 1;
-        testname = 'Cantilever Beam - Q4 elements';
+        testname = 'Cantilever Beam - Q4 elements, sinusoidal time-dependent force';
         nameslist{testnum} = testname;
 
 
@@ -29,7 +29,7 @@
         nu = 0.3;  % poisson's ratio
         
         config_name = 'CantileverBeam';
-        main_quasistatic
+        main
         
         % Step 2 - Check results
         % run check file, script is specific to each test

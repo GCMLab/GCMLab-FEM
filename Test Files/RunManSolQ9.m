@@ -32,7 +32,7 @@
             
             % Run coarse mesh
             meshfilename = 'Mesh Files\Manufactured_coarseQ9.msh';
-            main_static
+            main
 
             d_coarse = d;
             stress_coarse = stress;
@@ -42,7 +42,7 @@
 
             % Run fine mesh
             meshfilename = 'Mesh Files\Manufactured_fineQ9.msh';
-            main_static
+            main
 
             d_fine = d;
             stress_fine = stress;
@@ -51,7 +51,7 @@
 
             % Run finer mesh
             meshfilename = 'Mesh Files\Manufactured_finerQ9.msh';
-            main_static
+            main
             
             d_finer = d;
             stress_finer = stress;

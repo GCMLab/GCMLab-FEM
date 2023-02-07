@@ -32,7 +32,7 @@
             
             % Run coarse mesh
             meshfilename = 'Mesh Files\Manufactured_coarseT6.msh';
-            main_static
+            main
             
             d_coarse = d;
             stress_coarse = stress;
@@ -41,7 +41,7 @@
 
             % Run fine mesh
             meshfilename = 'Mesh Files\Manufactured_fineT6.msh';
-            main_static
+            main
 
             d_fine = d;
             stress_fine = stress;
@@ -50,7 +50,7 @@
 
             % Run finer mesh
             meshfilename = 'Mesh Files\Manufactured_finerT6.msh';
-            main_static
+            main
 
             d_finer = d;
             stress_finer = stress;

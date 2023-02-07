@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
-    global E nu t quadorder meshfilename
+    global E nu traction quadorder meshfilename
 
 %% Mesh Properties
     if progress_on
@@ -75,12 +75,12 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
 
     % Dirichlet boundary conditions (essential) according to exact solution
-    % ux = (1-nu)*t/E*x
-    % uy = (1-nu)*t/E*y
+    % ux = (1-nu)*traction/E*x
+    % uy = (1-nu)*traction/E*y
     % -----------------------------------------------------------------
         
-        BC.UU = @(x) (1-nu)*t/E*x(:,1);
-        BC.VV = @(x) (1-nu)*t/E*x(:,2);
+        BC.UU = @(x) (1-nu)*traction/E*x(:,1);
+        BC.VV = @(x) (1-nu)*traction/E*x(:,2);
         
         % column vector of prescribed displacement dof  
         BC.fix_disp_dof1 = Mesh.left_dof;

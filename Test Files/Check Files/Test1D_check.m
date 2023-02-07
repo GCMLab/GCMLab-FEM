@@ -22,11 +22,11 @@ function [disp_er] = Test1D_check(d, Material, BC, Mesh)
 % F, b and A variables are the applied force along the free edge, distributed body force and
 % sectional area of the bar, respectively.
 
-global E t b
+global E traction b
 
 % Calculate analytical displacement
 % prescribed traction [N]
-Force = t;
+Force = traction;
 % distributed body force [N/m]
 Body_force = b;
 L = max(Mesh.x(:,1));

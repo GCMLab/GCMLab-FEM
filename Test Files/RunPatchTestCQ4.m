@@ -25,8 +25,8 @@
         
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global  E nu t meshfilename quadorder
-        t = 3.495; % applied traction (both directions)
+        global  E nu traction meshfilename quadorder
+        traction = 3.495; % applied traction (both directions)
         E = 2540;  % elastic modulus
         nu = 0.3;  % poisson's ratio
         
@@ -34,7 +34,7 @@
         quadorder = 2;
         
         config_name = 'PatchTestC';
-        main_static
+        main
         
         % Step 2 - Check results
         [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Mesh);
