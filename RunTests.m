@@ -28,7 +28,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 23; 
+    ntests = 24; 
     
     nameslist = {};
     testnum = 0;
@@ -137,6 +137,11 @@
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
         run('Test Files/RunManSolQ8')
  
+%% Test 24: One Dimensional Problem
+%  Pass Condition: FEA solution displacements are exact
+      run('Test Files/RunTest1D')
+        
+
 % %% Test 8: Manufactured Solution - Q9 element convergence
 % %   Pass condition: L2-norm converges at a rate of at least h^3
 % %                    e-norm converges at a rate of at least h^2
