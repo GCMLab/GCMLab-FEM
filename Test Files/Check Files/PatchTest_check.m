@@ -37,9 +37,9 @@ d_exact(2:2:end) = (1-nu)*t/E.*y;
 stress_exact = [sigma*ones(1,Mesh.nn); sigma*ones(1,Mesh.nn); zeros(1,Mesh.nn)];
 
 % Calculate the error
-disp_er = norm(d - d_exact);
-stress_er = sqrt(sum((stress - stress_exact).^2,'all'));
-reaction_er = sum(Fext);
+disp_er = abs(norm(d - d_exact));
+stress_er = abs(sqrt(sum((stress - stress_exact).^2,'all')));
+reaction_er = abs(sum(Fext));
 
 end
 

@@ -1,4 +1,4 @@
-function [d, fE] = LinearSolver3(K, F, dfixed, free, fixed, beta)
+function [d, fE] = LinearSolver3(K, F, dfixed, free, fixed, beta, parallel)
 %LINEARSOLVER3 Solve for unknown vector using Penalty method
 % 	d = LINEARSOLVER3(K, F, dfixed, free, fixed) is the column vector of 
 % 	displacements (size ndof x 1 where ndof is the number of degrees of 
@@ -33,7 +33,7 @@ K(fixed,fixed) = eye(length(fixed))*beta;
 F(fixed) = beta*dfixed;
 
 % Solve for displacements
-d = K\F;
+d = MatrixInvert(K,F,parallel);
 
 % Apply displacement boundary conditions
 d(fixed) = dfixed;

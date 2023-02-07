@@ -261,5 +261,10 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
         Control.LinearSolver = 'LinearSolver1';       
- 
+
+        % parallel inversion
+        % Use parallel processing to invert the matrix.
+        % Usually more efficient at 2e5 dofs
+        Control.parallel = 2;
+        
 end
