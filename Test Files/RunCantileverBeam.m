@@ -23,19 +23,19 @@
 
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global  E nu t
-        t = -4e5; % applied traction
+        global  E nu traction
+        traction = -4e5; % applied traction
         E = 2e11;  % elastic modulus
         nu = 0.3;  % poisson's ratio
         
         config_name = 'CantileverBeam';
-        main_static
+        main_quasistatic
         
         % Step 2 - Check results
         % run check file, script is specific to each test
-        [disp_er] = CantileverBeam_check(d, Material, BC, Mesh);
+        [disp_er, time_er] = CantileverBeam_check(d, Material, BC, Mesh);
         tolerance_er = 1e-3;
-        if disp_er < tolerance_er
+        if disp_er < tolerance_er && time_er < tolerance_er
             test_pass = 1;
         else
             test_pass = 0;
