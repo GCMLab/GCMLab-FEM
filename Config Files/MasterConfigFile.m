@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control, IC] = MasterConfigFile(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -223,7 +223,8 @@ function [Mesh, Material, BC, Control, IC] = MasterConfigFile(config_dir, progre
         BC.b = @(x,t)[];    
 
 %% Initial Conditions
-        IC.d0 = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        
 %% Computation controls
 
         % quadrature order
@@ -260,7 +261,7 @@ function [Mesh, Material, BC, Control, IC] = MasterConfigFile(config_dir, progre
         % time controls
         Control.StartTime = 0;
         Control.EndTime   = 2*pi;
-        NumberOfSteps     = 50;
+        NumberOfSteps     = 10;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         
 end
