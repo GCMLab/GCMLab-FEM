@@ -242,7 +242,7 @@ switch type
         end
         
     case 'Q8'
-    %%%%%%%%%%%% Q8 NINE NODE QUADRILATERIAL ELEMENT %%%%%%%%%%%%%
+    %%%%%%%%%%%% Q8 EIGHT NODE QUADRILATERIAL ELEMENT %%%%%%%%%%%%%
     %
     %    4---------7----------3
     %    |                    |
@@ -270,7 +270,7 @@ switch type
             % 6 → 4
             % 7 → 7
             % 8 → 3
-%             N = [-1/4*(1 - xi)*(1 - eta)*(1 + xi - eta);        
+%             N = [-1/4*(1 - xi)*(1 - eta)*(1 + xi + eta);        
 %                     1/2*(-xi^2 + 1)*(1 - eta);         
 %                     1/4*(1 + xi)*(1 - eta)*(-1 + xi - eta);
 %                     1/2*(1 - xi)*(-eta^2 + 1);
@@ -278,7 +278,7 @@ switch type
 %                     1/4*(1 - xi)*(1 + eta)*(-1 - xi + eta);
 %                     1/2*(-xi^2 + 1)*(1 + eta);
 %                     1/4*(1 + xi)*(1 + eta)*(-1 + xi + eta)];
-%             dNdxi = [((1 - eta)*(1 + xi - eta))/4 - (1/4 - xi/4)*(1 - eta), (1/4 - xi/4)*(1 + xi - eta) + (1/4 - xi/4)*(1 - eta);        
+%             dNdxi = [((1 - eta)*(1 + xi + eta))/4 - (1/4 - xi/4)*(1 - eta), (1/4 - xi/4)*(1 + xi + eta) - (1/4 - xi/4)*(1 - eta);        
 %                     -xi*(1 - eta), xi^2/2 - 1/2;  
 %                     ((1 - eta)*(-1 + xi - eta))/4 + ((1 + xi)*(1 - eta))/4, -((1 + xi)*(-1 + xi - eta))/4 - ((1 + xi)*(1 - eta))/4 ;  
 %                     eta^2/2 - 1/2, -(1 - xi)*eta;  
@@ -288,7 +288,7 @@ switch type
 %                     ((1 + eta)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4,  ((1 + xi)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4 ];
             % In this case, nodes are numbered as in the sketch 
             
-            N = [-1/4*(1 - xi)*(1 - eta)*(1 + xi - eta); 
+            N = [-1/4*(1 - xi)*(1 - eta)*(1 + xi + eta); 
                     1/4*(1 + xi)*(1 - eta)*(-1 + xi - eta);
                     1/4*(1 + xi)*(1 + eta)*(-1 + xi + eta);
                     1/4*(1 - xi)*(1 + eta)*(-1 - xi + eta);
@@ -296,7 +296,7 @@ switch type
                     1/2*(1 + xi)*(-eta^2 + 1);
                     1/2*(-xi^2 + 1)*(1 + eta);
                     1/2*(1 - xi)*(-eta^2 + 1)];
-            dNdxi = [((1 - eta)*(1 + xi - eta))/4 - (1/4 - xi/4)*(1 - eta), (1/4 - xi/4)*(1 + xi - eta) + (1/4 - xi/4)*(1 - eta);        
+            dNdxi = [((1 - eta)*(1 + xi + eta))/4 - (1/4 - xi/4)*(1 - eta), (1/4 - xi/4)*(1 + xi + eta) - (1/4 - xi/4)*(1 - eta);        
                     ((1 - eta)*(-1 + xi - eta))/4 + ((1 + xi)*(1 - eta))/4, -((1 + xi)*(-1 + xi - eta))/4 - ((1 + xi)*(1 - eta))/4 ;  
                     ((1 + eta)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4,  ((1 + xi)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4;
                     -((1 + eta)*(-1 - xi + eta))/4 - ((1 - xi)*(1 + eta))/4, ((1 - xi)*(-1 - xi + eta))/4 + ((1 - xi)*(1 + eta))/4;
