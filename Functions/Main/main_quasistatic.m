@@ -67,12 +67,22 @@
     % Force vectors
         Fint = K*d0;
 
-    % Write to vtk
+    % Write initial conditions to vtk
         if plot2vtk
             write2vtk_quasistatic(config_name, vtk_dir, Mesh, Control, BC.fixed, d0, strain, stress, ...
                             Fint, Fext, step_count);
         end
         step_count = step_count + 1;
+        
+%% Initialize variable tracking for time-dependent problems 
+% Not recommended, primarily for use in testing and debugging.
+% Output is saved in vtk files.
+
+if Control.dSave
+    n_timesteps = ceil((Control.EndTime - Control.StartTime)/dt);
+    dSave = zeros(length(d0),n_timesteps+1);
+    dSave(:,1) = d0;
+end
         
  %% Solve the time-dependent problem
  t_tol = 1e-10; % Tolerance on the final end time
@@ -118,6 +128,11 @@
             write2vtk_quasistatic(config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain, stress, ...
                             Fint, Fext, step_count);
         end
+        
+        if Control.dSave
+           dSave(:,step_count+1) = d; 
+        end
+        
      % Update time variables
      if abs(t-Control.EndTime) < t_tol
         break
@@ -131,7 +146,11 @@
         t = Control.EndTime;
      end
      
+     
  end
+     if Control.dSave
+         d = dSave; 
+     end
  
      if progress_on
         disp('done')

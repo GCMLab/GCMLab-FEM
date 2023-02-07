@@ -150,8 +150,9 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     end  
     
     if ~isfield(BC, 'IC')
-        war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.IC not defined - set as Mesh.nsd*Mesh.nn\n',war_BC,war_count);
+        % Assume start from rest unless otherwise specified. 
+        %war_count = war_count+1;
+        %war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.IC not defined - set as Mesh.nsd*Mesh.nn\n',war_BC,war_count);
         BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
     end
 
@@ -200,6 +201,10 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     
     if ~isfield(Control, 'TimeStep')
         Control.TimeStep = 1;
+    end
+    
+    if ~isfield(Control, 'dSave')
+        Control.dSave = 0;
     end
     
 %% Output
