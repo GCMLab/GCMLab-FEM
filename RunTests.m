@@ -28,7 +28,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 24; 
+    ntests = 25; 
     
     nameslist = {};
     testnum = 0;
@@ -140,7 +140,10 @@
 %% Test 24: One Dimensional Problem
 %  Pass Condition: FEA solution displacements are exact
       run('Test Files/RunTest1D')
-        
+
+%% Test 25: Circular Inclusion Problem
+%  Pass Condition: FEA solution stresses are close to analytical solution
+      run('Test Files/RunCircularInclusion')
 
 % %% Test 8: Manufactured Solution - Q9 element convergence
 % %   Pass condition: L2-norm converges at a rate of at least h^3

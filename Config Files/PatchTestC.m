@@ -7,6 +7,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
     % Mesh formats: 
     %   'MANUAL'    - In-house structured meshing
     % 	'GMSH'      - Import .msh file from GMSH, structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'GMSH';        
 
     
@@ -34,7 +35,13 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);
+        case 'EXCEL'
+            meshFileName = 'CricularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
     end    
     
 
@@ -50,18 +57,30 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
 
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
-
-    % Young's modulus [Pa]
-    Material.E = @(x) E;  
+        
+        % NOTE: Number of material properties can be more than one. Properties
+        % for different materials are saved in Material.Prop.
+        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
+        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
+        
+    % number of material properties
+    Material.nmp = 1;
+    
+    % Properties material 1
+    Material.Prop(1).E = E; % Young's modulus [Pa]
+    Material.Prop(1).nu = nu; % Poisson's ratio
+    
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
 
     % Thickness (set as default to 1)
     Material.t = @(x) 1;
-
-    % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) nu;
 
     % Alternatively, import a material file
     % Material = Material_shale();

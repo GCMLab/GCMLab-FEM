@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -94,7 +94,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
-%                       ('none', 'nodal', 'center', 'L2projection')
+%                       ('none', 'nodal', 'center')
 %       .beta:          Penalty parameter  
 %       .LinearSolver   Method used for solving linear problem:
 %                       'LinearSolver1': Partitioning
@@ -115,8 +115,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
     % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    %   'EXCEL' - Import .xlsx file, structured or unstructured
-    MeshType = 'MANUAL';        
+    MeshType = 'EXCEL';        
     
     switch MeshType
         case 'MANUAL'
@@ -138,16 +137,13 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Unstructured_sample.msh';
+            meshFileName = 'Mesh Files\PlateWithHole.msh';
             % number of space dimensions 
             nsd = 2;
-            % Optional 5th input in case Q8 with reduced integration is desired
-            Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
-%             Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'Mesh Files\CricularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
@@ -170,23 +166,26 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
         
     % number of material properties
-    Material.nmp = 1;
+    Material.nmp = 2;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    Material.Prop(1).E = 1; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    
+    % Properties material 2
+    Material.Prop(2).E = 10; % Young's modulus [Pa]
+    Material.Prop(2).nu = 0.3; % Poisson's ratio
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements
-    Mesh.MatList(:) = 1;
+    Mesh.MatList = readmatrix(meshFileName,'Sheet','MatList');
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStrain'; 
 
     % Thickness (set as default to 1)
-    % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
 
     % Alternatively, import a material file
@@ -205,10 +204,25 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof;
+        BC.fix_disp_dof1 = [Mesh.left_dofx; Mesh.bottom_dofy];
 
+        curvenode = find(abs(sqrt(Mesh.x(:,1).^2 + Mesh.x(:,2).^2) - max(Mesh.x(:,2)))<1e-6);
+        BC.fix_disp_dof2 = [curvenode*2-1; curvenode*2];
+
+        BC.fix_disp_dof = [BC.fix_disp_dof1; BC.fix_disp_dof2];
+        
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value1 = zeros(length(BC.fix_disp_dof1),1);
+        
+        UD = max(Mesh.x(:,2));
+        BC.fix_disp_value2 = zeros(length(BC.fix_disp_dof2),1);
+        for e = 1 : size(curvenode,1)
+            theta = atan2(Mesh.x(curvenode(e),2),Mesh.x(curvenode(e),1));
+            BC.fix_disp_value2(e) = UD*cos(theta);
+            BC.fix_disp_value2(e+size(curvenode,1)) = UD*sin(theta);
+        end
+
+        BC.fix_disp_value = [BC.fix_disp_value1; BC.fix_disp_value2];
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -218,20 +232,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % magnitude of prescribed tractions [N]
         BC.traction_force_dof_value = [];
 
-        % NOTE: this is slower than prescribing tractions at dofs
-        % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
-
-        % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1);
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
+        BC.traction_force_node = [];
+%         BC.traction_force_value = [0 0];
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -258,16 +260,12 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        Control.stress_calc = 'L2projection';
+        global calc_type
+        Control.stress_calc = calc_type;
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
         Control.beta = 10^10;
-        
-        % parallel inversion
-        % Use parallel processing to invert the matrix.
-        % Usually more efficient at 2e5 dofs
-        Control.parallel = 1;
 
         % method used for solving linear problem:
         % 'LinearSolver1': Partitioning
