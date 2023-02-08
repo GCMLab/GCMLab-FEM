@@ -1,28 +1,37 @@
-%% Static solid deformation of linear elastic material
+% Static solid deformation of linear elastic material
 
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%   Last Updated: June 2016
-%	Acknowledgments: Matin Parchei Esfahani
-%   ----------------------------------------------------------------------
+% Acknowledgements: Matin Parchei Esfahani
+
 
 %% Delete past vtk files (so don't overwrite any)
-    if Control.vtk
-        fprintf('%.2f: Deleting old vtk files...\n', toc);
-        sol = fullfile(Control.vtk_dir, '*');
+    if plot2vtk
+        if progress_on
+            fprintf('%.2f: Deleting old vtk files...\n', toc);
+        end
+        sol = fullfile(vtk_dir, '*');
         delete(sol)
     end
 
 %% Input problem definition
-    fprintf('%.2f: Reading config file...\n', toc);
+    if progress_on
+        fprintf('%.2f: Reading config file...\n', toc);
+    end
     [Mesh, Material, BC, Control] = ...
-            feval(Control.config_name, Control);
+            feval(config_name, ConfigDir, progress_on);
+
+%% Set Default Values
+    [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
+
+%% Check for valid inputs
+    if progress_on
+        fprintf('%.2f: Checking for valid inputs...\n', toc);
+    end
+    [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control);
+
 
 %% Identify free and fixed dofs
-    BC = FreeFixed(BC, Mesh.DOF);
+    BC.fixed = BC.fix_disp_dof;
+    BC.free = setdiff(Mesh.DOF, BC.fixed)';
 
 %% Quadrature calculation
     % (Done at beginning of code - this assumes all elements are the 
@@ -32,12 +41,16 @@
 %% Compute system matrices
 
     % Compute stiffness matrix
-    disp([num2str(toc),': Assembling Stiffness Matrix...']);
+    if progress_on
+        disp([num2str(toc),': Assembling Stiffness Matrix...']);
+    end
     K = getK(Mesh, Quad, Material);
     
     % Compute external force vector
-    disp([num2str(toc),': Compute Force Vector...']);
-    Fext = getFext(Mesh, BC, Material, Quad, Control);
+    if progress_on
+        disp([num2str(toc),': Compute Force Vector...']);
+    end
+    Fext = getFext(Mesh, BC, Quad);
 
 %% Define initial conditions
     % For static solution, always assume that free nodes are initially at
@@ -49,25 +62,28 @@
     switch Control.LinearSolver
         case 'LinearSolver1'
             [d, f_fixed] = LinearSolver1(K, Fext, BC.fix_disp_value, ...
-                                            Mesh.nDOF, BC.free, BC.fixed);
+                                            BC.free, BC.fixed, Control.parallel);
         case 'LinearSolver2'
             [d, f_fixed] = LinearSolver2(K,Fext,BC.fix_disp_value, ...
-                                            BC.free, BC.fixed);
+                                            BC.free, BC.fixed, Control.parallel);
         case 'LinearSolver3'
             [d, f_fixed] = LinearSolver3(K, Fext, BC.fix_disp_value, ...
-                                            BC.free, BC.fixed, Control.beta);
+                                            BC.free, BC.fixed, Control.beta, Control.parallel);
     end
     Fext(BC.fixed) = f_fixed;
 
 % Strain
-    [strain, stress] = getStrain(d, Mesh, Control, Material);   
+    [strain, stress] = getStrain(d, Mesh, Material, Control.stress_calc, Quad);   
 
 % Force vectors
     Fint = K*d;
 
 %% Write to vtk
-    if Control.vtk
-        write2vtk_static(Mesh, Control, BC, d, strain, stress, Fint, Fext);
+    if plot2vtk
+        write2vtk_static(config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain, stress, ...
+                        Fint, Fext);
     end
     
-disp('done')
+    if progress_on
+        disp('done')
+    end

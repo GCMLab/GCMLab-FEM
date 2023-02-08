@@ -1,37 +1,50 @@
-function [N, dNdxi, Nv] = lagrange_basis(type, coord)
+function [N, dNdxi, Nv] = lagrange_basis(type, coord, dim)
 %LAGRANGE_BASIS Returns the lagrange interpolant basis and its gradients 
-%w.r.t the parent coordinate system.
-%   [N(xi),dNdxi(xi)] = lagrange_basis(type-order,coord,dim)
+%with respect to the parent coordinate system
+%   N = LAGRANGE_BASIS(type, coord) is a vector of shape functions
+%   (size n x 1 where n is the number of nodes) evaluated at the 
+%   specified parent coordinates (coord), for the specified element 
+%   type (type).
 %
-%   ----------------------------------------------------------------------
+%   [N, dNdxi] = LAGRANGE_BASIS(type, coord) also returns a vector of 
+%   shape function derivatives (size n x dim where n is the number of 
+%   nodes and dim is the number of model dimensions) evaluated at the 
+%   specified parent coordinates (coord), for specified element type (type). 
+% 
+%   [N, dNdxi, Nv] = LAGRANGE_BASIS(type, coord) also returns a vector 
+%   of shape functions in Voigt notation (size n*dim x dim where n is 
+%   the number of nodes and dim is the number of spatial dimensions) 
+%   evaluated at the specified parent coordinates (coord).
+% 
+%   --------------------------------------------------------------------
 % 	Input
-%   ----------------------------------------------------------------------
-%   type: the toplogical class of finite element; it is in the general
-%           form 'topology-#of nodes' ie a three node triangle is T3 a four
-%           node quadralateral is Q4 a 4 node tetrahedra is H4 a 27 node 
-%           brick is B27 etc. Presently defined are L2, L3, L4, T3, 
+%   --------------------------------------------------------------------
+%   type:   the topological class of finite element; it is in the general
+%           form 'topology-#of nodes' ie a three node triangle is T3 a 
+%           four node quadralateral is Q4 a 4 node tetrahedra is H4 a 27 
+%           node brick is B27 etc. Presently defined are L2, L3, L4, T3, 
 %           T4(cubic bubble), T6, Q4, Q9, H4, H10, B8 and B27.  
-%           (Only L2, L3, L4, Q4, and Q9 have been reviewed)
-%   coord: the parent coordinates at which the basis and its gradients are 
+%   coord:  the parent coordinates at which the basis and its gradients are 
 %           to be evaluated at. If enough coordinates are not specified, 
 %           code will return error. If too many coordinates are specified, 
 %           code will ignore the extra.
+%   dim:    Spatial dimensions. The default is unity. 
 %
-%   ----------------------------------------------------------------------
+%   --------------------------------------------------------------------
 % 	Output
-%   ----------------------------------------------------------------------
-%   N: shape functions evaluated at the specified parent coordinates 
+%   --------------------------------------------------------------------
+%   N:      shape functions evaluated at the specified parent coordinates 
 %           (coord). These are given as nx1 where n is the number of nodes
-%   dNdxi: derivatives of the shape functions evaluated at the specified 
+%   dNdxi:  derivatives of the shape functions evaluated at the specified 
 %           parent coordinates (coord). These are given as n x dim, where 
 %           n is the number of nodes and dim is the number of model 
 %           dimensions.
-%   Nv: shape functions evaluated at the specified parent coordinates 
+%   Nv:     shape functions evaluated at the specified parent coordinates 
 %           (coord). There are given in Voigt notation.
 %
-%   ----------------------------------------------------------------------
+%   --------------------------------------------------------------------
 %   References
-%   ----------------------------------------------------------------------
+%   --------------------------------------------------------------------
 %   [1] Fish, J., & Belytschko, T. (2007). A first course in finite 
 %       elements. Chichester; Hoboken, NJ: John Wiley & Sons.
 %   [2] Liu, G. R., & Quek, S. S. (Eds.). (2003). Finite Element Method. 
@@ -41,20 +54,9 @@ function [N, dNdxi, Nv] = lagrange_basis(type, coord)
 %   [4] Belytschko, T., Liu, W. K., Moran, B., & Elkhodary, K. (2014). 
 %       Nonlinear Finite Elements for Continua and Structures. John Wiley &
 %       Sons.
-% 
-%   ----------------------------------------------------------------------
-%	written by Jack Chessa
-%       j-chessa@northwestern.edu
-%       Department of Mechanical Engineering
-%       Northwestern University
-%
-%   Modified by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       May 2015
-%   Last Updated May 2016
-%   ----------------------------------------------------------------------
+%   [5] J. N. Reddy  (2006). AN Introduction to the Finite Element Meethod.
+
+% Acknowledgements: Jack Chessa
 
 % -------------------------------------------------------------------
 %% Set to one-dimension if dimension has not been specified
@@ -238,6 +240,72 @@ switch type
                         1+eta,      1+xi;
                         -(1+eta),   1-xi];
         end
+        
+    case 'Q8'
+    %%%%%%%%%%%% Q8 EIGHT NODE QUADRILATERIAL ELEMENT %%%%%%%%%%%%%
+    %
+    %    4---------7----------3
+    %    |                    |
+    %    |                    |
+    %    |                    |
+    %    |                    |
+    %    8                    6
+    %    |                    |
+    %    |                    |
+    %    |                    |
+    %    |                    |
+    %    1----------5---------2   
+        if size(coord,2) < 2
+            error('Error: two coordinates needed for the Q8 element')
+        else
+            xi = coord(1); 
+            eta = coord(2);
+            % In this case, nodes are numbered as in % Ref. [5] pg. 537 
+            % Ref [5] → sketch
+            % 1 → 1
+            % 2 → 5
+            % 3 → 2
+            % 4 → 8
+            % 5 → 6
+            % 6 → 4
+            % 7 → 7
+            % 8 → 3
+%             N = [-1/4*(1 - xi)*(1 - eta)*(1 + xi + eta);        
+%                     1/2*(-xi^2 + 1)*(1 - eta);         
+%                     1/4*(1 + xi)*(1 - eta)*(-1 + xi - eta);
+%                     1/2*(1 - xi)*(-eta^2 + 1);
+%                     1/2*(1 + xi)*(-eta^2 + 1);
+%                     1/4*(1 - xi)*(1 + eta)*(-1 - xi + eta);
+%                     1/2*(-xi^2 + 1)*(1 + eta);
+%                     1/4*(1 + xi)*(1 + eta)*(-1 + xi + eta)];
+%             dNdxi = [((1 - eta)*(1 + xi + eta))/4 - (1/4 - xi/4)*(1 - eta), (1/4 - xi/4)*(1 + xi + eta) - (1/4 - xi/4)*(1 - eta);        
+%                     -xi*(1 - eta), xi^2/2 - 1/2;  
+%                     ((1 - eta)*(-1 + xi - eta))/4 + ((1 + xi)*(1 - eta))/4, -((1 + xi)*(-1 + xi - eta))/4 - ((1 + xi)*(1 - eta))/4 ;  
+%                     eta^2/2 - 1/2, -(1 - xi)*eta;  
+%                     -eta^2/2 + 1/2, -(1 + xi)*eta ;  
+%                     -((1 + eta)*(-1 - xi + eta))/4 - ((1 - xi)*(1 + eta))/4, ((1 - xi)*(-1 - xi + eta))/4 + ((1 - xi)*(1 + eta))/4;  
+%                     -xi*(1 + eta), -xi^2/2 + 1/2;  
+%                     ((1 + eta)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4,  ((1 + xi)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4 ];
+            % In this case, nodes are numbered as in the sketch 
+            
+            N = [-1/4*(1 - xi)*(1 - eta)*(1 + xi + eta); 
+                    1/4*(1 + xi)*(1 - eta)*(-1 + xi - eta);
+                    1/4*(1 + xi)*(1 + eta)*(-1 + xi + eta);
+                    1/4*(1 - xi)*(1 + eta)*(-1 - xi + eta);
+                    1/2*(-xi^2 + 1)*(1 - eta);         
+                    1/2*(1 + xi)*(-eta^2 + 1);
+                    1/2*(-xi^2 + 1)*(1 + eta);
+                    1/2*(1 - xi)*(-eta^2 + 1)];
+            dNdxi = [((1 - eta)*(1 + xi + eta))/4 - (1/4 - xi/4)*(1 - eta), (1/4 - xi/4)*(1 + xi + eta) - (1/4 - xi/4)*(1 - eta);        
+                    ((1 - eta)*(-1 + xi - eta))/4 + ((1 + xi)*(1 - eta))/4, -((1 + xi)*(-1 + xi - eta))/4 - ((1 + xi)*(1 - eta))/4 ;  
+                    ((1 + eta)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4,  ((1 + xi)*(-1 + xi + eta))/4 + ((1 + xi)*(1 + eta))/4;
+                    -((1 + eta)*(-1 - xi + eta))/4 - ((1 - xi)*(1 + eta))/4, ((1 - xi)*(-1 - xi + eta))/4 + ((1 - xi)*(1 + eta))/4;
+                    -xi*(1 - eta), xi^2/2 - 1/2;  
+                    -eta^2/2 + 1/2, -(1 + xi)*eta ;
+                    -xi*(1 + eta), -xi^2/2 + 1/2;
+                    eta^2/2 - 1/2, -(1 - xi)*eta];      
+        end
+    
 
     case 'Q9'
     %%%%%%%%%%%% Q9 NINE NODE QUADRILATERIAL ELEMENT %%%%%%%%%%%%%
@@ -374,9 +442,6 @@ switch type
         if size(coord,2) < 3
             error('Error: three coordinates needed for the B8 element')
         else
-            xi = coord(1);
-            eta = coord(2);
-            zeta = coord(3);
             I1 = 1/2-coord/2;
             I2 = 1/2+coord/2;
             N = [I1(1)*I1(2)*I1(3);
@@ -395,14 +460,6 @@ switch type
                      I1(2)*I2(3)    -I2(1)*I2(3)    I2(1)*I1(2)
                      I2(2)*I2(3)    I2(1)*I2(3)     I2(1)*I2(2)
                      -I2(2)*I2(3)   I1(1)*I2(3)     I1(1)*I2(2)]*0.5;
-%     dNdxi = [-1+eta+zeta-eta*zeta  -1+xi+zeta-xi*zeta  -1+xi+eta-xi*eta;
-%              1-eta-zeta+eta*zeta   -1-xi+zeta+xi*zeta  -1-xi+eta+xi*eta;
-%              1+eta-zeta-eta*zeta    1+xi-zeta-xi*zeta  -1-xi-eta-xi*eta;
-%             -1-eta+zeta+eta*zeta    1-xi-zeta+xi*zeta  -1+xi-eta+xi*eta;      
-%             -1+eta-zeta+eta*zeta   -1+xi-zeta+xi*zeta   1-xi-eta+xi*eta;
-%              1-eta+zeta-eta*zeta   -1-xi-zeta-xi*zeta   1+xi-eta-xi*eta;
-%              1+eta+zeta+eta*zeta    1+xi+zeta+xi*zeta   1+xi+eta+xi*eta;
-%             -1-eta-zeta-eta*zeta    1-xi+zeta-xi*zeta   1-xi+eta-xi*eta]/8;
         end
 
     case 'B27'
@@ -458,11 +515,7 @@ end
 %% Convert to Voigt Notation
 
 % Shape functions in Voigt Notation
-I = eye(dim);
-Nv = [];
-for i = 1:size(N,1)
-    Nv = [Nv;I*N(i)];
-end
+Nv = getNv(N, dim);
 
 %% Calculate shape functions for L3 elements
 

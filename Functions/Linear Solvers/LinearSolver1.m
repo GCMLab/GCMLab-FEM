@@ -1,18 +1,30 @@
-function [d,fE] = LinearSolver1(K, F, dfixed, nDOF, free, fixed)
-%SOLVEMTETHOD1 Solves for unknown vector using partition method
-%   d = SolveMethod1(nodes,fixtempnode,fixtempvalue,K,F)
-%
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%       November 2015
-%   ----------------------------------------------------------------------
+function [d, fE] = LinearSolver1(K, F, dfixed, free, fixed, parallel)
+%LINEARSOLVER1 Solves for unknown vector using partition method
+% 	d = LINEARSOLVER1(K, F, dfixed, free, fixed) is the displacement 
+% 	vector for a given stiffness matrix, K, and external force vector, F.
+% 	The free DOFs and fixed DOFs are given in the vectors free and fixed, 
+% 	respectively. The displacements on the fixed DOFs are stored in the 
+% 	vector dfixed. 
+% 
+% 	[d, fE] = LINEARSOLVER1(K, F, dfixed, free, fixed) also returns the 
+% 	reaction forces on the fixed DOFs, provided as a column vector 
+% 	(size nfixed x 1 in which nfixed is the number of fixed degrees of 
+% 	freedom).
+% 
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+% 	K:			Stiffness matrix (size )
+% 	F: 			Column vector of external forces (size ndof x 1)
+% 	dfixed: 	Column vector of displacements on fixed degrees of 
+% 				freedom (size nfixed x 1)
+% 	free: 		Row vector of free degrees of freedom (size 1 x nfree in
+% 				which nfree is the number of free degrees of freedom)
+% 	fixed:		Row vector of fixed degrees of freedom (size 1 x nfixed)
 
-% Identify extra free nodes for LM method
-if size(K,1) > nDOF
-    free = [free nDOF+1:size(K,1)];
+% Identify extra free nodes
+if size(K,1) > length(F)
+    free = [free, length(F)+1:size(K,1)];
 end
 
 % Partition matrices
@@ -29,9 +41,9 @@ dE = dfixed;
 % This if statement allows for problems that do not have any fixed boundary
 % conditions
 if isempty(dE)
-    dF = KFF\(fF);
+    dF = MatrixInvert(KFF,fF,parallel);
 else
-    dF = KFF\(fF-KFE*dE);
+    dF = MatrixInvert(KFF,fF-KFE*dE,parallel);
 end
 
 % Update displacement vector

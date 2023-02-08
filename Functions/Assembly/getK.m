@@ -1,18 +1,44 @@
 function K = getK(Mesh, Quad, Material)
-%GETK 
-%   K = getK()
-%
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
+%GETK Stiffness matrix 
+%   K = GETK(Mesh, Quad, Material) is the global stiffness matrix for 
+%   parameters defined in the structure arrays Mesh, Quad, and Material. 
+%   The sparse matrix has size Mesh.nDOF x Mesh.nDOF
 %   
-%   Last updated: June 2016
-%   ----------------------------------------------------------------------
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   Mesh:       Structure array with the following fields,
+%               .ne:    Total number of elements in the mesh
+%               .nne:   Vector of number of nodes per element (size nsd x 1)
+%               .nsd:   Number of spatial dimensions
+%               .conn:  Array of element connectivity (size ne x nne)
+%               .x:     Array of nodal spatial locations for
+%                       undeformed mesh (size nn x nsd)
+%               .DOF:   Array of DOF indices (size nn x nsd)
+%               .nDOFe: Number of DOFs per element
+%               .nDOF:  Total number of DOFs
+%  
+%   Quad:       Structure array with the following fields,
+%               .W:      Vector of quadrature weights (size nq x 1)      
+%               .nq:     Number of quadrature points 
+%               .Nq:     Cell array (size nq x 1) with shape functions  
+%                        evaluated at each quadrature point
+%               .dNdxiq: Cell array (size nq x 1) with derivative of shape 
+%                        functions w.r.t. parent coordinates evaluated at 
+%                        each quadrature point
+% 
+%   Material:   Structure array with the following fields,
+%               .t:         Material thickness
+
+% Acknowledgements: Chris Ladubec
 
 % initialize stiffness matrix
-K = sparse(Mesh.nDOF, Mesh.nDOF); 
+vec_size = Mesh.ne*(Mesh.nne * Mesh.nsd)^2; % vector size (solid dofs)
+row = zeros(vec_size, 1);                   % vector of row indices
+col = zeros(vec_size, 1);                   % vector of column indices
+Kvec = zeros(vec_size, 1);                  % vectorized stiffness matrix
+
+count = 1;                                  % DOF counter
 
 % for each element, compute element stiffness matrix and add to global
 for e = 1:Mesh.ne
@@ -27,6 +53,10 @@ for e = 1:Mesh.ne
         dofE = reshape(dofE',Mesh.nDOFe,[]);
         % number of degrees of freedom
         ndofE = numel(dofE);
+        
+    %% Constitutive matrix
+        nMat = Mesh.MatList(e); % element material type
+        D = getD(Material.Prop(nMat).E, Material.Prop(nMat).nu, Mesh.nsd, Material.Dtype);
         
     %% Shape functions and derivatives in parent coordinates
         W = Quad.W;
@@ -57,18 +87,22 @@ for e = 1:Mesh.ne
            
             % determinant of the Jacobian
             dJe = det(Je);
+            if dJe < 0
+               error('Element %d has a negative Jacobian.', e)
+            end
 
             % derivative of shape function in physical coordinates 
             % (tensor form)
-            B = dNdxi/Je;
+            dNdxi = dNdxi';
+            B = Je\dNdxi;
 
             % convert B matrix to Voigt form
-            Bv = getBv(B, Mesh.nsd);
-
-            D = getD(Xi, Mesh.nsd, Material);    
+            Bv = getBv(B', Mesh.nsd);
             
             % for 2D, volume integral includes the thickness
             switch Mesh.nsd 
+                case 1
+                    L = Material.t(Xi);
                 case 2
                     L = Material.t(Xi);
                 case 3
@@ -81,9 +115,20 @@ for e = 1:Mesh.ne
             % quadrature debug tool
             A = A + W(q)*dJe; 
         end
-    
-    %% Assemble element matrices
-        K(dofE,dofE) = K(dofE,dofE) + Ke;
+   
+    %% Forming the vectorized stiffness matrix
+        count = count + ndofE^2;
+        Ke = reshape(Ke, [ndofE^2, 1]);
+        rowmatrix = dofE*ones(1,ndofE);        
+        rowe = reshape(rowmatrix,[ndofE^2, 1]);
+        cole = reshape(rowmatrix',[ndofE^2, 1]);
+        
+        Kvec(count-ndofE^2:count-1) = Ke;
+        row(count-ndofE^2:count-1) = rowe;
+        col(count-ndofE^2:count-1) = cole;
 end
+
+% sparse stiffness matrix
+K = sparse(row, col, Kvec, Mesh.nDOF, Mesh.nDOF);
 
 end

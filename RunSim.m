@@ -1,24 +1,13 @@
-%   ----------------------------------------------------------------------
-%   Created by Endrina Rivas
-%       endrina.rivas@uwaterloo.ca
-%       Department of Civil Engineering
-%       University of Waterloo
-%   Last Updated: February 2017
-%   ----------------------------------------------------------------------
-
 %% Clear variables and initialize code
     clearvars -global
     clear, clc, close all
     format compact
     tic;
     
-    % Current time and date
-    codeSubmitTime = datetime('now','Format','yyyy-MM-dd''_''HH-mm-ss');
-
     % Current directory
     curDir = pwd;
  
-%% Input
+%% Input (these variables must be modified by the user)
     % Folder name where config files are stored
     DirFolder = 'Config Files';
     % Config files to run. Choose either 'all' or give the file name.
@@ -26,17 +15,20 @@
     
     % Directory for VTK Files (end with \)
     if ispc
-        VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
+        VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+        %VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
     else
         VTKFolder = '/home/e2rivas/Documents/Matlab Results/';
     end
-    
-    VTKFolder = fullfile(VTKFolder, DirFolder);
-    
+     
     % output vtk files
     plot2vtk = 1;
+    
+    % output progress messages
+    progress_on = 1;
 
 %% Directories
+    VTKFolder = fullfile(VTKFolder, DirFolder);
     FuncDir = fullfile(curDir, 'Functions');
     ConfigDir = fullfile(curDir, DirFolder);
 
@@ -67,7 +59,7 @@ try
                   curDir FuncDir  ConfigDir ...
                   file codeSubmitTime ...
                   exit_when_done print_log ...
-                  plot2vtk
+                  plot2vtk progress_on
 
         clearvars -global
 
@@ -75,19 +67,10 @@ try
         config_name_full = ConfigFiles{file};
         [~,config_name] = fileparts(config_name_full);
 
-        Control.config_name = config_name;
-        Control.vtk_dir = VTKDirs{file};
-        Control.config_dir = ConfigDir;
-
-        % post-processing controls
-        if plot2vtk
-            Control.vtk = 1;  
-        else 
-            Control.vtk = 0;
-        end
+        vtk_dir = VTKDirs{file};
         
-        if ~isfolder(VTKDirs{file}) 
-            mkdir(VTKDirs{file})
+        if ~isfolder(vtk_dir) 
+            mkdir(vtk_dir)
         end
         
         % run and time the simulation
@@ -95,12 +78,11 @@ try
         run('Functions/Main/main');
         end_time = toc;
 
+        disp(['run time: ' num2str(end_time - start_time)])
         close all
     end
 
 catch err
-	% save a text file called 'error' to the directory so I 
-	% know it is incomplete.
     disp(err.message);
 
     errStack = struct2cell(err.stack);
@@ -109,5 +91,4 @@ catch err
 
     disp([errStackName' errStackLine']);
     disp(err.identifier);
-
 end
