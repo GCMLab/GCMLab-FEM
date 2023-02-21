@@ -223,6 +223,7 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
         end
 
         BC.fix_disp_value = [BC.fix_disp_value1; BC.fix_disp_value2];
+        BC.fix_disp_value = @(t) BC.fix_disp_value;
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -243,7 +244,7 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[];    
+        BC.b = @(x,t)[];    
 
 %% Computation controls
 
