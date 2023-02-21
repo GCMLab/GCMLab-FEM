@@ -65,10 +65,12 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %
 %   [Mesh, Material] = MASTERCONFIGFILE() also returns a
 %   structure array with the following fields: 
-%       .E:     Modulus of elasticity
-%       .nu:    Poisson's ratio
-%       .Dtype: 2D approximation ('PlaneStrain' or 'PlainStress')
-%       .t:     Material thickness
+%       .nmp:           number of material properties
+%       .Prop:          Material properties
+%       .Prop.E:        Modulus of elasticity
+%       .Prop.nu:       Poisson's ratio
+%       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
+%       .Prop.t:        Material thickness
 % 
 %   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
 %   array with the following fields: 
@@ -113,6 +115,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
     % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'MANUAL';        
     
     switch MeshType
@@ -138,8 +141,17 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             meshFileName = 'Unstructured_sample.msh';
             % number of space dimensions 
             nsd = 2;
+            % Optional 5th input in case Q8 with reduced integration is desired
+            Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
             Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
+%             Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
+        case 'EXCEL'
+            meshFileName = 'CricularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
     end    
     
 %% Material Properties (Solid)
@@ -151,9 +163,24 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
+        
+        % NOTE: Number of material properties can be more than one. Properties
+        % for different materials are saved in Material.Prop.
+        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
+        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
+        
+    % number of material properties
+    Material.nmp = 1;
 
-    % Young's modulus [Pa]
-    Material.E = @(x) x(:,1) + 4*x(:,2);  
+    % Properties material 1
+    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStrain'; 
@@ -161,9 +188,6 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
-
-    % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) x(:,1)/2.5;
 
     % Alternatively, import a material file
     % Material = Material_shale();

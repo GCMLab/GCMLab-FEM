@@ -65,10 +65,12 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
 %
 %   [Mesh, Material] = MASTERCONFIGFILE() also returns a
 %   structure array with the following fields: 
-%       .E:     Modulus of elasticity
-%       .nu:    Poisson's ratio
-%       .Dtype: 2D approximation ('PlaneStrain' or 'PlainStress')
-%       .t:     Material thickness
+%       .nmp:           number of material properties
+%       .Prop:          Material properties
+%       .Prop.E:        Modulus of elasticity
+%       .Prop.nu:       Poisson's ratio
+%       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
+%       .Prop.t:        Material thickness
 % 
 %   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
 %   array with the following fields: 
@@ -151,18 +153,30 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
 
         % NOTE: Material properties must be continuous along an element, 
         % otherwise, quadrature order must be increased significantly
+        
+        % NOTE: Number of material properties can be more than one. Properties
+        % for different materials are saved in Material.Prop.
+        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
+        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
 
-    % Young's modulus [Pa]
-    Material.E = @(x) 2e11;  
+    % number of material properties
+    Material.nmp = 1;
+        
+    % Properties material 1
+    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
 
     % Thickness (set as default to 1)
     Material.t = @(x) 1;
-
-    % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) 0.3;
 
     % Alternatively, import a material file
     % Material = Material_shale();

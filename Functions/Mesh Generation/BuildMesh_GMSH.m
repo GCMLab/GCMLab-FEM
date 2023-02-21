@@ -1,4 +1,4 @@
-function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on)
+function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on, Q8_reduced)
 %BUILDMESH_GMSH Import GMSH file
 %   Mesh = BUILDMESH_GMSH(meshFileName, nsd, config_dir) is a structure 
 %   array with the mesh description. The mesh is imported from the GMSH 
@@ -11,6 +11,9 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on)
 %   meshFileName:   Name of the mesh file exported from GMSH
 %   nsd:            Number of spatial dimensions
 %   config_dir:     Directory where mesh file is stored
+%   Q8_reduced:     Optional input to be defined when Q8 with reduced
+%                   integration is desired.This case is oibtained from que
+%                   Q9 mesh
 % 
 %   --------------------------------------------------------------------
 %   Output
@@ -97,7 +100,12 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on)
         case 6
             Mesh.type = 'T6';
         case 9
-            Mesh.type = 'Q9';
+            switch nargin
+                case 5
+                    Mesh.type = Q8_reduced; %Q8 with reduced integration;
+                otherwise
+                    Mesh.type = 'Q9';
+            end
         case 8
             Mesh.type = 'B8';
     end
@@ -109,12 +117,13 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on)
     if progress_on
         disp([num2str(toc),': Defining element connectivity...']);
     end
-%% Nodal Connectivity
-    % list of elements connected to each node
-    Mesh.nodeconn = NodalConn(Mesh);
 
 %% Element neighbours 
     if strcmp(Mesh.type,'Q4')% NOTE: Only works for Q4 elements at the moment
+        
+        % list of elements connected to each node
+        Mesh.nodeconn = NodalConn(Mesh);
+        
         Mesh.eneighbours = zeros(Mesh.ne,4);  % element neighbours (share an edge)
         for e = 1:Mesh.ne
             % list of elements which share at least one node with element e       
@@ -143,6 +152,56 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on)
     else
         Mesh.eneighbours = 'NA - currently only available for Q4 element';
     end
+    
+%% Transform Q9 → Q8
+
+switch Mesh.type 
+    case 'Q8'
+        % GMSH does not generate Q8 elements - remove column 9
+
+        middlenodes = Mesh.conn(:,9);
+        Mesh.conn(:,9) = [];
+
+        % remove middle nodes from node list
+        Mesh.nn = Mesh.nn - length(middlenodes);
+        Mesh.nne = 8;
+        Mesh.nDOFe = 16;
+        Mesh.nDOF = Mesh.nDOF - length(middlenodes)* nsd;
+        Mesh.x(middlenodes,:) = [];
+
+        % Update Mesh.DOF
+        Mesh.DOF = zeros(Mesh.nn, Mesh.nsd); 
+        for sd = 1:Mesh.nsd
+           Mesh.DOF(:,sd) = (sd : Mesh.nsd : (Mesh.nDOF-(Mesh.nsd-sd)))';
+        end
+
+        % remove middle nodes from connectivity
+        middlenodes = sort(middlenodes,'ascend');
+        conn = Mesh.conn; 
+        for i = 1:length(middlenodes)
+            conn(conn>middlenodes(i)) = conn(conn>middlenodes(i))-1;
+            middlenodes(middlenodes>middlenodes(i)) = middlenodes(middlenodes>middlenodes(i))-1;
+        end
+        
+        % Update Mesh.nodeconn
+        Mesh.conn = conn;
+    otherwise
+        % No changes to Mesh. structure
+    
+end
+
+%% Nodal Connectivity
+    % list of elements connected to each node
+    switch Mesh.type
+        case 'Q4'
+            %This was already done in line 125
+        case 'Q8'
+            %This has not been implemented for Q8s with reduced integration
+            Mesh.nodeconn = [];
+        otherwise
+            Mesh.nodeconn = NodalConn(Mesh);
+    end
+
 %% Node sets
     Mesh = NodeSets(Mesh);
     

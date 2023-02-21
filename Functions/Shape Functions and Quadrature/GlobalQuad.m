@@ -14,7 +14,7 @@ function Quad = GlobalQuad(nsd, elem_type, qo)
 %           	triangle is T3 a four node quadralateral is Q4 a 4 node 
 %           	tetrahedra is H4 a 27 node brick is B27 etc. Presently 
 %           	defined are L2, L3, L4, T3, T4(cubic bubble), T6, Q4, 
-% 				Q9, H4, H10, B8 and B27.  
+% 				Q8 (reduced integration), Q9, H4, H10, B8 and B27.  
 %   qo:  		quadrature order
 % 
 %   --------------------------------------------------------------------
@@ -40,6 +40,9 @@ switch elem_type
         [Quad.W, Quad.Q] = quadrature(qo, 'TRIANGULAR', nsd);
     case 'T6'
         [Quad.W, Quad.Q] = quadrature(qo, 'TRIANGULAR', nsd);
+    case 'Q8'
+        % For Q8 with reduced integration 
+        [Quad.W, Quad.Q] = quadrature(2, 'GAUSS', nsd);
     otherwise
         [Quad.W, Quad.Q] = quadrature(qo, 'GAUSS', nsd);
 end
