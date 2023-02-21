@@ -197,7 +197,8 @@ function [Mesh, Material, BC, Control] = CantileverBeam(config_dir, progress_on)
         BC.fix_disp_dof = [Mesh.left_dofx;Mesh.left_dofy];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+        
 
     %% Neumann BC
     % -----------------------------------------------------------------

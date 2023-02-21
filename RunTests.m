@@ -8,9 +8,9 @@
     tic;
     
     % Test VTK output
-    plot2vtk = 0;
-%     VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
-    VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
+    plot2vtk = 1;
+     VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+%    VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
     
     % suppress progress messages
     progress_on = 0;
@@ -37,6 +37,11 @@
     testpasssummary = zeros(ntests,1);
     
 %% Run Tests
+
+%% Test 17: Manufactured Solution - Plane Strain check
+%   Pass condition: L2-norm converges at a rate of at least h^2
+%                    e-norm converges at a rate of at least h
+        run('Test Files/RunPstrain')
 
 %% Test 1: Patch Test A - All nodal displacements prescribed Q4
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
@@ -106,10 +111,7 @@
 %                    e-norm converges at a rate of at least h
          run('Test Files/RunManSolT6')
         
-%% Test 17: Manufactured Solution - Plane Strain check
-%   Pass condition: L2-norm converges at a rate of at least h^2
-%                    e-norm converges at a rate of at least h
-        run('Test Files/RunPstrain')
+
         
 %% Test 18: Plate with Hole under tension
 %  Pass Condtion: error of L2 projected stresses is less than nodal

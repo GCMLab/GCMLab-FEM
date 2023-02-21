@@ -107,7 +107,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
         BC.fix_disp_value1 = BC.UU([Mesh.x(Mesh.left_nodes,1),Mesh.x(Mesh.left_nodes,2)]);
         BC.fix_disp_value2 = BC.VV([Mesh.x(Mesh.bottom_nodes,1),Mesh.x(Mesh.bottom_nodes,2)]);
-        BC.fix_disp_value = [BC.fix_disp_value1;BC.fix_disp_value2];  
+        BC.fix_disp_value = @(t) [BC.fix_disp_value1;BC.fix_disp_value2];  
 
     %% Neumann BC
     % -----------------------------------------------------------------
