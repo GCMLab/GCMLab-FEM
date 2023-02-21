@@ -208,7 +208,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.fix_disp_dof = Mesh.left_dof;
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = @(t) sin(t)/1e5*ones(length(BC.fix_disp_dof),1);  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -223,7 +223,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.traction_force_node = Mesh.right_nodes;  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1/(length(BC.traction_force_node) - 1);
+        Fnode = 1e7/(length(BC.traction_force_node) - 1);
         BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
         
         % find the nodes in the top right and bottom right corners
@@ -285,7 +285,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % time controls
         Control.StartTime = 0;
         Control.EndTime   = 2*pi;
-        NumberOfSteps     = 10;
+        NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
         

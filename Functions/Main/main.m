@@ -57,7 +57,7 @@
 %% Define initial conditions
     
     d0 = BC.IC;
-    d0(BC.fix_disp_dof) = BC.fix_disp_value;
+    d0(BC.fix_disp_dof) = BC.fix_disp_value(t);
     Fext = getFext(Mesh, BC, Quad,t);
     
     % Export initial conditions
@@ -103,13 +103,13 @@ end
         end
         switch Control.LinearSolver
             case 'LinearSolver1'
-                [d, f_fixed] = LinearSolver1(K, Fext, BC.fix_disp_value, ...
+                [d, f_fixed] = LinearSolver1(K, Fext, BC.fix_disp_value(t), ...
                                                 BC.free, BC.fixed, Control.parallel);
             case 'LinearSolver2'
-                [d, f_fixed] = LinearSolver2(K,Fext,BC.fix_disp_value, ...
+                [d, f_fixed] = LinearSolver2(K,Fext,BC.fix_disp_value(t), ...
                                                 BC.free, BC.fixed, Control.parallel);
             case 'LinearSolver3'
-                [d, f_fixed] = LinearSolver3(K, Fext, BC.fix_disp_value, ...
+                [d, f_fixed] = LinearSolver3(K, Fext, BC.fix_disp_value(t), ...
                                                 BC.free, BC.fixed, Control.beta, Control.parallel);
         end
         Fext(BC.fixed) = f_fixed;
