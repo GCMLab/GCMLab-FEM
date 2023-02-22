@@ -287,6 +287,9 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         Control.EndTime   = 2*pi;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
-        Control.dSave     = 1;
+        % save displacements and stresses at each timestep in matlab 
+        % debugging and testing purposes only, vtk files are otherwise
+        % recommended
+        Control.dSave     = 0; 
         
 end
