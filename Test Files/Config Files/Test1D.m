@@ -201,7 +201,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
         BC.fix_disp_dof = Mesh.left_dof;
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);
 
     %% Neumann BC
     % -----------------------------------------------------------------
