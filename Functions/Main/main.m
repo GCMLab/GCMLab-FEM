@@ -57,7 +57,7 @@
 %% Define initial conditions
     
     d0 = BC.IC;
-    d0(BC.fix_disp_dof) = BC.fix_disp_value(t);
+    d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
     Fext = getFext(Mesh, BC, Quad,t);
     
     % Export initial conditions
@@ -81,7 +81,9 @@
 if Control.dSave
     n_timesteps = ceil((Control.EndTime - Control.StartTime)/dt);
     dSave = zeros(length(d0),n_timesteps+1);
-    dSave(:,1) = d0;
+    dSave(:,1) = d0;                                   % Save displacements
+    sSave = zeros(3,Mesh.nn, n_timesteps+1);        % Save stresses
+    sSave(:,:,1) = stress;
 end
         
  %% Solve the time-dependent problem
@@ -131,6 +133,7 @@ end
         
         if Control.dSave
            dSave(:,step_count+1) = d; 
+           sSave(:,:,step_count + 1) = stress;
         end
         
      % Update time variables
