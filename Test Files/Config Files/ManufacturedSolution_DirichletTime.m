@@ -1,4 +1,5 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = ManufacturedSolution_DirichletTime(config_dir, progress_on)
+global Omega1 Omega2 E nu
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -127,7 +128,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
+            nex = [1;1]*5;
             % element type ('Q4')
             type = 'Q4';
             
@@ -173,8 +174,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    Material.Prop(1).E = E; % Young's modulus [Pa]
+    Material.Prop(1).nu = nu; % Poisson's ratio
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -183,7 +184,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
+    Material.Dtype = 'PlaneStress'; 
 
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
@@ -201,14 +202,22 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % right_nodes = find(Mesh.x(:,1)==4);
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
+        
+    % Manufactured solution
+    % ux = y*sin(omega1*t)
+    % uy = x*sin(omega2*t)
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
-        % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof;
+        % column vector of prescribed displacement dof 
+        edge_nodes = unique([Mesh.left_nodes; Mesh.right_nodes; Mesh.bottom_nodes; Mesh.top_nodes]);
+        xdofs_edges = 2*edge_nodes - 1;
+        ydofs_edges = 2*edge_nodes;
+        BC.fix_disp_dof = [xdofs_edges;ydofs_edges];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) sin(t)/1e5*ones(length(BC.fix_disp_dof),1);  
+        
+        BC.fix_disp_value = @(t) [sin(Omega1*t)*Mesh.x(edge_nodes,2);  sin(Omega2*t)*Mesh.x(edge_nodes,1)];
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -220,21 +229,10 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
+        BC.traction_force_node = [];  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e7/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        
-        % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
+        BC.traction_force_value = @(t) 0; 
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -264,7 +262,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        Control.stress_calc = 'L2projection';
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
@@ -287,9 +285,6 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         Control.EndTime   = 2*pi;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
-        % save displacements and stresses at each timestep in matlab 
-        % debugging and testing purposes only, vtk files are otherwise
-        % recommended
-        Control.dSave     = 0; 
+        Control.dSave     = 1;
         
 end

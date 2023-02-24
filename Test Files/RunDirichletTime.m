@@ -1,17 +1,14 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 7 - Cantilever Beam as part of RunTests
+% Runs unit Test 26 - Dirichlet Time
 % ------------------------------------------------------------------------
-% Runs cantilever beam under bending. The nodes located at the left edge is
-% fully restrained, and nodal forces are applied to the nodes located at
-% the right edge by sigma(y) = -4e5. Then, in order to check shear locking,
-% the error between the FEA and theoretical solutions is then calculated.
-% The FEA approximate solution should be close to theoretical solution.
+% This test applies time dependent Dirichlet boundary conditions on a
+% square domain and computes the stress as a function of time.
+%
 
         testnum = testnum + 1;
-        testname = 'Cantilever Beam - Q4 elements, sinusoidal time-dependent force';
-        nameslist{testnum} = testname;
-
-
+        testname = 'Time dependent manufactured solution'; 
+        nameslist{testnum} = testname;          
+       
         % Create test VTK folder
         if plot2vtk
             folname = ['\Test',num2str(testnum)];
@@ -21,21 +18,21 @@
             end
         end
 
+        
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global  E nu traction
-        traction = -4e5; % applied traction
-        E = 2e11;  % elastic modulus
-        nu = 0.3;  % poisson's ratio
-        
-        config_name = 'CantileverBeam';
-        main
+        global Omega1 Omega2 E nu
+        Omega1 = 2;
+        Omega2 = 3;
+        E = 2.5e11;
+        nu = 0.25;
+        config_name = 'ManufacturedSolution_DirichletTime'; 
+        main  % Runs calculation
         
         % Step 2 - Check results
         % run check file, script is specific to each test
-        [disp_er, time_er] = CantileverBeam_check(d, Material, BC, Mesh);
-        tolerance_er = 1e-3;
-        if disp_er < tolerance_er && time_er < tolerance_er
+        time_er = DirichletTime_check(sSave);          
+        if time_er < 1e-10
             test_pass = 1;
         else
             test_pass = 0;
@@ -49,8 +46,8 @@
             fprintf('\nFAIL')
         end
         testpasssummary(testnum) = test_pass;
-          
 
+        
         % Step 4 - Cleanup
         clearvars -except  curDir  ConfigDir ...
                       ntests testpasssummary testnum nameslist...

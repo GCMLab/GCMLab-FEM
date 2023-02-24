@@ -147,7 +147,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
     end    
     
 %% Material Properties (Solid)
-    global E nu t b
+    global E nu traction b
 
     % NOTES-------------------------------------------------------------
                                 
@@ -201,7 +201,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
         BC.fix_disp_dof = Mesh.left_dof;
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -217,7 +217,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         % tensile force applied to right edge
-        BC.traction_force_value = t;
+        BC.traction_force_value = @(t) traction;
             
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -227,7 +227,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x) b;    
+        BC.b = @(x,t) b;    
 
 %% Computation controls
 

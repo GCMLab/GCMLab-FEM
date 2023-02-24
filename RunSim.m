@@ -13,6 +13,7 @@
     % Config files to run. Choose either 'all' or give the file name.
     FileList = 'MasterConfigFile';
     
+    
     % Directory for VTK Files (end with \)
     if ispc
         VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
@@ -50,7 +51,7 @@
     numfiles = length(ConfigFiles);
     
 %% Run
-try                     
+%try                     
     %% Run config files
     % Loop through every configuration file 
     for file = 1:numfiles
@@ -59,7 +60,7 @@ try
                   curDir FuncDir  ConfigDir ...
                   file codeSubmitTime ...
                   exit_when_done print_log ...
-                  plot2vtk progress_on
+                  plot2vtk progress_on AnalysisType
 
         clearvars -global
 
@@ -75,20 +76,20 @@ try
         
         % run and time the simulation
         start_time = toc;
-        run('Functions/Main/main');
+        run('Functions/Main/main')
         end_time = toc;
 
         disp(['run time: ' num2str(end_time - start_time)])
         close all
     end
 
-catch err
-    disp(err.message);
-
-    errStack = struct2cell(err.stack);
-    errStackName = errStack(2,:);
-    errStackLine = errStack(3,:);
-
-    disp([errStackName' errStackLine']);
-    disp(err.identifier);
-end
+% catch err
+%     disp(err.message);
+% 
+%     errStack = struct2cell(err.stack);
+%     errStackName = errStack(2,:);
+%     errStackLine = errStack(3,:);
+% 
+%     disp([errStackName' errStackLine']);
+%     disp(err.identifier);
+% end

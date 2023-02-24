@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
-    global E nu t quadorder meshfilename
+    global E nu traction quadorder meshfilename
 %% Mesh Properties
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
@@ -93,8 +93,8 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
     % uy = (1-nu)*t/E*y
     % -----------------------------------------------------------------
         
-        BC.UU = @(x) (1-nu)*t/E*x(:,1);
-        BC.VV = @(x) (1-nu)*t/E*x(:,2);
+        BC.UU = @(x) (1-nu)*traction/E*x(:,1);
+        BC.VV = @(x) (1-nu)*traction/E*x(:,2);
         
         % column vector of prescribed displacement dof  
         topleftnode = Mesh.left_nodes(find(Mesh.x(Mesh.left_nodes,2) == max(Mesh.x(:,2))));
@@ -109,7 +109,7 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
         BC.fix_disp_value1 = BC.UU([Mesh.x(Mesh.left_nodes,1),Mesh.x(Mesh.left_nodes,2)]);
         BC.fix_disp_value2 = BC.VV([Mesh.x(Mesh.bottom_nodes,1),Mesh.x(Mesh.bottom_nodes,2)]);
-        BC.fix_disp_value = [BC.fix_disp_value1;BC.fix_disp_value2];  
+        BC.fix_disp_value = @(t)  [BC.fix_disp_value1;BC.fix_disp_value2];  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -130,8 +130,8 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         %t = 4;
         if strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T3')
-            Fright = t*max(Mesh.x(:,2))/(length(Mesh.right_nodes) - 1); % traction * 1 element length (assumed evenly distributed)
-            Ftop   = t*max(Mesh.x(:,1))/(length(Mesh.top_nodes)   - 1); % traction * 1 element length (assumed evenly distributed)
+            Fright = traction*max(Mesh.x(:,2))/(length(Mesh.right_nodes) - 1); % traction * 1 element length (assumed evenly distributed)
+            Ftop   = traction*max(Mesh.x(:,1))/(length(Mesh.top_nodes)   - 1); % traction * 1 element length (assumed evenly distributed)
             BC.traction_force_value =       [   Fright*ones(size(Mesh.right_nodes(index_right))),     zeros(size(Mesh.right_nodes(index_right)));      % right side nodes
                                                 zeros(size(Mesh.top_nodes(index_top))),               Ftop*ones(size(Mesh.top_nodes(index_top)));           % top side nodes
                                                 Fright*1/2,                                           Ftop*1/2                                           ]; % top right node
@@ -143,8 +143,8 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
             BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
             BC.traction_force_value(topleftnode,2) = BC.traction_force_value(topleftnode,2)/2;
         elseif strcmp(Mesh.type, 'Q9') || strcmp(Mesh.type, 'T6') || strcmp(Mesh.type, 'Q8')
-            Fright = t*max(Mesh.x(:,2))/((length(Mesh.right_nodes) - 1)/2);
-            Ftop   = t*max(Mesh.x(:,1))/((length(Mesh.top_nodes)   - 1)/2);
+            Fright = traction*max(Mesh.x(:,2))/((length(Mesh.right_nodes) - 1)/2);
+            Ftop   = traction*max(Mesh.x(:,1))/((length(Mesh.top_nodes)   - 1)/2);
             BC.traction_force_value = zeros(length(BC.traction_force_node),2);
             for n = 1:length(BC.traction_force_node)
                 if n <= length(Mesh.right_nodes(index_right)) % then node is on the right edge
@@ -185,7 +185,7 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[];    
+        BC.b = @(x,t)[];    
 
 %% Computation controls
 

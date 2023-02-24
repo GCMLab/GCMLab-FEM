@@ -1,4 +1,4 @@
-function F = getFext(Mesh, BC, Quad)
+function F = getFext(Mesh, BC, Quad, t)
 %GETFEXT External forces
 %   F = GETFEXT(Mesh, BC, Quad) is a column vector of external forces 
 %   acting on each degree of freedom (size ndof x 1 in which ndof is the
@@ -48,14 +48,23 @@ function F = getFext(Mesh, BC, Quad)
 
 %% Initialize values
 
+    % Check input arguments
+    if nargin<4
+        t = 0; % Set default time if not specified
+    end
+    
 	% initialize source (body) force vector
 	F = zeros(Mesh.nDOF, 1);       
 
     if ~isempty(BC.traction_force_node)
         % counter to assess whether point load has been yet accounted for
         t_count = zeros(size(BC.traction_force_node));
-        traction_value = BC.traction_force_value; 
         traction_force_node = BC.traction_force_node;
+        if isa(BC.traction_force_value,'function_handle')
+            traction_value = BC.traction_force_value(t);
+        else
+            traction_value = BC.traction_force_value;
+        end
     else
         traction_force_node = [];
     end
@@ -97,7 +106,7 @@ for e = 1:Mesh.ne
         A = 0;
 
 	    % if there is a body force run through the quadrature loop
-	    if ~strcmp(func2str(BC.b),'@(x)[]')
+	    if ~strcmp(func2str(BC.b),'@(x,t)[]') && ~strcmp(func2str(BC.b),'@(x)[]')
             for q = 1:nq
 
                 % Shape functions and derivatives in parent coordinates
@@ -116,7 +125,7 @@ for e = 1:Mesh.ne
                 dJe = det(Je);
 
                 % Applied body force
-                Fbe = Fbe + W(q)*Nv*BC.b(Xi)*dJe;
+                Fbe = Fbe + W(q)*Nv*BC.b(Xi,t)*dJe;
 
                 % quadrature debug tool
                 A = A + W(q)*dJe; 
@@ -156,23 +165,25 @@ for e = 1:Mesh.ne
 end
 
 %% Apply pre-integrated boundary node point forces
-switch Mesh.nsd
-    case 1
-        F(BC.traction_force_node) = F(BC.traction_force_node) + traction_value(:,1);
-    case 2
-        traction_xdofs = 2*BC.traction_force_node-1;
-        traction_ydofs = 2*BC.traction_force_node;
+if ~isempty(BC.traction_force_node)
+    switch Mesh.nsd
+        case 1
+            F(BC.traction_force_node) = F(BC.traction_force_node) + traction_value(:,1);
+        case 2
+            traction_xdofs = 2*BC.traction_force_node-1;
+            traction_ydofs = 2*BC.traction_force_node;
 
-        F(traction_xdofs) = F(traction_xdofs) + traction_value(:,1);
-        F(traction_ydofs) = F(traction_ydofs) + traction_value(:,2);
-    case 3
-        traction_xdofs = 3*BC.traction_force_node-2;
-        traction_ydofs = 3*BC.traction_force_node-1;
-        traction_zdofs = 3*BC.traction_force_node;
+            F(traction_xdofs) = F(traction_xdofs) + traction_value(:,1);
+            F(traction_ydofs) = F(traction_ydofs) + traction_value(:,2);
+        case 3
+            traction_xdofs = 3*BC.traction_force_node-2;
+            traction_ydofs = 3*BC.traction_force_node-1;
+            traction_zdofs = 3*BC.traction_force_node;
 
-        F(traction_xdofs) = F(traction_xdofs) + traction_value(:,1);
-        F(traction_ydofs) = F(traction_ydofs) + traction_value(:,2);
-        F(traction_zdofs) = F(traction_zdofs) + traction_value(:,3);
+            F(traction_xdofs) = F(traction_xdofs) + traction_value(:,1);
+            F(traction_ydofs) = F(traction_ydofs) + traction_value(:,2);
+            F(traction_zdofs) = F(traction_zdofs) + traction_value(:,3);
+    end
 end
 %% Add forces prescribed at dofs
     F(BC.traction_force_dof) = F(BC.traction_force_dof) ...

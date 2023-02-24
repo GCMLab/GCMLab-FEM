@@ -197,7 +197,8 @@ function [Mesh, Material, BC, Control] = CantileverBeam(config_dir, progress_on)
         BC.fix_disp_dof = [Mesh.left_dofx;Mesh.left_dofy];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+        
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -222,6 +223,9 @@ function [Mesh, Material, BC, Control] = CantileverBeam(config_dir, progress_on)
         
         BC.traction_force_value(toprightnode,2) = BC.traction_force_value(toprightnode,2)/2;
         BC.traction_force_value(botrightnode,2) = BC.traction_force_value(botrightnode,2)/2;
+        
+        % Make the vector into an anonymous function in time
+        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -261,5 +265,14 @@ function [Mesh, Material, BC, Control] = CantileverBeam(config_dir, progress_on)
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
         Control.LinearSolver = 'LinearSolver1';       
+        
+        % time controls
+        Control.StartTime = 0;
+        Control.EndTime   = 2*pi;
+        NumberOfSteps     = 8;
+        Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
+        % Save d vector in each timestep in MATLAB variables. Primarily a
+        % debugging tool, output is saved in vtk files.
+        Control.dSave     = 1; 
  
 end

@@ -106,6 +106,7 @@ global meshfilename quadorder E nu
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
         BC.fix_disp_value(1:2:end) = BC.UU([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
         BC.fix_disp_value(2:2:end) = BC.VV([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
+        BC.fix_disp_value = @(t) BC.fix_disp_value;
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -134,7 +135,7 @@ global meshfilename quadorder E nu
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[-E /(1+nu)/(1-2*nu) * ( (1-nu)*20*x(1).^3                    + nu*3*x(2).^2        + (1-2*nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2 ));
+        BC.b = @(x,t)[-E /(1+nu)/(1-2*nu) * ( (1-nu)*20*x(1).^3                    + nu*3*x(2).^2        + (1-2*nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2 ));
                     -E /(1+nu)/(1-2*nu) * ( (1-2*nu)/2*(3*x(2).^2 + 20*x(1).^3)  + nu*3*x(2).^2        + (1-nu)*(6*x(1).*x(2) - 30*x(2).^4) )];
 
 %% Computation controls
