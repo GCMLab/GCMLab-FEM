@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = ManufacturedSolution_DirichletTime(config_dir, progress_on)
 global Omega1 Omega2 E nu
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
