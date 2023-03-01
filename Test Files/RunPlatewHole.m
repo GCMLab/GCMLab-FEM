@@ -24,7 +24,8 @@
             config_name = 'PlateWithHole';
             % run with nodal averaging
             calc_type = 'nodal';
-            main
+%           main  % Runs calculation
+            main_nonlinear % Runs calculation
            
             stress_nodal = stress;
 
