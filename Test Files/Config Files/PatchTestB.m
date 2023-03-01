@@ -153,10 +153,15 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
         % LinearSolver3
         Control.beta = 10^10;
 
-        % method used for solving linear problem:
-            % 'LinearSolver1'
-            % 'LinearSolver2'
-            % 'LinearSolver3'
-        Control.LinearSolver = 'LinearSolver1';
+        % method used for solving linear and nonlinear problems:
+        % 'LinearSolver1': Partitioning
+        % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
+        %                   corresponding to essential boundaries
+        % 'LinearSolver3': Penalty method
+        % 'NonLinearSolver1': Partitioning
+        % 'NonLinearSolver2': Zeroing DOFs in stiffness matrix 
+        %                   corresponding to essential boundaries
+        % 'NonLinearSolver3': Penalty method
+        Control.LinearSolver = 'NonLinearSolver1';
  
 end

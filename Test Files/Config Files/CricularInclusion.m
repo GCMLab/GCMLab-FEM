@@ -268,11 +268,15 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
         % LinearSolver3
         Control.beta = 10^10;
 
-        % method used for solving linear problem:
+        % method used for solving linear and nonlinear problems:
         % 'LinearSolver1': Partitioning
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';       
+        % 'NonLinearSolver1': Partitioning
+        % 'NonLinearSolver2': Zeroing DOFs in stiffness matrix 
+        %                   corresponding to essential boundaries
+        % 'NonLinearSolver3': Penalty method
+        Control.LinearSolver = 'NonLinearSolver1';    
  
 end

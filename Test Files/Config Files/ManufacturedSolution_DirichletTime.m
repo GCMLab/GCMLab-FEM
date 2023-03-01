@@ -273,12 +273,16 @@ global Omega1 Omega2 E nu
         % Usually more efficient at 2e5 dofs
         Control.parallel = 1;
 
-        % method used for solving linear problem:
+        % method used for solving linear and nonlinear problems:
         % 'LinearSolver1': Partitioning
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';       
+        % 'NonLinearSolver1': Partitioning
+        % 'NonLinearSolver2': Zeroing DOFs in stiffness matrix 
+        %                   corresponding to essential boundaries
+        % 'NonLinearSolver3': Penalty method
+        Control.LinearSolver = 'NonLinearSolver1';     
  
         % time controls
         Control.StartTime = 0;
