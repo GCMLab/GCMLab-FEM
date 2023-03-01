@@ -31,7 +31,8 @@
             
             % Run coarse mesh
             meshfilename = 'Mesh Files\Manufactured_coarseQ4.msh';
-            main
+%           main  % Runs calculation
+            main_nonlinear % Runs calculation
             
             d_coarse = d;
             stress_coarse = stress;

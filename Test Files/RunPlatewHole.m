@@ -30,7 +30,8 @@
 
             % run with L2 projection
             calc_type = 'L2projection';
-            main
+%           main  % Runs calculation
+            main_nonlinear % Runs calculation
 
             stress_L2 = stress;
         

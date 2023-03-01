@@ -29,7 +29,8 @@
             config_name = 'CricularInclusion';
             % run with nodal averaging
             calc_type = 'center';
-            main
+%       main  % Runs calculation
+        main_nonlinear % Runs calculation
         
         test_pass = 1;
         fprintf('\nPASS')

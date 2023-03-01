@@ -24,7 +24,8 @@
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
         config_name = '[Test config file name]'; % Update!
-        main  % Runs calculation
+        %       main  % Runs calculation
+        main_nonlinear % Runs calculation
         
         % Step 2 - Check results
         % run check file, script is specific to each test
