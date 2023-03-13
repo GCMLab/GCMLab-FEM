@@ -291,4 +291,8 @@ global Omega1 Omega2 E nu
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
         
+        % Newton Raphson controls
+        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
 end

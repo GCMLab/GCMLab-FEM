@@ -165,4 +165,8 @@ global meshfilename quadorder E nu
         % 'NonLinearSolver3': Penalty method
         Control.LinearSolver = 'NonLinearSolver1';
  
+        % Newton Raphson controls
+        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
 end

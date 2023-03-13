@@ -161,4 +161,8 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
         % 'NonLinearSolver3': Penalty method
         Control.LinearSolver = 'NonLinearSolver1';
  
+        % Newton Raphson controls
+        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
 end

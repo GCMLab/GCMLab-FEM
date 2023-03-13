@@ -90,8 +90,6 @@ end
         
  %% Solve the time-dependent nonlinear problem
  t_tol = 1e-10; % Tolerance on the final end time
- r_tol = 1e-5; % Tolerance on residual forces
- iter_max = 50; % Maximum number of iteration in Newton-Raphson algorithm
  while true   
     if progress_on
         fprintf(['\n', num2str(toc),': Computing Time = %.2f s, Timestep %d, Progress %.2f percent...\n'], t, step_count, t/Control.EndTime*100);
@@ -154,12 +152,12 @@ end
             resScale = 1+norm(Fint);
         end
         res = norm(ResForce)/resScale;
-        if res < r_tol
+        if res < Control.r_tol
             break
         end
         
         iter = iter + 1;
-        if iter > iter_max
+        if iter > Control.iter_max
             err_NR = sprintf('\t Newton-Raphson algorithm will not converge: The number of iterations in Newton-Raphson algorithm exceeds the maximum number of iteration');
             error(err_NR)
         end
