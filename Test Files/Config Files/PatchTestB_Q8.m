@@ -155,16 +155,12 @@ function [Mesh, Material, BC, Control] = PatchTestB_Q8(config_dir, progress_on)
         % LinearSolver3
         Control.beta = 10^10;
 
-        % method used for solving linear and nonlinear problems:
+        % method used for solving linear problem:
         % 'LinearSolver1': Partitioning
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        % 'NonLinearSolver1': Partitioning
-        % 'NonLinearSolver2': Zeroing DOFs in stiffness matrix 
-        %                   corresponding to essential boundaries
-        % 'NonLinearSolver3': Penalty method
-        Control.LinearSolver = 'NonLinearSolver1';
+        Control.LinearSolver = 'LinearSolver1'; 
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces

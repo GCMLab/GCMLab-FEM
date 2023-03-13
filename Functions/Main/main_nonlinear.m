@@ -114,14 +114,14 @@ end
             disp([num2str(toc),': Solve System of Equations...']);
         end
         switch Control.LinearSolver
-            case 'NonLinearSolver1'
-                [Dd, ~] = NonLinearSolver1(K, ResForce, Dd(BC.fix_disp_dof), ...
+            case 'LinearSolver1'
+                [Dd, ~] = LinearSolver1(K, ResForce, Dd(BC.fix_disp_dof), ...
                                                 BC.free, BC.fixed, Control.parallel);
-            case 'NonLinearSolver2'
-                [Dd, ~] = NonLinearSolver2(K,ResForce,Dd, ...
+            case 'LinearSolver2'
+                [Dd, ~] = LinearSolver2(K,ResForce,Dd, ...
                                                 BC.free, BC.fixed, Control.parallel);
-            case 'NonLinearSolver3'
-                [Dd, ~] = NonLinearSolver3(K, ResForce, Dd, ...
+            case 'LinearSolver3'
+                [Dd, ~] = LinearSolver3(K, ResForce, Dd, ...
                                                 BC.free, BC.fixed, Control.beta, Control.parallel);
         end
         
