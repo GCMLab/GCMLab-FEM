@@ -108,11 +108,19 @@ end
     ResForce = Fext - Fint;
     % Todo: Make the boundary conditions time dependent functions
     
+    if progress_on
+        msg_len = 1;
+        fprintf('Newton-Raphson - Iteration:  ')
+    end
+    
     while true
-        % Solve incremental form of system of equations
         if progress_on
-            disp([num2str(toc),': Solve System of Equations...']);
+            fprintf(repmat('\b',1,msg_len)) 
+            fprintf('%d',iter');
+            msg_len = numel(num2str(iter));
         end
+        
+        % Solve incremental form of system of equations
         switch Control.LinearSolver
             case 'LinearSolver1'
                 [Dd, ~] = LinearSolver1(K, ResForce, Dd(BC.fix_disp_dof), ...
@@ -129,9 +137,6 @@ end
         d = d + Dd;
         
         % Compute nonlinear stiffness matrix
-        if progress_on
-            disp([num2str(toc),': Assembling Nonlinear Stiffness Matrix...']);
-        end
         Knlin = sparse(Mesh.nDOF, Mesh.nDOF); % Nonlinear stiffness matrix
         K = Klin + Knlin ; % Total stiffness matrix
         % Todo: Write a function to calculate Knlin when the material is nonlinear
@@ -151,21 +156,26 @@ end
         else
             resScale = 1+norm(Fint);
         end
+        
+        % Calculate residual
         res = norm(ResForce)/resScale;
+        
+        % Check convergence
         if res < Control.r_tol
             break
         end
         
         iter = iter + 1;
+        % Case of divergence in Newton Raphson algorithm
         if iter > Control.iter_max
-            err_NR = sprintf('\t Newton-Raphson algorithm will not converge: The number of iterations in Newton-Raphson algorithm exceeds the maximum number of iteration');
+            err_NR = sprintf('\n \t Newton-Raphson algorithm will not converge: The number of iterations in Newton-Raphson algorithm exceeds the maximum number of iteration');
             error(err_NR)
         end
         
     end
     
     if progress_on
-        fprintf([num2str(toc),': Timestep %d converged with %d iterations ...\n'], step_count, iter);
+        fprintf(['\n', num2str(toc),': Timestep %d converged with %d iterations ...\n'], step_count, iter);
     end
       
     Fext(BC.fixed) = Fint(BC.fixed);
