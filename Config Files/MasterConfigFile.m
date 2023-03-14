@@ -169,8 +169,9 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
         
-    % Specify stiffness matrix calculation file    
-    Material.StiffnessMatrix = 'getK_elastic';
+    % Specify stiffness matrix and stress/strain calculation files
+    Material.StiffnessMatrixFile = 'getK_elastic';
+    Material.StressStrainFile = 'getStrain';
     
     % number of material properties
     Material.nmp = 1;

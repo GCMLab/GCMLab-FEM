@@ -58,7 +58,9 @@
     M = 0; % placeholder
     
     % Create tangent matrix function pointer
-    [~,stiffnessmatrix_name] = fileparts(Material.StiffnessMatrix);
+    [~,stiffnessmatrixfile_name] = fileparts(Material.StiffnessMatrixFile);
+    [~,stressstrainfile_name] = fileparts(Material.StressStrainFile);
+
     
 
 %% Define initial conditions
@@ -145,7 +147,7 @@ end
         d = d + Dd;
         
         % Compute nonlinear stiffness matrix and internal forces
-        [K, Fint] = feval(stiffnessmatrix_name, Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1) ; 
+        [K, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1) ; 
 
         % Calculate residual vector at the end of each iteration
         Dd = zeros(Mesh.nsd*Mesh.nn,1);
@@ -187,8 +189,7 @@ end
         if progress_on
             disp([num2str(toc),': Post-Processing...']);
         end
-        [strain, stress] = getStrain(d, Mesh, Material, Control.stress_calc, Quad);   
-    % Todo: Create a new function for calculation of stress and strain in nonlinear cases
+        [strain, stress] = feval(stressstrainfile_name, d, Mesh, Material, Control.stress_calc, Quad);   
 
 
     % Write to vtk
