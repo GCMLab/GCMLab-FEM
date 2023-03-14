@@ -1,4 +1,4 @@
-function [K, Fint] = getK_elastic(~, ~, ~, Klin, ~, d, ~, ~, ~, ~, ~, ~)
+function [K, Fint] = getK_elastic(~, ~, ~, Klin, ~, d, ~, ~, ~, ~)
 %GETK_ELASTIC Stiffness matrix for iterative elastic case
 %   [K, Fint] = GETK_ELASTIC(Mesh, Quad, Material) returns the stiffness
 %   matrix and internal force vector for the iterative solver where the
@@ -40,8 +40,6 @@ function [K, Fint] = getK_elastic(~, ~, ~, Klin, ~, d, ~, ~, ~, ~, ~, ~)
 %   d:          unconverged degree of freedom vector at current timestep n and iteration
 %   dnm1:       converged degree of freedom vector at timestep n-1
 %   dnm2:       converged degree of freedom vector at timestep n-2
-%   stress:     stress in the body
-%   strain:     strain in the body
 %   dt:         timestep size between timesteps n-1 and n
 %   dtnm1:      timestep size between timesteps n-2 and n-1
 

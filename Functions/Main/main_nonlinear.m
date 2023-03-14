@@ -147,7 +147,7 @@ end
         d = d + Dd;
         
         % Compute nonlinear stiffness matrix and internal forces
-        [K, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1) ; 
+        [K, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, dt, dtnm1) ; 
 
         % Calculate residual vector at the end of each iteration
         Dd = zeros(Mesh.nsd*Mesh.nn,1);
