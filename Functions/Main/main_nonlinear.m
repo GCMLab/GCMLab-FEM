@@ -34,6 +34,7 @@
     t = Control.StartTime;
     dt = Control.TimeStep;
     t = t + dt;
+    dtnm1 = dt;     % delta t bewteen timesteps n-2 to n-1
     step_count = 0;
 
 %% Identify free and fixed dofs
@@ -45,7 +46,7 @@
     % same type and same order of quadrature for all integrals)
     Quad = GlobalQuad(Mesh.nsd, Mesh.type, Control.qo);
 
-%% Compute system matrices
+%% Compute system matrices 
 
     % Compute linear elastic stiffness matrix
     if progress_on
@@ -53,13 +54,21 @@
     end
     Klin = getK(Mesh, Quad, Material); % Linear elastic stiffness matrix
     
+    % Compute mass matrix
+    M = 0; % placeholder
+    
+    % Create tangent matrix function pointer
+    [~,stiffnessmatrix_name] = fileparts(Material.StiffnessMatrix);
+    
 
 %% Define initial conditions
     
     d0 = BC.IC;
     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
     Fext = getFext(Mesh, BC, Quad,t-dt);
-    d = d0;
+    d = d0;     % d at timestep n
+    dnm1 = d0;  % d at timestep n-1
+    dnm2 = d0;  % d at timestep n-2
     K = Klin;
     
     % Export initial conditions
@@ -106,7 +115,6 @@ end
     end
     Fext = getFext(Mesh, BC, Quad, t);
     ResForce = Fext - Fint;
-    % Todo: Make the boundary conditions time dependent functions
     
     if progress_on
         msg_len = 1;
@@ -136,15 +144,9 @@ end
         % Update displacement vector
         d = d + Dd;
         
-        % Compute nonlinear stiffness matrix
-        Knlin = sparse(Mesh.nDOF, Mesh.nDOF); % Nonlinear stiffness matrix
-        K = Klin + Knlin ; % Total stiffness matrix
-        % Todo: Write a function to calculate Knlin when the material is nonlinear
-        
-        % Internal force vectors
-        Fint = K*d;
-        % Todo: Create a function for calculation of Fint when the material is nonlinear
-        
+        % Compute nonlinear stiffness matrix and internal forces
+        [K, Fint] = feval(stiffnessmatrix_name, Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1) ; 
+
         % Calculate residual vector at the end of each iteration
         Dd = zeros(Mesh.nsd*Mesh.nn,1);
         ResForce = Fext - Fint;
@@ -205,6 +207,7 @@ end
         break
      end
      
+     dtnm1 = dt;
      t = t + dt;
      step_count = step_count + 1;
      if t > Control.EndTime
@@ -212,6 +215,10 @@ end
         dt = Control.EndTime - t;
         t = Control.EndTime;
      end
+     
+     % Update previous d vectors
+     dnm2 = dnm1;
+     dnm1 = d;
      
      
  end
