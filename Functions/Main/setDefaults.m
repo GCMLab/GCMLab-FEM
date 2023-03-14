@@ -117,6 +117,12 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         err_count = err_count+1;
         err_mat = sprintf('%s\t\t\tError #%d\t:\t Model thickness is not defined - Define Material.t\n',err_mat,err_count);
     end
+    
+    if ~isfield(Material, 'StiffnessMatrix')
+        Material.StiffnessMatrix = 'getK_elastic';
+        err_mat = sprintf('%s\t\t\tError #%d\t:\t Tangent matrix type not defined, set to linear elastic\n',err_mat,err_count);
+
+    end
    
 %% Boundary conditions
     err_BC = sprintf('\t\tBoundary conditions \n');
