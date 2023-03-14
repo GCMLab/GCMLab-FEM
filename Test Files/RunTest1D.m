@@ -32,7 +32,8 @@
         nu = 0;  % poisson's ratio
         
         config_name = 'Test1D';
-        main
+%       main  % Runs calculation
+        main_nonlinear % Runs calculation
         
         % Step 2 - Check results
         % run check file, script is specific to each test

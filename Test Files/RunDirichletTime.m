@@ -27,7 +27,8 @@
         E = 2.5e11;
         nu = 0.25;
         config_name = 'ManufacturedSolution_DirichletTime'; 
-        main  % Runs calculation
+%       main  % Runs calculation
+        main_nonlinear % Runs calculation
         
         % Step 2 - Check results
         % run check file, script is specific to each test

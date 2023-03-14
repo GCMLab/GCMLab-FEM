@@ -273,6 +273,10 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';       
+        Control.LinearSolver = 'LinearSolver1';    
  
+        % Newton Raphson controls
+        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
 end

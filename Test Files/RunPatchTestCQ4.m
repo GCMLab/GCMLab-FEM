@@ -34,7 +34,8 @@
         quadorder = 2;
         
         config_name = 'PatchTestC';
-        main
+%       main  % Runs calculation
+        main_nonlinear % Runs calculation
         
         % Step 2 - Check results
         [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Mesh);

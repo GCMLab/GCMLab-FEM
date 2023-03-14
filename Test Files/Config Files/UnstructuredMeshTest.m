@@ -139,9 +139,14 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         Control.beta = 10^10;
 
         % method used for solving linear problem:
-            % 'LinearSolver1'
-            % 'LinearSolver2'
-            % 'LinearSolver3'
+        % 'LinearSolver1': Partitioning
+        % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
+        %                   corresponding to essential boundaries
+        % 'LinearSolver3': Penalty method
         Control.LinearSolver = 'LinearSolver1';
+        
+        % Newton Raphson controls
+        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
  
 end

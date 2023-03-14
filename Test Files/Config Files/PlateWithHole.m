@@ -260,11 +260,15 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';       
+        Control.LinearSolver = 'LinearSolver1'; 
 
         % parallel inversion
         % Use parallel processing to invert the matrix.
         % Usually more efficient at 2e5 dofs
         Control.parallel = 2;
+        
+        % Newton Raphson controls
+        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
         
 end
