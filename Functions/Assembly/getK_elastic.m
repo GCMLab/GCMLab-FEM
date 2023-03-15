@@ -1,8 +1,8 @@
-function [K, Fint] = getK_elastic(~, ~, ~, Klin, ~, d, ~, ~, ~, ~)
+function [K, R, Fint] = getK_elastic(~, ~, ~, Fext, Klin, ~, d, ~, ~, ~, ~)
 %GETK_ELASTIC Stiffness matrix for iterative elastic case
-%   [K, Fint] = GETK_ELASTIC(Mesh, Quad, Material) returns the stiffness
-%   matrix and internal force vector for the iterative solver where the
-%   problem uses a linear elastic material
+%   [K, R, Fint] = GETK_ELASTIC(Mesh, Quad, Material) returns the stiffness
+%   matrix K, the residual vector R, and the internal force vector for the 
+%   iterative solver where the problem uses a linear elastic material
 %   
 %   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
@@ -35,6 +35,7 @@ function [K, Fint] = getK_elastic(~, ~, ~, Klin, ~, d, ~, ~, ~, ~)
 %               with new fields
 %               .t:         Material thickness
 %
+%   Fext:       External force vector at timestep n
 %   Klin:       Linear elastic stiffness matrix
 %   M:          Mass matrix
 %   d:          unconverged degree of freedom vector at current timestep n and iteration
@@ -46,6 +47,7 @@ function [K, Fint] = getK_elastic(~, ~, ~, Klin, ~, d, ~, ~, ~, ~)
 
 K = Klin;
 Fint = K*d;
+R = Fext - Fint;
 
 
 end

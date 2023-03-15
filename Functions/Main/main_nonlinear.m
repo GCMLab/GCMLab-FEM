@@ -100,92 +100,99 @@ if Control.dSave
 end
         
  %% Solve the time-dependent nonlinear problem
- t_tol = 1e-10; % Tolerance on the final end time
- while true   
-    if progress_on
-        fprintf(['\n', num2str(toc),': Computing Time = %.2f s, Timestep %d, Progress %.2f percent...\n'], t, step_count, t/Control.EndTime*100);
-    end
+ % Set tolerance on the final end time
+    t_tol = 1e-10; 
+ while true   % Timestep loop
+    % Output progress
+        if progress_on
+            fprintf(['\n', num2str(toc),': Computing Time = %.2f s, Timestep %d, Progress %.2f percent...\n'], t, step_count, t/Control.EndTime*100);
+        end
     
     % Initialize incremental variables in each step
-    Dd = zeros(Mesh.nsd*Mesh.nn,1); % Increment of displacement vector
-    Dd(BC.fix_disp_dof) = BC.fix_disp_value(t) - BC.fix_disp_value(t-dt);
-    iter = 1; % Iteration counter in each step
+        Dd = zeros(Mesh.nsd*Mesh.nn,1);                                         % Increment of displacement vector
+        d(BC.fix_disp_dof) = BC.fix_disp_value(t);                              % Apply fixed DoF Boundary conditions
+        iter = 1;                                                               % Iteration counter in each step
+        converged = 0;                                                          % convergence status
+        FintPrev = 0;                                                            % Internal force vector from previous iteration
 
     % Compute external force and residual vectors
-    if progress_on
-        disp([num2str(toc),': Compute Force Vector...']);
-    end
-    Fext = getFext(Mesh, BC, Quad, t);
-    ResForce = Fext - Fint;
-    
-    if progress_on
-        msg_len = 1;
-        fprintf('Newton-Raphson - Iteration:  ')
-    end
-    
-    while true
         if progress_on
-            fprintf(repmat('\b',1,msg_len)) 
-            fprintf('%d',iter');
-            msg_len = numel(num2str(iter));
+            disp([num2str(toc),': Compute Force Vector...']);
         end
-        
-        % Solve incremental form of system of equations
-        switch Control.LinearSolver
-            case 'LinearSolver1'
-                [Dd, ~] = LinearSolver1(K, ResForce, Dd(BC.fix_disp_dof), ...
-                                                BC.free, BC.fixed, Control.parallel);
-            case 'LinearSolver2'
-                [Dd, ~] = LinearSolver2(K,ResForce,Dd, ...
-                                                BC.free, BC.fixed, Control.parallel);
-            case 'LinearSolver3'
-                [Dd, ~] = LinearSolver3(K, ResForce, Dd, ...
-                                                BC.free, BC.fixed, Control.beta, Control.parallel);
+        Fext = getFext(Mesh, BC, Quad, t);
+    
+    % Output progress to command window
+        if progress_on
+            msg_len = 1;
+            fprintf('Newton-Raphson - Iteration:  ')
         end
-        
-        % Update displacement vector
-        d = d + Dd;
-        
+    
+    % Begin Newton-Raphson Loop
+    while ~converged
+        % Update iteration counter in command window
+            if progress_on
+                fprintf(repmat('\b',1,msg_len)) 
+                fprintf('%d',iter');
+                msg_len = numel(num2str(iter));
+            end
+      
         % Compute nonlinear stiffness matrix and internal forces
-        [K, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, dt, dtnm1) ; 
-
-        % Calculate residual vector at the end of each iteration
-        Dd = zeros(Mesh.nsd*Mesh.nn,1);
-        ResForce = Fext - Fint;
-        ResForce(BC.fixed) = 0;
+            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fext, Klin, M, d, dnm1, dnm2, dt, dtnm1) ; 
+            ResForce(BC.fixed) = 0;
         
         % Calculate the norm of residual vector
-        if norm(Fint) < 1e-2
-            resScale = 1+norm(FintPre);
-        else
-            resScale = 1+norm(Fint);
-        end
+            if norm(Fint) < 1e-2
+                resScale = 1+norm(FintPrev);
+            else
+                resScale = 1+norm(Fint);
+            end
         
         % Calculate residual
-        res = norm(ResForce)/resScale;
+            res = norm(ResForce)/resScale;
         
         % Check convergence
-        if res < Control.r_tol
-            break
-        end
+            if res < Control.r_tol
+                converged = 1;
+            else
+                % Solve incremental form of system of equations
+                    switch Control.LinearSolver
+                        case 'LinearSolver1'
+                            [Dd, ~] = LinearSolver1(K, ResForce, Dd(BC.fix_disp_dof), ...
+                                                            BC.free, BC.fixed, Control.parallel);
+                        case 'LinearSolver2'
+                            [Dd, ~] = LinearSolver2(K,ResForce,Dd, ...
+                                                            BC.free, BC.fixed, Control.parallel);
+                        case 'LinearSolver3'
+                            [Dd, ~] = LinearSolver3(K, ResForce, Dd, ...
+                                                            BC.free, BC.fixed, Control.beta, Control.parallel);
+                    end
+
+                % Update displacement vector
+                    d = d + Dd;
+
+                % Update iteration number
+                    iter = iter + 1;
+                % Update internal force vector for normalization
+                    FintPrev = Fint; 
+            end
+              
         
-        iter = iter + 1;
         % Case of divergence in Newton Raphson algorithm
-        if iter > Control.iter_max
-            err_NR = sprintf('\n \t Newton-Raphson algorithm will not converge: The number of iterations in Newton-Raphson algorithm exceeds the maximum number of iteration');
-            error(err_NR)
-        end
+            if iter > Control.iter_max 
+                err_NR = sprintf('\n \t Newton-Raphson algorithm will not converge: The number of iterations in Newton-Raphson algorithm exceeds the maximum number of iteration');
+                error(err_NR)
+            end
         
     end
     
-    if progress_on
-        fprintf(['\n', num2str(toc),': Timestep %d converged with %d iterations ...\n'], step_count, iter);
-    end
+    % Output progress
+        if progress_on
+            fprintf(['\n', num2str(toc),': Timestep %d converged with %d iterations ...\n'], step_count, iter);
+        end
       
-    Fext(BC.fixed) = Fint(BC.fixed);
-    FintPre = Fint; 
 
-    % Strain
+
+    % Strain calculation
         if progress_on
             disp([num2str(toc),': Post-Processing...']);
         end
@@ -193,6 +200,8 @@ end
 
 
     % Write to vtk
+        Fext(BC.fixed) = Fint(BC.fixed);   % Set external forces as equal to reaction forces at fixed dof for output
+        
         if plot2vtk
             write2vtk_quasistatic(config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain, stress, ...
                             Fint, Fext, step_count);
@@ -203,23 +212,26 @@ end
            sSave(:,:,step_count + 1) = stress;
         end
         
-     % Update time variables
-     if abs(t-Control.EndTime) < t_tol
-        break
-     end
      
-     dtnm1 = dt;
-     t = t + dt;
-     step_count = step_count + 1;
-     if t > Control.EndTime
-        t = t - dt;
-        dt = Control.EndTime - t;
-        t = Control.EndTime;
-     end
+     % Break out of loop at end time
+         if abs(t-Control.EndTime) < t_tol
+            break
+         end
+         
+     % Update time variables  
+         dtnm1 = dt;                    % Timestep from previous step
+         t = t + dt;                    % New time n 
+         step_count = step_count + 1;   
+         if t > Control.EndTime         % Catch end time overshoot
+            t = t - dt;
+            dt = Control.EndTime - t;
+            t = Control.EndTime;
+         end
      
-     % Update previous d vectors
-     dnm2 = dnm1;
-     dnm1 = d;
+     % Update vectors from previous timesteps
+     dnm2 = dnm1;                       % d vector from timestep n-2
+     dnm1 = d;                          % d vector from timestep n-1
+          
      
      
  end
