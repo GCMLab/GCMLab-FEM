@@ -127,6 +127,12 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         Material.StressStrainFile = 'getStrain';
         err_mat = sprintf('%s\t\t\tError #%d\t:\t Stress-Strain type not defined, set to linear elastic\n',err_mat,err_count);
     end
+    
+    if ~isfield(Material, 'ConstitutiveLawFile')
+        Material.ConstitutiveLawFile = 'getD';
+        err_mat = sprintf('%s\t\t\tError #%d\t:\t Constitutive law file pointer not defined, set to linear elastic\n',err_mat,err_count);
+    end
+   
    
 %% Boundary conditions
     err_BC = sprintf('\t\tBoundary conditions \n');

@@ -170,6 +170,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
         
     % Specify stiffness matrix and stress/strain calculation files
+    Material.ConstitutiveLawFile = 'getD';
     Material.StiffnessMatrixFile = 'getK_elastic';
     Material.StressStrainFile = 'getStrain';
     
