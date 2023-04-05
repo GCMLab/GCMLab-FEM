@@ -159,6 +159,11 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
 
+    % Specify stiffness matrix and stress/strain calculation files
+    Material.ConstitutiveLawFile = 'getD';
+    Material.StiffnessMatrixFile = 'getK_elastic';
+    Material.StressStrainFile = 'getStrain';
+
     % number of material properties
     Material.nmp = 1;
         
