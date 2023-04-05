@@ -32,6 +32,9 @@ function K = getK(Mesh, Quad, Material)
 
 % Acknowledgements: Chris Ladubec
 
+% initialize D matrix file pointer
+[~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);
+
 % initialize stiffness matrix
 vec_size = Mesh.ne*(Mesh.nne * Mesh.nsd)^2; % vector size (solid dofs)
 row = zeros(vec_size, 1);                   % vector of row indices
@@ -56,7 +59,7 @@ for e = 1:Mesh.ne
         
     %% Constitutive matrix
         nMat = Mesh.MatList(e); % element material type
-        D = getD(Material.Prop(nMat).E, Material.Prop(nMat).nu, Mesh.nsd, Material.Dtype);
+        D = feval(DMatrix_functn, Material.Prop(nMat).E, Material.Prop(nMat).nu, Mesh.nsd, Material.Dtype);
         
     %% Shape functions and derivatives in parent coordinates
         W = Quad.W;
