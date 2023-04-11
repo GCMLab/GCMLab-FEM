@@ -145,13 +145,36 @@ switch ext
         nelem = e_str_e - e_str + 1;
         
         x = zeros(nnode, nsd);
-
+        
+        % Get grid coordinates
         for i = 1:nnode
             temp = s{1}(n_str+i-1);
             temp = char(split(temp,','));
             x(i,1) = sscanf(temp(end-3,:), '%f'); %coordinate X
             x(i,2) = sscanf(temp(end-2,:), '%f'); %coordinate Y                      
         end
+        
+        % Get nodal conectivity
+        temp = char(split(s{1}(e_str),','));
+        elmtyp =  temp(1,:);
+        switch elmtyp
+            case 'CQUAD4' % Q4
+                nne = 4; % number of nodes per element
+            case 'CTRIA3' % T3
+                nne = 3; % number of nodes per element
+            otherwise
+                error('Mesh reader only supports Q4 and T3 for hypermesh')
+        end
+        conn = zeros(nelem, nne);
+                
+        for i = 1:nelem
+            temp = s{1}(e_str+i-1);
+            temp = char(split(temp,','));
+            for j = 1 : nne
+               conn(i,j) =  sscanf(temp(end-nne-1+j,:), '%f');
+            end
+        end
+        
         
 end
 end
