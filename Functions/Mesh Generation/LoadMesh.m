@@ -3,8 +3,10 @@ function [x, conn] = LoadMesh(meshfile, nsd, config_dir)
 %   x = LOADMESH(meshfile, nsd, config_dir) is a matrix containing the 
 %   spatial coordinates of the nodes (size nn x nsd in which nn is the 
 %   number of nodes in the mesh and nsd is the number of spatial dimensions).
-%   The mesh is defined in the file exported from GMSH (meshfile), 
+%   The mesh is defined in the file exported from GMSH (meshfile) or Hyperworks, 
 %   located in the directory config_dir.  
+%
+%   Note: Hyperworks files only for 2D meshes
 % 
 %   [x, conn] = LOADMESH(meshfile, nsd, config_dir) also 
 %   returns the element connectivity matrix (size ne x nne in which  
@@ -14,105 +16,142 @@ function [x, conn] = LoadMesh(meshfile, nsd, config_dir)
 %   --------------------------------------------------------------------
 %   Input
 %   --------------------------------------------------------------------
-%   meshfile:       Name of the mesh file exported from GMSH
+%   meshfile:       Name of the mesh file exported from GMSH (.msh) or
+%                   Hypermesh (.fem)
 %   nsd:            Number of spatial dimensions
 %   config_dir:     Directory where mesh file is stored
 
 % Acknowledgements: Matin Parchei Esfahani
 
+% Define if it is a .msh or .fem file
+temp = strfind(meshfile,'.');
+ext = meshfile(temp:end); % Extension of the file
+                        
 filename = fullfile(config_dir, meshfile);
 fileID = fopen(filename,'r');
 
 s = textscan(fileID, '%s', 'delimiter', '\n');
 
-% start of nodes section
-n_str = find(strcmp(s{1}, '$Nodes'), 1, 'first');       
-% start of elements section
-e_str = find(strcmp(s{1}, '$Elements'), 1, 'first');    
+switch ext
+    case '.msh' %GMSH file
+        % start of nodes section
+        n_str = find(strcmp(s{1}, '$Nodes'), 1, 'first');       
+        % start of elements section
+        e_str = find(strcmp(s{1}, '$Elements'), 1, 'first');    
 
-% number of nodes
-nnode = str2double( s{1}(n_str+1) );                   
-% number of elements
-nelem = str2double( s{1}(e_str+1) );                    
+        % number of nodes
+        nnode = str2double( s{1}(n_str+1) );                   
+        % number of elements
+        nelem = str2double( s{1}(e_str+1) );                    
 
-x = zeros(nnode, nsd);
+        x = zeros(nnode, nsd);
 
-for i = 1:nnode
-    temp = s{1}(n_str+1+i);
-    temp = sscanf(temp{1}(1,:), '%f');
-    % nodal coordinates
-    x(i,:) = temp(2:nsd+1)';                        
+        for i = 1:nnode
+            temp = s{1}(n_str+1+i);
+            temp = sscanf(temp{1}(1,:), '%f');
+            % nodal coordinates
+            x(i,:) = temp(2:nsd+1)';                        
+        end
+
+        conn = [];
+
+        for i = 1:nelem
+            temp = s{1}(e_str+1+i);
+            temp = sscanf(temp{1}(1,:), '%d');
+            % equivalent type number in GMSH
+            elmtyp = temp(2);                                  
+
+            switch elmtyp
+                case 5          % B8
+                    nne = 8;
+                    if nsd == 3
+                        edg = 0;
+                    else
+                        edg = 1;
+                    end
+                case 1          % L2
+                    nne = 2;    % number of nodes per element
+                    edg = 1;
+                case 8          % L3
+                    nne = 3;    % number of nodes per element
+                    edg = 1;
+                case 3          % Q4
+                    nne = 4;    % number of nodes per element
+                    if nsd == 2
+                        edg = 0;
+                    else
+                        edg = 1;
+                    end
+                case 10         % Q9
+                    nne = 9;    % number of nodes per element
+                    if nsd == 2
+                        edg = 0;
+                    else
+                        edg = 1;
+                    end
+                case 15         % single node element
+                    nne = 1;    % number of nodes per element
+                    edg = 1;    
+                case 12         % B27
+                    nne = 27;   % number of nodes per element
+                    if nsd == 3
+                        edg = 0;
+                    else
+                        edg = 1;
+                    end
+                case 2          % T3 element
+                    nne = 3;
+                    if nsd == 2
+                        edg = 0;
+                    else
+                        edg = 1;
+                    end
+                case 9          % T6 element
+                    nne = 6;
+                    if nsd == 2
+                        edg = 0;
+                    else
+                        edg = 1;
+                    end
+            end
+
+            if ~edg
+                conn = [conn; temp(end-nne+1:end)'];
+            end
+
+        end
+
+        clear s
+        fclose(fileID);
+    case '.fem' %Hypermesh file
+        if nsd ~= 2
+            error('Hypermesh file reader only supports 2D mesh')
+        end
+        
+        % start of nodes section
+        n_str = find(strcmp(s{1}, '$$  GRID Data'), 1, 'first') + 2;
+        % end of node section
+        temp_m = find(strcmp(s{1}, '$$')); % Positions where $$ is found
+        n_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>n_str,1, 'first')) - 1;
+        % number of nodes 
+        nnode = n_str_e - n_str + 1;
+        
+        % start of element section 
+        %       Note: supports only one element type per mesh
+        e_str = n_str_e + 5;
+        % end of node section
+        e_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>e_str,1, 'first')) - 1;
+         % number of elements
+        nelem = e_str_e - e_str + 1;
+        
+        x = zeros(nnode, nsd);
+
+        for i = 1:nnode
+            temp = s{1}(n_str+i-1);
+            temp = char(split(temp,','));
+            x(i,1) = sscanf(temp(end-3,:), '%f'); %coordinate X
+            x(i,2) = sscanf(temp(end-2,:), '%f'); %coordinate Y                      
+        end
+        
 end
-
-conn = [];
-
-for i = 1:nelem
-    temp = s{1}(e_str+1+i);
-    temp = sscanf(temp{1}(1,:), '%d');
-    % equivalent type number in GMSH
-    elmtyp = temp(2);                                  
-
-    switch elmtyp
-        case 5          % B8
-            nne = 8;
-            if nsd == 3
-                edg = 0;
-            else
-                edg = 1;
-            end
-        case 1          % L2
-            nne = 2;    % number of nodes per element
-            edg = 1;
-        case 8          % L3
-            nne = 3;    % number of nodes per element
-            edg = 1;
-        case 3          % Q4
-            nne = 4;    % number of nodes per element
-            if nsd == 2
-                edg = 0;
-            else
-                edg = 1;
-            end
-        case 10         % Q9
-            nne = 9;    % number of nodes per element
-            if nsd == 2
-                edg = 0;
-            else
-                edg = 1;
-            end
-        case 15         % single node element
-            nne = 1;    % number of nodes per element
-            edg = 1;    
-        case 12         % B27
-            nne = 27;   % number of nodes per element
-            if nsd == 3
-                edg = 0;
-            else
-                edg = 1;
-            end
-        case 2          % T3 element
-            nne = 3;
-            if nsd == 2
-                edg = 0;
-            else
-                edg = 1;
-            end
-        case 9          % T6 element
-            nne = 6;
-            if nsd == 2
-                edg = 0;
-            else
-                edg = 1;
-            end
-    end
-    
-    if ~edg
-        conn = [conn; temp(end-nne+1:end)'];
-    end
-    
-end
-
-clear s
-fclose(fileID);
-
 end
