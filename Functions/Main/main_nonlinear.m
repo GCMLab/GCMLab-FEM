@@ -196,20 +196,20 @@ end
         if progress_on
             disp([num2str(toc),': Post-Processing...']);
         end
-        [strain, stress] = feval(stressstrainfile_name, d, Mesh, Material, Control.stress_calc, Quad);   
+        [strain_nm1, stress_nm1] = feval(stressstrainfile_name, d, Mesh, Material, Control.stress_calc, Quad, strain);   
 
 
     % Write to vtk
         Fext(BC.fixed) = Fint(BC.fixed);   % Set external forces as equal to reaction forces at fixed dof for output
         
         if plot2vtk
-            write2vtk_quasistatic(config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain, stress, ...
+            write2vtk_quasistatic(config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain_nm1, stress_nm1, ...
                             Fint, Fext, step_count);
         end
         
         if Control.dSave
            dSave(:,step_count+1) = d; 
-           sSave(:,:,step_count + 1) = stress;
+           sSave(:,:,step_count + 1) = stress_nm1;
         end
         
      
@@ -231,7 +231,7 @@ end
      % Update vectors from previous timesteps
      dnm2 = dnm1;                       % d vector from timestep n-2
      dnm1 = d;                          % d vector from timestep n-1
-          
+     strain = strain_nm1;               % strain matrix from time n-1     
      
      
  end
