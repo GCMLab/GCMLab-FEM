@@ -1,6 +1,6 @@
-function D = getD(E, nu, nsd, Dtype)
+function D = getD(nMat, Material, Mesh)
 %GETD Elasticity tensor
-%   D = GETD(E, nu, nsd) is the elasticity tensor for a problem of 
+%   D = GETD(nMat, Material, Mesh) is the elasticity tensor for a problem of 
 %   spatial dimension, nsd, Young's modulus, E, and Poisson's ratio, nu. 
 %   For a 1D problem, a scalar is returned. For a 2D problem, a 3x3 
 %   matrix is returned, and for a 3D problem, a 6x6 matrix is returned. 
@@ -8,15 +8,25 @@ function D = getD(E, nu, nsd, Dtype)
 %   --------------------------------------------------------------------
 %   Input
 %   --------------------------------------------------------------------
-%   E:      Modulus of elasticity
-%   nu:     Poisson's ratio
-%   nsd:    Number of spatial dimensions
+%   nMat:       Material type
+%   Mesh:       Structure array with the following fields, may be updated
+%               with new fields
+%               .nsd:   Number of spatial dimensions
+%   Material:   Structure array with the following fields, may be updated
+%               with new fields
+%               .Dtype: constitutive law for two-dimensional elasticity
+%               .E: Modulus of elasticity
+%               .nu: Poisson's ratio
+%   --------------------------------------------------------------------
 
-switch nsd
+E = Material.Prop(nMat).E;
+nu = Material.Prop(nMat).nu;
+
+switch Mesh.nsd
     case 1
         D = E;
     case 2                 
-        switch Dtype
+        switch Material.Dtype
             case 'PlaneStrain'
                 D  = E/((1+nu)*(1-2*nu))*[1-nu  nu   0     ;
                                           nu    1-nu 0     ;
