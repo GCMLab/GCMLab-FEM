@@ -75,7 +75,7 @@
     
     % Export initial conditions
         % Strain
-        [strain, stress] = feval(stressstrainfile_name, d0, Mesh, Material, Control.stress_calc, Quad);   
+        [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
 
     % Internal force vectors
         Fint = K*d0;
