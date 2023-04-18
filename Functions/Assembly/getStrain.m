@@ -57,6 +57,9 @@ function [strain, stress] = getStrain(d, Mesh, Material, calc_type, Quad)
 %       	.Nv:     Cell array (size nq x 1) with shape functions 
 %       	         evaluated at each quadrature point in Voigt form
 
+% initialize D matrix file pointer
+[~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);
+
 if nargin < 4
     calc_type = 'center';
 end
@@ -110,7 +113,7 @@ else
                 de = d(dofE);
             %% Constitutive matrix
                 nMat = Mesh.MatList(e); % element material type
-                D = getD(Material.Prop(nMat).E, Material.Prop(nMat).nu, Mesh.nsd, Material.Dtype);
+                D = getD(nMat, Material, Mesh);
         
         switch calc_type
             case 'center'
