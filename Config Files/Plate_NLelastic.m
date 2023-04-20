@@ -179,7 +179,7 @@ function [Mesh, Material, BC, Control] = Plate_NLelastic(config_dir, progress_on
 
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).E1 = 1e11; % Young's modulus [Pa]
+    Material.Prop(1).E1 = 1e20; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     
     % type of material per element
@@ -229,7 +229,7 @@ function [Mesh, Material, BC, Control] = Plate_NLelastic(config_dir, progress_on
         BC.traction_force_node = Mesh.right_nodes;  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e7/(length(BC.traction_force_node) - 1);
+        Fnode = 1e8/(length(BC.traction_force_node) - 1);
         BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
         
         % find the nodes in the top right and bottom right corners
