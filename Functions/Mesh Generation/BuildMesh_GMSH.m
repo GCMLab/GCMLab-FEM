@@ -80,7 +80,7 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on, Q8_re
 
 %% Load GMSH file
     % nodal matrix and member connectivity
-    [Mesh.x, Mesh.conn] = LoadMesh(meshFileName, nsd, config_dir);
+    [Mesh] = LoadMesh(meshFileName, nsd, config_dir);
 
 %% Mesh properties
     % total number of elements
@@ -154,42 +154,42 @@ function Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on, Q8_re
     end
     
 %% Transform Q9 → Q8
+if strcmp(Mesh.ext, '.msh')
+    switch Mesh.type 
+        case 'Q8'
+            % GMSH does not generate Q8 elements - remove column 9
 
-switch Mesh.type 
-    case 'Q8'
-        % GMSH does not generate Q8 elements - remove column 9
+            middlenodes = Mesh.conn(:,9);
+            Mesh.conn(:,9) = [];
 
-        middlenodes = Mesh.conn(:,9);
-        Mesh.conn(:,9) = [];
+            % remove middle nodes from node list
+            Mesh.nn = Mesh.nn - length(middlenodes);
+            Mesh.nne = 8;
+            Mesh.nDOFe = 16;
+            Mesh.nDOF = Mesh.nDOF - length(middlenodes)* nsd;
+            Mesh.x(middlenodes,:) = [];
 
-        % remove middle nodes from node list
-        Mesh.nn = Mesh.nn - length(middlenodes);
-        Mesh.nne = 8;
-        Mesh.nDOFe = 16;
-        Mesh.nDOF = Mesh.nDOF - length(middlenodes)* nsd;
-        Mesh.x(middlenodes,:) = [];
+            % Update Mesh.DOF
+            Mesh.DOF = zeros(Mesh.nn, Mesh.nsd); 
+            for sd = 1:Mesh.nsd
+               Mesh.DOF(:,sd) = (sd : Mesh.nsd : (Mesh.nDOF-(Mesh.nsd-sd)))';
+            end
 
-        % Update Mesh.DOF
-        Mesh.DOF = zeros(Mesh.nn, Mesh.nsd); 
-        for sd = 1:Mesh.nsd
-           Mesh.DOF(:,sd) = (sd : Mesh.nsd : (Mesh.nDOF-(Mesh.nsd-sd)))';
-        end
+            % remove middle nodes from connectivity
+            middlenodes = sort(middlenodes,'ascend');
+            conn = Mesh.conn; 
+            for i = 1:length(middlenodes)
+                conn(conn>middlenodes(i)) = conn(conn>middlenodes(i))-1;
+                middlenodes(middlenodes>middlenodes(i)) = middlenodes(middlenodes>middlenodes(i))-1;
+            end
 
-        % remove middle nodes from connectivity
-        middlenodes = sort(middlenodes,'ascend');
-        conn = Mesh.conn; 
-        for i = 1:length(middlenodes)
-            conn(conn>middlenodes(i)) = conn(conn>middlenodes(i))-1;
-            middlenodes(middlenodes>middlenodes(i)) = middlenodes(middlenodes>middlenodes(i))-1;
-        end
-        
-        % Update Mesh.nodeconn
-        Mesh.conn = conn;
-    otherwise
-        % No changes to Mesh. structure
-    
+            % Update Mesh.nodeconn
+            Mesh.conn = conn;
+        otherwise
+            % No changes to Mesh. structure
+
+    end
 end
-
 %% Nodal Connectivity
     % list of elements connected to each node
     switch Mesh.type
