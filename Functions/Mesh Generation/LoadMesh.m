@@ -271,10 +271,12 @@ end
 % Store data in Mesh.structure
 Mesh.x = x;
 Mesh.conn = conn;
-Mesh.BC_N_t = BC_N_t;
-Mesh.BC_E = BC_E;
-Mesh.BC_nE = BC_nE;
-Mesh.BC_nN_n = BC_nN_n;
-Mesh.BC_N_n = BC_N_n;
 
+switch ext
+    case '.fem'
+        Mesh.BC_N_t = BC_N_t;
+        Mesh.BC_E = BC_E;
+        Mesh.BC_nE = BC_nE;
+        Mesh.BC_nN_n = BC_nN_n;
+        Mesh.BC_N_n = BC_N_n;
 end
