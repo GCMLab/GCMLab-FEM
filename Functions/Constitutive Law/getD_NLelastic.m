@@ -2,7 +2,7 @@ function D = getD_NLelastic(nMat, Material, Mesh, strain_e)
 %GETD Elasticity tensor
 %   D = GETD_NLelastic(E, nu, nsd) is the elasticity tensor for a problem 
 %   in which the constitutive law is a non linear elastic relation given by
-%   E = E0 - E1*I1^2
+%   E = E0 + E1*I1^2
 % 
 %   --------------------------------------------------------------------
 %   Input
