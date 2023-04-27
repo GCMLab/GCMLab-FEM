@@ -189,27 +189,26 @@ end
         if progress_on
             fprintf(['\n', num2str(toc),': Timestep %d converged with %d iterations ...\n'], step_count, iter);
         end
-      
-
 
     % Strain calculation
         if progress_on
             disp([num2str(toc),': Post-Processing...']);
         end
-        [strain_nm1, stress_nm1] = feval(stressstrainfile_name, d, Mesh, Material, Control.stress_calc, Quad, strain);   
+        [strain, stress] = feval(stressstrainfile_name, d, Mesh, Material, Control.stress_calc, Quad, dnm1);   
 
 
     % Write to vtk
         Fext(BC.fixed) = Fint(BC.fixed);   % Set external forces as equal to reaction forces at fixed dof for output
         
         if plot2vtk
-            write2vtk_quasistatic(config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain_nm1, stress_nm1, ...
+            write2vtk_quasistatic(config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain, stress, ...
                             Fint, Fext, step_count);
         end
         
         if Control.dSave
            dSave(:,step_count+1) = d; 
-           sSave(:,:,step_count + 1) = stress_nm1;
+           sSave(:,:,step_count + 1) = stress;
+           loadSave(:,step_count+1) = Fext;
         end
         
      
@@ -230,13 +229,12 @@ end
      
      % Update vectors from previous timesteps
      dnm2 = dnm1;                       % d vector from timestep n-2
-     dnm1 = d;                          % d vector from timestep n-1
-     strain = strain_nm1;               % strain matrix from time n-1     
-     
+     dnm1 = d;                          % d vector from timestep n-1     
      
  end
      if Control.dSave
          d = dSave; 
+         plotLoadVsDispl(loadSave, dSave, Control);
      end
  
      if progress_on
