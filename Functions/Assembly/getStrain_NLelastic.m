@@ -59,6 +59,8 @@ function [strain, stress] = getStrain_NLelastic(d, Mesh, Material, calc_type, Qu
 %       	         each quadrature point
 %       	.Nv:     Cell array (size nq x 1) with shape functions
 %       	         evaluated at each quadrature point in Voigt form
+%
+%   dnm1:       d at time step n-1 
 
 % initialize D matrix file pointer
 [~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);
@@ -114,6 +116,8 @@ else
         dofE = reshape(dofE',Mesh.nDOFe,[]);
         % local displacement vector
         de = d(dofE);
+        % local displacement vector from step n-1
+        de_nm1 = dnm1(dofE);
         % element material type
         nMat = Mesh.MatList(e); 
         
