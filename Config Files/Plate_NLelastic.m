@@ -296,7 +296,8 @@ function [Mesh, Material, BC, Control] = Plate_NLelastic(config_dir, progress_on
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise
         % recommended
-        Control.dSave     = 0; 
+        Control.dSave     = 1; 
+        Control.plotAt = Mesh.nDOF - 1; % dof in x at bottom right node
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
