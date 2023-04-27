@@ -1,22 +1,25 @@
-function [strain, stress] = getStrain_NLelastic(d, Mesh, Material, calc_type, Quad, strain_old)
+function [strain, stress] = getStrain_NLelastic(d, Mesh, Material, calc_type, Quad, dnm1)
 %GETSTRAIN Evaluate stress and strain
-%   [strain, stress] = GETSTRAIN(d, Mesh, Material) returns two matrices of
-%   strains and stresses computed at the center of each element. The
-%   matrices are of size dim x ne, in which dim = 1 for 1D elements, 3 for
-%   2D elements, and 6 for 3D elements.
+%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material) returns two 
+%   matrices of strains and stresses computed at the center of each element. 
+%   The matrices are of size dim x ne, in which dim = 1 for 1D elements, 3 
+%   for 2D elements, and 6 for 3D elements.
+%   
+%   The non linear elastic material is defined by the law:
+%   E = E0 + E1*I1^2
 %
-%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'none') does not
-%   compute the stresses or strains
+%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material, 'none') does 
+%   not compute the stresses or strains
 %
-%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'nodal') returns
-%   matrices of nodal-averaged strains (size dim x nn).
+%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material, 'nodal') 
+%   returns matrices of nodal-averaged strains (size dim x nn).
 %
-%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'center') returns
-%   matrices of strains computed at the center of each element
+%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material, 'center') 
+%   returns matrices of strains computed at the center of each element
 %   (size dim x ne).
 %
-%   [strain, stress] = GETSTRAIN(d, Mesh, Material, 'L2projection') returns
-%   matrices of L2-projected stresses at the nodes (size dim x nn).
+%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material, 'L2projection') 
+%   returns matrices of L2-projected stresses at the nodes (size dim x nn).
 %
 %   --------------------------------------------------------------------
 %   Input
