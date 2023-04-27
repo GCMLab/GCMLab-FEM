@@ -128,6 +128,11 @@ else
                 Je = dNdxi'*xI;
                 B = Je\(dNdxi');
                 Bv = getBv(B', Mesh.nsd);
+                % strain from step n-1
+                strain_nm1 = Bv'*de_nm1;
+                % calculate constitutive matrix
+                D = feval(DMatrix_functn, nMat, Material, Mesh, strain_nm1);
+                % strain and stress at current step
                 strain(:, e) = Bv'*de;
                 stress(:, e) = D*strain(:, e);
             case 'nodal'
@@ -155,7 +160,14 @@ else
                     
                     % convert B matrix to Voigt form
                     Bv = getBv(B', Mesh.nsd);
+
+                    % strain from step n-1
+                    strain_nm1 = Bv'*de_nm1;
                     
+                    % calculate constitutive matrix
+                    D = feval(DMatrix_functn, nMat, Material, Mesh, strain_nm1);
+                    
+                    % strain and stress at current step
                     % strain_e = [strainx_n1  strainx_n2...;
                     %strainy_n1  strainy_n2...;
                     %strainxy_n1 strainxy_n2...];
@@ -171,9 +183,6 @@ else
                 A_e = zeros(Mesh.nne, Mesh.nne);
                 de_e = zeros(Mesh.nne,dim);    % column vector of strains exx
                 ds_e = zeros(Mesh.nne,dim);    % column vector of stresses sxx
-                
-                % strain in element from previous step
-                strain_e_old = strain_old(:,e);
                 
                 % loop through all quadrature points
                 for q = 1:Quad.nq
@@ -200,8 +209,11 @@ else
                     % calculate strain at quadrature point
                     strain_q = Bv'*de;
                     
+                    % strain from step n-1
+                    strain_nm1 = Bv'*de_nm1;
+                    
                     % calculate constitutive matrix
-                    D = feval(DMatrix_functn, nMat, Material, Mesh, strain_e_old);
+                    D = feval(DMatrix_functn, nMat, Material, Mesh, strain_nm1);
                     
                     % calculate stress at quadrature point
                     stress_q = D*strain_q;
