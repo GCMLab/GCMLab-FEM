@@ -11,7 +11,7 @@
     % Folder name where config files are stored
     DirFolder = 'Config Files';
     % Config files to run. Choose either 'all' or give the file name.
-    FileList = 'MasterConfigFile';
+    FileList = 'PlateWithHoleTransient';
     
     
     % Directory for VTK Files (end with \)
@@ -19,7 +19,7 @@
         VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
         %VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
     else
-        VTKFolder = '/home/e2rivas/Documents/Matlab Results/';
+        VTKFolder = '/Users/jonathanzingaro/Documents/MATLAB Results';
     end
      
     % output vtk files

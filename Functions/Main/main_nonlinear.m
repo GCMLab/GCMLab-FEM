@@ -61,17 +61,23 @@
     [~,stiffnessmatrixfile_name] = fileparts(Material.StiffnessMatrixFile);
     [~,stressstrainfile_name] = fileparts(Material.StressStrainFile);
 
+    % Compute linear damping stiffness matrix
+    if Control.transient == 1
+        disp([num2str(toc),': Assembling Damping Matrix...']);
+        C = getC(Mesh, Quad, Material);
+    end    
     
 
 %% Define initial conditions
-    
     d0 = BC.IC;
     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
     Fext = getFext(Mesh, BC, Quad,t-dt);
+    Fextnm1 = Fext; % Fext at timestep n-1
     d = d0;     % d at timestep n
     dnm1 = d0;  % d at timestep n-1
     dnm2 = d0;  % d at timestep n-2
     K = Klin;
+    alpha = Control.alpha; % Integration Scheme
     
     % Export initial conditions
         % Strain
@@ -86,6 +92,7 @@
                             Fint, Fext, step_count);
         end
         step_count = step_count + 1;
+       
         
 %% Initialize variable tracking for time-dependent problems 
 % Not recommended, primarily for use in testing and debugging.
@@ -137,7 +144,7 @@ end
             end
       
         % Compute nonlinear stiffness matrix and internal forces
-            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fext, Klin, M, d, dnm1, dnm2, dt, dtnm1) ; 
+            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fext, Fextnm1, Klin, M, d, dnm1, dnm2, dt, dtnm1,C,alpha); 
             ResForce(BC.fixed) = 0;
         
         % Calculate the norm of residual vector
@@ -174,6 +181,9 @@ end
                     iter = iter + 1;
                 % Update internal force vector for normalization
                     FintPrev = Fint; 
+
+                % Update external force vector for next time-step iteration
+                    Fextnm1 = Fext;
             end
               
         

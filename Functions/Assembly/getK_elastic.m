@@ -1,4 +1,4 @@
-function [K, R, Fint] = getK_elastic(~, ~, ~, Fext, Klin, ~, d, ~, ~, ~, ~)
+function [K, R, Fint] = getK_elastic(~, ~, ~, Fext, ~, Klin, ~, d, ~, ~, ~, ~,~,~)
 %GETK_ELASTIC Stiffness matrix for iterative elastic case
 %   [K, R, Fint] = GETK_ELASTIC(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 

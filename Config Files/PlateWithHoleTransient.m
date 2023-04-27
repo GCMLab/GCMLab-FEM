@@ -172,7 +172,7 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
-    Material.Prop(1).C = 1e5; % Damping Coefficent
+    Material.Prop(1).C = 1e10; % Damping Coefficent
      
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -206,7 +206,7 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
 
     % Specify stiffness matrix and stress/strain calculation files
     Material.ConstitutiveLawFile = 'getD';
-    Material.StiffnessMatrixFile = 'getK_elastic';
+    Material.StiffnessMatrixFile = 'getK_transient';
     Material.StressStrainFile = 'getStrain';
         
     % number of material properties
