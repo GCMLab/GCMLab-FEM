@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = Plate_NLelastic(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_on)
 %PLATENLELASTIC Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = PLATENLELASTIC() is a structure array with the
@@ -127,7 +127,7 @@ function [Mesh, Material, BC, Control] = Plate_NLelastic(config_dir, progress_on
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
+            nex = [1;1];
             % element type ('Q4')
             type = 'Q4';
             
@@ -297,7 +297,7 @@ function [Mesh, Material, BC, Control] = Plate_NLelastic(config_dir, progress_on
         % debugging and testing purposes only, vtk files are otherwise
         % recommended
         Control.dSave     = 1; 
-        Control.plotAt = Mesh.nDOF - 1; % dof in x at bottom right node
+        Control.plotAt = Mesh.nDOF-1; % dof in x at bottom right node
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
