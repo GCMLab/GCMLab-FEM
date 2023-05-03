@@ -296,6 +296,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % debugging and testing purposes only, vtk files are otherwise
         % recommended
         Control.dSave     = 0; 
+        % Plot load vs displacement curve (if not included, default is set
+        % to 0)
+        Control.plotLoadDispl = 0;
+        % DOF to plot (only necessary if Control.plotLoadDispl = 1)
+        Control.plotAt = 0; % [add DOF number]
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
