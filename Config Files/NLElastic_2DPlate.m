@@ -230,7 +230,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         Fnode = 1e8/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), ones(size(BC.traction_force_node))];
         
         % find the nodes in the top right and bottom right corners
         toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
@@ -290,14 +290,14 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 2*pi;
+        Control.EndTime   = 1*pi;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise
         % recommended
         Control.dSave     = 1; 
-        Control.plotAt = Mesh.nDOF-1; % dof in x at bottom right node
+        Control.plotAt = Mesh.nDOF; % dof in y at bottom right node
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
