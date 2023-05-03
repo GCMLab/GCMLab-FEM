@@ -243,6 +243,9 @@ end
  end
      if Control.dSave
          d = dSave; 
+     end
+     
+     if Control.plotLoadDispl
          plotLoadVsDispl(loadSave, dSave, Control);
      end
  

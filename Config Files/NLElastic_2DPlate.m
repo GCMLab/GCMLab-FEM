@@ -297,6 +297,9 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % debugging and testing purposes only, vtk files are otherwise
         % recommended
         Control.dSave     = 1; 
+        % Plot load vs displacement curve
+        Control.plotLoadDispl = 1;
+        % DOF to plot
         Control.plotAt = Mesh.nDOF; % dof in y at bottom right node
         
         % Newton Raphson controls
