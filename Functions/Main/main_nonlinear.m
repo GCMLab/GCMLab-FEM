@@ -95,7 +95,15 @@ if Control.dSave
     n_timesteps = ceil((Control.EndTime - Control.StartTime)/dt);
     dSave = zeros(length(d0),n_timesteps+1);
     dSave(:,1) = d0;                                % Save displacements
-    sSave = zeros(3,Mesh.nn, n_timesteps+1);        % Save stresses
+    switch Mesh.nsd
+        case 1
+            dim = 1;
+        case 2
+            dim = 3;
+        case 3
+            dim = 6;
+    end
+    sSave = zeros(dim,Mesh.nn, n_timesteps+1);        % Save stresses
     sSave(:,:,1) = stress;
     loadSave = zeros(length(d0),n_timesteps+1);     % Save applied load
 end
