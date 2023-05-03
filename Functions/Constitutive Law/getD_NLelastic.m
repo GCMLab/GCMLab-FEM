@@ -54,7 +54,7 @@ switch Mesh.nsd
         % strain invariant
         I1 = (strain_e(1,1)+strain_e(2,1)+ strain_e(3,1))^2;
         % elasticity modulus
-        E = E0 - E1*I1^2;
+        E = E0 + E1*I1^2;
         % constitutive matrix
         D = E/(1+nu)/(1-2*nu)*[1-nu nu nu 0 0 0;
                                 nu 1-nu nu 0 0 0;
