@@ -34,7 +34,7 @@ function Mesh = LoadMesh(meshfile, nsd, config_dir)
 %   Output for .fem files
 %       Mesh.x          Spatial coordinates of mesh
 %       Mesh.conn       Nodal conectivity of elements (ne x nne)
-%       Mesh.BC_E       Direction of dirichlet boundary conditions (essential)
+%       Mesh.BC_E       Direction of dirichlet boundary conditions (essential - displacements)
 %       Mesh.BC_nE      Nodes of dirichlet boundary conditions (essential)
 %       Mesh.BC_N_n     Direction of neumann boundary conditions (natural) - points
 %       Mesh.BC_nN_n    Nodes of dirichlet boundary conditions (essential)
@@ -165,12 +165,16 @@ switch Mesh.ext
         nelem = e_str_e - e_str + 1;
         
         % start of CROD section for tractions Mesh.BC_N_t
-        %       Note: supports only one element type per mesh
-        t_str = e_str_e + 5;
-        % end of section
-        t_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>t_str,1, 'first')) - 1;
-        % number of surfaces
-        nt = t_str_e - t_str + 1;
+        %       Note: supports only one element type per mesh\
+        if ~isempty(find(strcmp(s{1}, '$$  CROD Elements'), 1, 'first'))
+            t_str = e_str_e + 5;
+            % end of section
+            t_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>t_str,1, 'first')) - 1;
+            % number of surfaces
+            nt = t_str_e - t_str + 1;
+        else
+            nt = 0;
+        end
         
         % start of SPC (single - point constrains) for BC_E
         ebc_str = find(strcmp(s{1}, '$$  SPC Data'), 1, 'first') + 2;
@@ -180,11 +184,15 @@ switch Mesh.ext
         nebc = ebc_str_e - ebc_str + 1;        
         
         % start of FORCE for Mesh.BC_N_n
-        nbc_str = ebc_str_e + 4;
-        % end of section
-        nbc_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>nbc_str,1, 'first')) - 1;
-        % number of forces
-        nnbc = nbc_str_e - nbc_str;      
+        if ~isempty(find(strcmp(s{1}, '$$  FORCE Data'), 1, 'first'))
+            nbc_str = ebc_str_e + 4;
+            % end of section
+            nbc_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>nbc_str,1, 'first')) - 1;
+            % number of forces
+            nnbc = nbc_str_e - nbc_str;
+        else
+            nnbc = 0;
+        end
         
         % Initialization of relevant matrices/vectors
         x = zeros(nnode, nsd);
@@ -224,7 +232,8 @@ switch Mesh.ext
             end
         end
         
-        % Get natural boundary conditions for Mesh.BC_N_t
+        % Get natural boundary conditions for Mesh.BC_N_t 
+        % Matrix of nodes that define were tractions are applied
         for i = 1:nt
             temp = s{1}(t_str+i-1);
             temp = char(split(temp,','));
@@ -238,7 +247,7 @@ switch Mesh.ext
             temp = char(split(temp,','));
             supp = sscanf(temp(end-2,:), '%f');
             if supp == 1        % constrain on X
-                BC_E(i,1) = 1;  
+                BC_E(i,1) = 1;         
             elseif supp == 2    % constrain on Y
                 BC_E(i,2) = 1;  
             elseif supp == 12   % constrain on X and Y

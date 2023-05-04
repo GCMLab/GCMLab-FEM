@@ -28,7 +28,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 26; 
+    ntests = 27; 
     
     nameslist = {};
     testnum = 0;
@@ -37,6 +37,8 @@
     testpasssummary = zeros(ntests,1);
     
 %% Run Tests
+
+      run('Test Files/RunPlatewHole_hypermesh')       
 
 %% Test 1: Patch Test A - All nodal displacements prescribed Q4
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
@@ -150,6 +152,10 @@
 %   Pass Condtion: Shear strain over time matches manufactured solution
        run('Test Files/RunDirichletTime')
 
+%% Test 27: Plate with Hole under tension using Hypermesh input
+%  Pass Condtion: error of L2 projected stresses is less than nodal
+%  averaged stresses
+      run('Test Files/RunPlatewHole_hypermesh')       
 
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:
