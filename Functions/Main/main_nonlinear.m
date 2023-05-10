@@ -19,8 +19,6 @@
     [Mesh, Material, BC, Control] = ...
             feval(config_name, ConfigDir, progress_on);
         
-
-
 %% Set Default Values
     [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
 
@@ -63,8 +61,13 @@
 
     % Compute linear damping stiffness matrix
     if Control.transient == 1
-        disp([num2str(toc),': Assembling Damping Matrix...']);
-        C = getC(Mesh, Quad, Material);
+        if progress_on
+            disp([num2str(toc),': Assembling Damping Matrix...']);
+        else
+        end
+        C = getC(Mesh, Quad, Material); % Transient Case
+    else
+        C = 0; % Static Case
     end    
     
 
@@ -77,14 +80,18 @@
     dnm1 = d0;  % d at timestep n-1
     dnm2 = d0;  % d at timestep n-2
     K = Klin;
-    alpha = Control.alpha; % Integration Scheme
+    alpha = Control.alpha; % Integration Scheme Parameter
     
     % Export initial conditions
         % Strain
         [strain, stress] = feval(stressstrainfile_name, d0, Mesh, Material, Control.stress_calc, Quad);   
 
     % Internal force vectors
-        Fint = K*d0;
+        if Control.transient == 1
+            Fint = (alpha*Klin+(1/dt)*C)*d+((1-alpha)*Klin-C./dt)*dnm1;
+        else
+            Fint = K*d0;
+        end
 
     % Write initial conditions to vtk
         if plot2vtk
@@ -105,7 +112,7 @@ if Control.dSave
     sSave = zeros(3,Mesh.nn, n_timesteps+1);        % Save stresses
     sSave(:,:,1) = stress;
 end
-        
+  
  %% Solve the time-dependent nonlinear problem
  % Set tolerance on the final end time
     t_tol = 1e-10; 
@@ -182,8 +189,7 @@ end
                 % Update internal force vector for normalization
                     FintPrev = Fint; 
 
-                % Update external force vector for next time-step iteration
-                    Fextnm1 = Fext;
+
             end
               
         
@@ -241,8 +247,7 @@ end
      % Update vectors from previous timesteps
      dnm2 = dnm1;                       % d vector from timestep n-2
      dnm1 = d;                          % d vector from timestep n-1
-          
-     
+     Fextnm1 = Fext;                    % Fext from timestep n-1
      
  end
      if Control.dSave
@@ -251,4 +256,4 @@ end
  
      if progress_on
         disp('done')
-    end
+     end

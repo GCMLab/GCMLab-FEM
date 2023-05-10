@@ -125,7 +125,7 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = [1;0.1];
             % number of elements in each direction [nex; ney; nez] 
             nex = [2;2]*10;
             % element type ('Q4')
@@ -138,7 +138,7 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'PlateWithHoleQ9.msh';
+            meshFileName = '2DBarMesh.msh';
             % number of space dimensions 
             nsd = 2;
             
@@ -171,8 +171,8 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
 
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
-    Material.Prop(1).C = 1e10; % Damping Coefficent
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    Material.Prop(1).C = 0; % Damping Coefficent
      
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -206,7 +206,7 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
 
     % Specify stiffness matrix and stress/strain calculation files
     Material.ConstitutiveLawFile = 'getD';
-    Material.StiffnessMatrixFile = 'getK_transient';
+    Material.StiffnessMatrixFile = 'getK_transient'; 
     Material.StressStrainFile = 'getStrain';
         
     % number of material properties
@@ -215,7 +215,7 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.25; % Poisson's ratio
-    Material.Prop(1).C = 1e7; % Damping Coefficient
+    Material.Prop(1).C = 50e3; % Damping Coefficient
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -251,17 +251,19 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof 
-        edge_nodes = unique([Mesh.left_nodes; Mesh.right_nodes; Mesh.bottom_nodes; Mesh.top_nodes]);
-        xdofs_edges = 2*edge_nodes - 1;
-        ydofs_edges = 2*edge_nodes;
-        BC.fix_disp_dof = [xdofs_edges;ydofs_edges];
+        BC.fix_disp_dof = [Mesh.left_dofx; Mesh.left_dofy];
+        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1); 
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        Omega1 = 1; Omega2 = 1;
-        BC.fix_disp_value = @(t) [sin(Omega1*t)*Mesh.x(edge_nodes,2);  sin(Omega2*t)*Mesh.x(edge_nodes,1)];
+
+        BC.fix_disp_value = @(t) 0;
 
     %% Neumann BC
     % -----------------------------------------------------------------
+
+        % Magnitude of amplitude of traction
+        tr = 10e5;
+
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
 
@@ -270,10 +272,11 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = [];  
+        BC.traction_force_node = [Mesh.right_nodes];  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        BC.traction_force_value = @(t) 0; 
+        omega = 1;
+        BC.traction_force_value = @(t) [tr*sin(omega*t) *ones(size(Mesh.right_nodes)), zeros(size(Mesh.right_nodes))];
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -283,7 +286,7 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t)[];    
+        BC.b = @(x,t)[];  
 
 %% Initial Conditions
         BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
@@ -310,7 +313,7 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
         Control.beta = 10^10;
 
         % transient toggle
-        Control.transient = 1;
+        Control.transient = 1; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
         
         % parallel inversion
         % Use parallel processing to invert the matrix.
@@ -326,14 +329,14 @@ function [Mesh, Material, BC, Control] = PlateWithHoleTransient(config_dir, prog
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 10;
-        NumberOfSteps     = 50;
+        Control.EndTime   = 50;
+        NumberOfSteps     = 1e3;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
-        Control.alpha     = 0.5; % β = 1 Fully Implicit, β = 1/2 Crank-Nicolson
+        Control.alpha     = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         
         % Newton Raphson controls
-        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.r_tol = 1e-7; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
         
 end
