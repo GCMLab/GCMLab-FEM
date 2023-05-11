@@ -151,43 +151,6 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
             Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
     end    
     
-%% Material Properties (Solid)
-
-    % NOTES-------------------------------------------------------------
-                                
-        % NOTE: anonymous functions are defined with respect to the variable x,
-        % which is a vector [x(1) x(2) x(3)] = [x y z]
-
-        % NOTE: Material properties must be continuous along an element, 
-        % otherwise, quadrature order must be increased significantly
-        
-        % NOTE: Number of material properties can be more than one. Properties
-        % for different materials are saved in Material.Prop.
-        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
-        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
-
-    % number of material properties
-    Material.nmp = 1;
-
-    % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.25; % Poisson's ratio
-    Material.Prop(1).C = 0; % Damping Coefficent
-     
-    % type of material per element
-    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
-    
-    % assign material type to elements
-    Mesh.MatList(:) = 1;
-
-    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
-
-    % Thickness (set as default to 1)
-    Material.t = @(x) 1;
-
-    % Alternatively, import a material file
-    % Material = Material_shale();
 
 %% Material Properties (Solid)
 

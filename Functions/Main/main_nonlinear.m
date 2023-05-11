@@ -67,7 +67,7 @@
         end
         C = getC(Mesh, Quad, Material); % Transient Case
     else
-        C = 0; % Static Case
+        C = sparse(Mesh.nDOF, Mesh.nDOF); % Static Case
     end    
     
 
@@ -80,7 +80,6 @@
     dnm1 = d0;  % d at timestep n-1
     dnm2 = d0;  % d at timestep n-2
     K = Klin;
-    alpha = Control.alpha; % Integration Scheme Parameter
     
     % Export initial conditions
         % Strain
@@ -88,7 +87,7 @@
 
     % Internal force vectors
         if Control.transient == 1
-            Fint = (alpha*Klin+(1/dt)*C)*d+((1-alpha)*Klin-C./dt)*dnm1;
+            Fint = (Control.alpha*Klin+(1/dt)*C)*d+((1-Control.alpha)*Klin-C./dt)*dnm1;
         else
             Fint = K*d0;
         end
@@ -151,7 +150,7 @@ end
             end
       
         % Compute nonlinear stiffness matrix and internal forces
-            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fext, Fextnm1, Klin, M, d, dnm1, dnm2, dt, dtnm1,C,alpha); 
+            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fext, Fextnm1, Klin, M, d, dnm1, dnm2, dt, dtnm1, C, Control.alpha); 
             ResForce(BC.fixed) = 0;
         
         % Calculate the norm of residual vector
