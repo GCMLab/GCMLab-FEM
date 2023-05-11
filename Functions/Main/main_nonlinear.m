@@ -75,7 +75,7 @@
     
     % Export initial conditions
         % Strain
-        [strain, stress] = feval(stressstrainfile_name, d0, Mesh, Material, Control.stress_calc, Quad);   
+        [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
 
     % Internal force vectors
         Fint = K*d0;
@@ -94,9 +94,18 @@
 if Control.dSave
     n_timesteps = ceil((Control.EndTime - Control.StartTime)/dt);
     dSave = zeros(length(d0),n_timesteps+1);
-    dSave(:,1) = d0;                                   % Save displacements
-    sSave = zeros(3,Mesh.nn, n_timesteps+1);        % Save stresses
+    dSave(:,1) = d0;                                % Save displacements
+    switch Mesh.nsd
+        case 1
+            dim = 1;
+        case 2
+            dim = 3;
+        case 3
+            dim = 6;
+    end
+    sSave = zeros(dim,Mesh.nn, n_timesteps+1);        % Save stresses
     sSave(:,:,1) = stress;
+    loadSave = zeros(length(d0),n_timesteps+1);     % Save applied load
 end
         
  %% Solve the time-dependent nonlinear problem
@@ -189,14 +198,12 @@ end
         if progress_on
             fprintf(['\n', num2str(toc),': Timestep %d converged with %d iterations ...\n'], step_count, iter);
         end
-      
-
 
     % Strain calculation
         if progress_on
             disp([num2str(toc),': Post-Processing...']);
         end
-        [strain, stress] = feval(stressstrainfile_name, d, Mesh, Material, Control.stress_calc, Quad);   
+        [strain, stress] = feval(stressstrainfile_name, d, Mesh, Material, Control.stress_calc, Quad, dnm1);   
 
 
     % Write to vtk
@@ -210,6 +217,7 @@ end
         if Control.dSave
            dSave(:,step_count+1) = d; 
            sSave(:,:,step_count + 1) = stress;
+           loadSave(:,step_count+1) = Fext;
         end
         
      
@@ -230,13 +238,15 @@ end
      
      % Update vectors from previous timesteps
      dnm2 = dnm1;                       % d vector from timestep n-2
-     dnm1 = d;                          % d vector from timestep n-1
-          
-     
+     dnm1 = d;                          % d vector from timestep n-1     
      
  end
      if Control.dSave
          d = dSave; 
+     end
+     
+     if Control.plotLoadDispl
+         plotLoadVsDispl(loadSave, dSave, Control);
      end
  
      if progress_on

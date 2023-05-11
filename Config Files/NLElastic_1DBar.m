@@ -1,7 +1,7 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_on)
-%MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
+function [Mesh, Material, BC, Control] = NLElastic_1DBar(config_dir, progress_on)
+%PLATENLELASTIC Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = MASTERCONFIGFILE() is a structure array with the
+%   Mesh = PLATENLELASTIC() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 
@@ -60,10 +60,10 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 %       
-%   Mesh = MASTERCONFIGFILE(config_dir) defines the mesh using GMSH file 
+%   Mesh = PLATENLELASTIC(config_dir) defines the mesh using GMSH file 
 %   import located in the directory config_dir
 %
-%   [Mesh, Material] = MASTERCONFIGFILE() also returns a
+%   [Mesh, Material] = PLATENLELASTIC() also returns a
 %   structure array with the following fields: 
 %       .nmp:           number of material properties
 %       .Prop:          Material properties
@@ -72,7 +72,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
 %       .Prop.t:        Material thickness
 % 
-%   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
+%   [Mesh, Material, BC] = PLATENLELASTIC() also returns a structure
 %   array with the following fields: 
 %       .fix_disp_dof:              Column vector of degrees of freedom 
 %                                   with prescribed displacements
@@ -90,7 +90,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %       .b                          Anonymous function of distributed
 %                                   body force (size 1 x nsd)
 % 
-%   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
+%   [Mesh, Material, BC, Control] = PLATENLELASTIC() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
@@ -123,13 +123,13 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % location of initial node [m] [x0;y0;z0] 
             x1 = [0;0;0];
             % number of space dimensions 
-            nsd = 2;
+            nsd = 1;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = 2.35;
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
+            nex = 1;
             % element type ('Q4')
-            type = 'Q4';
+            type = 'L2';
             
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
         case 'GMSH'
@@ -170,15 +170,16 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
         
     % Specify stiffness matrix and stress/strain calculation files
-    Material.ConstitutiveLawFile = 'getD';
-    Material.StiffnessMatrixFile = 'getK_elastic';
-    Material.StressStrainFile = 'getStrain';
+    Material.ConstitutiveLawFile = 'getD_NLelastic';
+    Material.StiffnessMatrixFile = 'getK_NLelastic';
+    Material.StressStrainFile = 'getStrain_NLelastic';
     
     % number of material properties
     Material.nmp = 1;
 
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E1 = 1e20; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     
     % type of material per element
@@ -188,7 +189,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
+    Material.Dtype = 'PlaneStress'; 
 
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
@@ -213,7 +214,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.fix_disp_dof = Mesh.left_dof;
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) sin(t)/1e5*ones(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -228,18 +229,10 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.traction_force_node = Mesh.right_nodes;  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e7/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        
+        BC.traction_force_value = 1e8;
+              
         % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
+        BC.traction_force_value = @(t) BC.traction_force_value*t; 
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -295,12 +288,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise
         % recommended
-        Control.dSave     = 0; 
-        % Plot load vs displacement curve (if not included, default is set
-        % to 0)
-        Control.plotLoadDispl = 0;
-        % DOF to plot (only necessary if Control.plotLoadDispl = 1)
-        Control.plotAt = 0; % [add DOF number]
+        Control.dSave     = 1; 
+        % Plot load vs displacement curve
+        Control.plotLoadDispl = 1;
+        % DOF to plot
+        Control.plotAt = Mesh.nDOF; % end node
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
