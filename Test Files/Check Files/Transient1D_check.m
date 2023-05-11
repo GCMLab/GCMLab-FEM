@@ -19,8 +19,8 @@ function [disp_er] = Transient1D_check(d, Material, Mesh, Control,BC);
 
 % The analytical displacement along the free edge of a 1D bar is given by
 %% NOTE: 
-% 1. the traction is applied to all nodes in the x-direction along the free-end of the beam. 
-%    This is accounted by F = 21*tr. 
+% 1. the external force is applied to all nodes in the x-direction along the free-end of the beam. 
+%    This is accounted by F = 21*Fn. 
 % 2. Index 863 corresponds to the displacement in x along the free-end of the beam at the midpoint in the y-direction. 
 
 % Import Material Parameters
