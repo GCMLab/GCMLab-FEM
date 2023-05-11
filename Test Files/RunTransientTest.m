@@ -1,12 +1,16 @@
 % ------------------------------------------------------------------------
-% Runs unit test - Patch Test C as part of RunTests
+% Runs unit test - Manufactured Solution for Transient as part of RunTests
 % ------------------------------------------------------------------------
-% Patch Test C is performed with node 1 fully restrained and nodes 4 and 8 
-% restrained only in the x -direction. Nodal forces are applied to nodes 2,
-% 3, and 6 in accordance with the values generated through the boundary 
-% tractions by sigma(x)=2. The error between the FEA
-% and exact solutions is then calculated. The FEA approximate solution
-% should be exact.
+% Test consists of a 2D cantilever bar simulation where the left is fixed.
+% Boundary conditions at the fixed-end are restricted to displacements in
+% the x-direction. The bottom node at the fixed-end restricts displacement
+% in both the x and y directions to avoid 2d effects. An external force is
+% applied to all nodes at the free end of the bar. The solution is compared
+% to the 1D analytical solution whereby the displacement at node 863 
+% (i.e. midpoint in y-direction at free-end) is compared over time. A 
+% slight variation in the numerical and analytical solution is expected due 
+% to the truncation error and the comparison to an exact one-dimensional 
+% solution. 
 
        
         testnum = testnum + 1;
@@ -24,7 +28,7 @@
     
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        config_name = 'TransientTest';
+        config_name = 'ManufacturedSolution_Transient';
         main_nonlinear % Runs calculation
 
         
@@ -42,9 +46,9 @@
         
         % Step 3 - Output results
         if test_pass
-            fprintf('\nPASS\n')
+            fprintf('\nPASS Patch Test C\n')
         else
-            fprintf('\n\nFAIL\n')
+            fprintf('\n\nFAIL Patch Test C\n')
             return
         end
         testpasssummary(testnum) = test_pass;
