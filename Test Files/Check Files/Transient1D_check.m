@@ -31,7 +31,7 @@ K = Material.Prop.E;
 t = Control.StartTime:Control.TimeStep:Control.EndTime;
 
 % Force at Free End
-F = 21*BC.tr;
+F = 21*BC.Fn;
 
 % Compute Exact Solution
 dsoln = @(t) ((F./(C.^2+K.^2)).*(-C.*cos(t)+K.*sin(t)+C.*cos(t).*exp(-K.*t./C)));
