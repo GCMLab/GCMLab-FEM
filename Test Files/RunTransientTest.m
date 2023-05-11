@@ -46,9 +46,9 @@
         
         % Step 3 - Output results
         if test_pass
-            fprintf('\nPASS Patch Test C\n')
+            fprintf('\nPASSED Manufactured Solution\n')
         else
-            fprintf('\n\nFAIL Patch Test C\n')
+            fprintf('\n\nFAILED  Manufactured Solution C\n')
             return
         end
         testpasssummary(testnum) = test_pass;
