@@ -38,7 +38,7 @@
         
         % Step 2 - Check results
         % run check file, script is specific to each test
-        [error_nodal, error_L2] = PlateWithHole_check(Mesh,stress_nodal,stress_L2);
+        [error_nodal, error_L2] = PlateWithHole_check_hypermesh(Mesh,stress_nodal,stress_L2);
         if error_L2 < error_nodal
             test_pass = 1;
         else
