@@ -23,7 +23,7 @@ function [error_nodal, error_L2] = PlateWithHole_check_hypermesh(Mesh, stress_no
 
 plot_on = 0; % turn plots on/off - debugging tool
 
-Mesh.left_nodes = Mesh.BC_nE(find(Mesh.BC_E(:,2) == 1),1);
+Mesh.left_nodes = Mesh.BC_nE(find(Mesh.BC_E(:,2) == 0),1);
 
 sxx_nodal = stress_nodal(1,Mesh.left_nodes);
 sxx_L2    = stress_L2(1,Mesh.left_nodes);

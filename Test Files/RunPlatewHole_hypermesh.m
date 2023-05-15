@@ -6,7 +6,7 @@
 % TODO: Add description of test case to Wiki
 
         testnum = testnum + 1;
-        testname = 'Plate with hole under tension';
+        testname = 'Plate with hole under tension using Hypermesh input';
         nameslist{testnum} = testname;
        
         % Create test VTK folder

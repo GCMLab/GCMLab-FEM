@@ -8,9 +8,9 @@
     tic;
     
     % Test VTK output
-    plot2vtk = 0;
-     VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
-%    VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
+    plot2vtk = 1;
+%      VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+    VTKFolder = 'C:\Users\nilsb\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
     
     % suppress progress messages
     progress_on = 0;
@@ -37,8 +37,6 @@
     testpasssummary = zeros(ntests,1);
     
 %% Run Tests
-
-      run('Test Files/RunPlatewHole_hypermesh')       
 
 %% Test 1: Patch Test A - All nodal displacements prescribed Q4
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
@@ -155,7 +153,7 @@
 %% Test 27: Plate with Hole under tension using Hypermesh input
 %  Pass Condtion: error of L2 projected stresses is less than nodal
 %  averaged stresses
-      run('Test Files/RunPlatewHole_hypermesh')       
+      run('Test Files/RunPlatewHole_hypermesh')   
 
 %% Test X: [Test Name] - Short Test Description
 %   Pass Condtion:

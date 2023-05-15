@@ -217,8 +217,11 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
 %         BC.traction_force_node = Mesh.right_nodes;  
-        temp = Mesh.DOF(Mesh.BC_nN_n,:).*Mesh.BC_N_n;
-        BC.traction_force_node = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
+%         temp = Mesh.DOF(Mesh.BC_nN_n,:).*Mesh.BC_N_n;
+%         BC.traction_force_node = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
+
+        temp = Mesh.BC_nN_n;
+        BC.traction_force_node = temp;
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         t = 10e3; % uniform tensile stress applied to right edge

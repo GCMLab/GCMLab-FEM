@@ -231,7 +231,10 @@ switch Mesh.ext
                conn(i,j) =  sscanf(temp(end-nne-1+j,:), '%f');
             end
         end
-        
+        % Correction for node labeling;
+        min_conn = min(min(conn));
+        conn(:,:)  = conn(:,:) - min_conn + 1;
+
         % Get natural boundary conditions for Mesh.BC_N_t 
         % Matrix of nodes that define were tractions are applied
         for i = 1:nt
@@ -240,7 +243,8 @@ switch Mesh.ext
             BC_N_t(i,1) =  sscanf(temp(end-2,:), '%f');
             BC_N_t(i,2) =  sscanf(temp(end-1,:), '%f');
         end
-        
+        BC_N_t(:,:) = BC_N_t(i,1) - min_conn + 1;
+
         % Get essential boundary conditions for BC_E
         for i = 1:nebc
             temp = s{1}(ebc_str+i-1);
@@ -257,7 +261,9 @@ switch Mesh.ext
                 error('Essential boundary conditions should be applied only on X and Y directions in .fem file')
             end
             BC_nE(i,1) = sscanf(temp(end-3,:), '%f'); % Node label of constrain
-        end       
+        end   
+        % Correction for node labeling;
+        BC_nE(:,:) = BC_nE(:,:) - min_conn + 1;
         
         % Get natural boundary conditions for Mesh.BC_N_n
         for i = 1:nnbc
@@ -274,6 +280,8 @@ switch Mesh.ext
                 error('Nodal forces should not be applied in the Z direction in .fem file')
             end
         end
+        % Correction for node labeling;
+        BC_nN_n(:,:) = BC_nN_n(:,:) - min_conn + 1;
 end
 
 
