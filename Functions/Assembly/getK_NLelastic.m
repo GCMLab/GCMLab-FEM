@@ -1,13 +1,17 @@
-function K = getK(Mesh, Quad, Material)
-%GETK Stiffness matrix 
-%   K = GETK(Mesh, Quad, Material) is the global stiffness matrix for 
-%   parameters defined in the structure arrays Mesh, Quad, and Material. 
-%   The sparse matrix has size Mesh.nDOF x Mesh.nDOF
+function [K, R, Fint] = getK_NLelastic(Mesh, Quad, Material, Fext, ~, ~, d, ~, ~, ~, ~)
+%GETK_NLELASTIC Stiffness matrix for iterative non linear elastic case
+%   [K, R, Fint] = GETK_NLELASTIC(Mesh, Quad, Material) returns the 
+%   stiffness matrix K, the residual vector R, and the internal force 
+%   vector for the iterative solver where the problem uses a non linear 
+%   elastic material
 %   
+%   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
-%   Input
+%   Accepted Inputs (in order)
 %   --------------------------------------------------------------------
-%   Mesh:       Structure array with the following fields,
+%   getK_NLelastic(Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1)
+%   Mesh:       Structure array with the following fields, may be updated
+%               with new fields
 %               .ne:    Total number of elements in the mesh
 %               .nne:   Vector of number of nodes per element (size nsd x 1)
 %               .nsd:   Number of spatial dimensions
@@ -18,7 +22,8 @@ function K = getK(Mesh, Quad, Material)
 %               .nDOFe: Number of DOFs per element
 %               .nDOF:  Total number of DOFs
 %  
-%   Quad:       Structure array with the following fields,
+%   Quad:       Structure array with the following fields, may be updated
+%               with new fields
 %               .W:      Vector of quadrature weights (size nq x 1)      
 %               .nq:     Number of quadrature points 
 %               .Nq:     Cell array (size nq x 1) with shape functions  
@@ -27,10 +32,21 @@ function K = getK(Mesh, Quad, Material)
 %                        functions w.r.t. parent coordinates evaluated at 
 %                        each quadrature point
 % 
-%   Material:   Structure array with the following fields,
+%   Material:   Structure array with the following fields, may be updated
+%               with new fields
 %               .t:         Material thickness
+%
+%   Fext:       External force vector at timestep n
+%   Klin:       Linear elastic stiffness matrix
+%   M:          Mass matrix
+%   d:          unconverged degree of freedom vector at current timestep n and iteration
+%   dnm1:       converged degree of freedom vector at timestep n-1
+%   dnm2:       converged degree of freedom vector at timestep n-2
+%   dt:         timestep size between timesteps n-1 and n
+%   dtnm1:      timestep size between timesteps n-2 and n-1
 
-% Acknowledgements: Chris Ladubec
+% initialize D matrix file pointer
+[~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);
 
 % initialize stiffness matrix
 vec_size = Mesh.ne*(Mesh.nne * Mesh.nsd)^2; % vector size (solid dofs)
@@ -53,11 +69,11 @@ for e = 1:Mesh.ne
         dofE = reshape(dofE',Mesh.nDOFe,[]);
         % number of degrees of freedom
         ndofE = numel(dofE);
-        
-    %% Constitutive matrix
-        nMat = Mesh.MatList(e); % element material type
-        D = getD(nMat, Material, Mesh);
-        
+        % displacements of the element's nodes
+        de = d(dofE);
+        % element material type
+        nMat = Mesh.MatList(e); 
+
     %% Shape functions and derivatives in parent coordinates
         W = Quad.W;
         nq = Quad.nq;
@@ -109,6 +125,12 @@ for e = 1:Mesh.ne
                     L = 1;                
             end
 
+            % compute strains in quadrature point
+            strain_e = Bv'*de;
+
+            % Compute constitutive matrix
+            D = feval(DMatrix_functn, nMat, Material, Mesh, strain_e);
+
             % Calculate local stiffness matrix
             Ke = Ke + W(q)*Bv*D*Bv'*L*dJe;
 
@@ -130,5 +152,11 @@ end
 
 % sparse stiffness matrix
 K = sparse(row, col, Kvec, Mesh.nDOF, Mesh.nDOF);
+
+% internal forces
+Fint = K*d;
+
+% residual
+R = Fext - Fint;
 
 end

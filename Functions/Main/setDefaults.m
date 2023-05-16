@@ -247,6 +247,10 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         Control.dSave = 0;
     end
     
+    if ~isfield(Control, 'plotLoadDispl')
+        Control.plotLoadDispl = 0;
+    end
+    
 %% Output
 
 war_message = sprintf('%s %s %s %s %s', war_message, war_mesh, war_mat, war_BC, war_control);
