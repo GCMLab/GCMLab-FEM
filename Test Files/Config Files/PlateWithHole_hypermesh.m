@@ -114,8 +114,8 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    MeshType = 'GMSH';        
+    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
+    MeshType = 'IMPORTED';      
     
     switch MeshType
         case 'MANUAL'
@@ -131,7 +131,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
             type = 'Q4';
             
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'GMSH'
+        case 'IMPORTED'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
@@ -141,7 +141,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
     end    
     
 %% Material Properties (Solid)

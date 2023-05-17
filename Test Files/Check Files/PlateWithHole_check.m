@@ -23,6 +23,12 @@ function [error_nodal, error_L2] = PlateWithHole_check(Mesh, stress_nodal, stres
 
 plot_on = 0; % turn plots on/off - debugging tool
 
+switch Mesh.ext
+    case '.fem'
+        Mesh.left_nodes = Mesh.BC_nE(find(Mesh.BC_E(:,2) == 0),1);
+    otherwise
+        % Mesh.left_nodes has already been defined
+end
 sxx_nodal = stress_nodal(1,Mesh.left_nodes);
 sxx_L2    = stress_L2(1,Mesh.left_nodes);
 
