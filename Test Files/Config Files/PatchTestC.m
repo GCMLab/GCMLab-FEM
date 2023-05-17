@@ -216,9 +216,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
-        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        
+        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm      
         
      
 end

@@ -299,10 +299,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         
         % transient toggle
         Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        
         
 end
