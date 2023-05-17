@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -114,8 +114,8 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    MeshType = 'EXCEL';        
+    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
+    MeshType = 'IMPORTED';      
     
     switch MeshType
         case 'MANUAL'
@@ -131,23 +131,17 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
             type = 'Q4';
             
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'GMSH'
+        case 'IMPORTED'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Mesh Files\PlateWithHole.msh';
+            meshFileName = 'Mesh Files\PlateWithHole.fem';
             % number of space dimensions 
             nsd = 2;
             
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
-        case 'EXCEL'
-            meshFileName = 'Mesh Files\CricularInclusion.xlsx';
-            % number of space dimensions
-            nsd = 2;
-            
-            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
     end    
     
 %% Material Properties (Solid)
@@ -169,26 +163,22 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
     Material.ConstitutiveLawFile = 'getD';
     Material.StiffnessMatrixFile = 'getK_elastic';
     Material.StressStrainFile = 'getStrain';
-        
-    % number of material properties
-    Material.nmp = 2;
 
+    % number of material properties
+    Material.nmp = 1;
+        
     % Properties material 1
-    Material.Prop(1).E = 1; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.25; % Poisson's ratio
-    
-    % Properties material 2
-    Material.Prop(2).E = 10; % Young's modulus [Pa]
-    Material.Prop(2).nu = 0.3; % Poisson's ratio
+    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements
-    Mesh.MatList = readmatrix(meshFileName,'Sheet','MatList');
+    Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
+    Material.Dtype = 'PlaneStress'; 
 
     % Thickness (set as default to 1)
     Material.t = @(x) 1;
@@ -209,26 +199,12 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof1 = [Mesh.left_dofx; Mesh.bottom_dofy];
+%         BC.fix_disp_dof = [Mesh.left_dofx; Mesh.bottom_dofy];
+        temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
+        BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
 
-        curvenode = find(abs(sqrt(Mesh.x(:,1).^2 + Mesh.x(:,2).^2) - max(Mesh.x(:,2)))<1e-6);
-        BC.fix_disp_dof2 = [curvenode*2-1; curvenode*2];
-
-        BC.fix_disp_dof = [BC.fix_disp_dof1; BC.fix_disp_dof2];
-        
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value1 = zeros(length(BC.fix_disp_dof1),1);
-        
-        UD = max(Mesh.x(:,2));
-        BC.fix_disp_value2 = zeros(length(BC.fix_disp_dof2),1);
-        for e = 1 : size(curvenode,1)
-            theta = atan2(Mesh.x(curvenode(e),2),Mesh.x(curvenode(e),1));
-            BC.fix_disp_value2(e) = UD*cos(theta);
-            BC.fix_disp_value2(e+size(curvenode,1)) = UD*sin(theta);
-        end
-
-        BC.fix_disp_value = [BC.fix_disp_value1; BC.fix_disp_value2];
-        BC.fix_disp_value = @(t) BC.fix_disp_value;
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -238,8 +214,26 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
         % magnitude of prescribed tractions [N]
         BC.traction_force_dof_value = [];
 
-        BC.traction_force_node = [];
-%         BC.traction_force_value = [0 0];
+        % NOTE: this is slower than prescribing tractions at dofs
+        % column vector of prescribed traction nodes 
+%         BC.traction_force_node = Mesh.right_nodes;  
+%         temp = Mesh.DOF(Mesh.BC_nN_n,:).*Mesh.BC_N_n;
+%         BC.traction_force_node = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
+
+        temp = Mesh.BC_nN_n;
+        BC.traction_force_node = temp;
+
+        % prescribed traction [t1x t1y;t2x t2y;...] [N]
+        t = 10e3; % uniform tensile stress applied to right edge
+        Fnode = t*max(Mesh.x(:,2))/(length(BC.traction_force_node) - 1);
+        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        
+        % find the nodes in the top right and bottom right corners
+        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
+        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
+        
+        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
+        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -249,7 +243,7 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t)[];    
+        BC.b = @(x)[];    
 
 %% Computation controls
 
@@ -278,8 +272,13 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';    
- 
+        Control.LinearSolver = 'LinearSolver1'; 
+
+        % parallel inversion
+        % Use parallel processing to invert the matrix.
+        % Usually more efficient at 2e5 dofs
+        Control.parallel = 2;
+        
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
