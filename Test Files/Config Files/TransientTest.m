@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = TransientCantileverBeam(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = ManufacturedSolution_Transient(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -172,7 +172,7 @@ function [Mesh, Material, BC, Control] = TransientCantileverBeam(config_dir, pro
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.25; % Poisson's ratio
-    Material.Prop(1).C = 1; % Damping Coefficent
+    Material.Prop(1).C = 0; % Damping Coefficent
      
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
