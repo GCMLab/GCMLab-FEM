@@ -245,7 +245,11 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';         
+        Control.LinearSolver = 'LinearSolver1';     
+        
+        % transient controls
+        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
