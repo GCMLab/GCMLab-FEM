@@ -8,9 +8,10 @@
     tic;
     
     % Test VTK output
-    plot2vtk = 0;
-     VTKFolder ='/Users/jonathanzingaro/Documents/MATLAB Results';
-%    VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
+    plot2vtk = 1;
+%      VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+%     VTKFolder = 'C:\Users\nilsb\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
+    VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
     
     % suppress progress messages
     progress_on = 0;
@@ -28,7 +29,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 27; 
+    ntests = 28; 
     
     nameslist = {};
     testnum = 0;
@@ -147,16 +148,21 @@
       run('Test Files\RunCircularInclusion')
 
 %% Test 26: Time Dependent Dirichlet - Time dependent dirichlet boundary conditions
-%   Pass Condtion: Shear strain over time matches manufactured solution
-       run('Test Files\RunDirichletTime')
+%  Pass Condtion: Shear strain over time matches manufactured solution
+      run('Test Files\RunDirichletTime')
+       
+%% Test 27: Plate with Hole under tension using Hypermesh input
+%  Pass Condtion: error of L2 projected stresses is less than nodal
+%  averaged stresses
+      run('Test Files/RunPlatewHole_hypermesh')   
 
-% Test 27: Transient Test] - Cantilever 2D bar with Time-Dependent Neumann B.C at free end 
-  Pass Condtion: Displacement matches analytical solution over time
-       run('Test Files\RunTransientTest')
+%% Test 28: Transient Test - Cantilever 2D bar with Time-Dependent Neumann B.C at free end 
+%  Pass Condtion: Displacement matches analytical solution over time
+      run('Test Files\RunTransientTest')
 
 %% Test X: [Test Name] - Short Test Description
-%   Pass Condtion:
-%       run('Test Files/RunTestX')
+%  Pass Condtion:
+%      run('Test Files/RunTestX')
 
 %% Summarize test results
 fprintf('\n\n%-10s%-10s%-20s', 'Test', 'Status','Test Name')
