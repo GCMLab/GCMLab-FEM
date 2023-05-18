@@ -150,13 +150,13 @@
 %% Test 26: Time Dependent Dirichlet - Time dependent dirichlet boundary conditions
 %  Pass Condtion: Shear strain over time matches manufactured solution
       run('Test Files\RunDirichletTime')
-       
+
 %% Test 27: Plate with Hole under tension using Hypermesh input
 %  Pass Condtion: error of L2 projected stresses is less than nodal
 %  averaged stresses
       run('Test Files/RunPlatewHole_hypermesh')   
 
-%% Test 28: Transient Test - Cantilever 2D bar with Time-Dependent Neumann B.C at free end 
+%% Test 28: Transient Test - 2D elastic bar with Time-Dependent Neumann B.C at free end 
 %  Pass Condtion: Displacement matches analytical solution over time
       run('Test Files\RunTransientTest')
 

@@ -125,7 +125,7 @@ function [Mesh, Material, BC, Control] = ManufacturedSolution_Transient(config_d
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = [1;0.1];
             % number of elements in each direction [nex; ney; nez] 
             nex = [2;2]*10;
             % element type ('Q4')
@@ -215,7 +215,7 @@ function [Mesh, Material, BC, Control] = ManufacturedSolution_Transient(config_d
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.25; % Poisson's ratio
-    Material.Prop(1).C = 50e3; % Damping Coefficient
+    Material.Prop(1).C = 1e3; % Damping Coefficient
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
