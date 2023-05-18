@@ -139,7 +139,7 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
     end    
     
 %% Material Properties (Solid)

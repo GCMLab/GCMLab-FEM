@@ -36,7 +36,7 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
             % Optional 5th input in case Q8 with reduced integration is desired
             Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on, Q8_reduced);          
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q8_reduced);          
     end    
     
 

@@ -64,35 +64,73 @@ switch Mesh.nsd
         Mesh.zdofs = [];
 
     case 2
-        % Nodes and dofs on the left face of the domain
-        % (left and right are defined along the x-direction)
-        Mesh.left_nodes = find(Mesh.x(:,1)==min(Mesh.x(:,1)));
-        Mesh.left_dof = Mesh.DOF(Mesh.left_nodes,:);        
-        Mesh.left_dofx = Mesh.left_dof(:,1);
-        Mesh.left_dofy = Mesh.left_dof(:,2);
-        Mesh.left_dof = reshape(Mesh.left_dof',numel(Mesh.left_dof),1);
+        if isfield(Mesh,'ext') 
+            switch Mesh.ext
+                case '.fem'
+                    % The following variables are not prescribed when the data
+                    % is obtained from a .fem file
+                case '.msh' 
+                    % Nodes and dofs on the left face of the domain
+                    % (left and right are defined along the x-direction)
+                    Mesh.left_nodes = find(Mesh.x(:,1)==min(Mesh.x(:,1)));
+                    Mesh.left_dof = Mesh.DOF(Mesh.left_nodes,:);        
+                    Mesh.left_dofx = Mesh.left_dof(:,1);
+                    Mesh.left_dofy = Mesh.left_dof(:,2);
+                    Mesh.left_dof = reshape(Mesh.left_dof',numel(Mesh.left_dof),1);
 
-        % Nodes and dofs on the right face of the domain
-        Mesh.right_nodes = find(Mesh.x(:,1)==max(Mesh.x(:,1)));
-        Mesh.right_dof = Mesh.DOF(Mesh.right_nodes,:);
-        Mesh.right_dofx = Mesh.right_dof(:,1);
-        Mesh.right_dofy = Mesh.right_dof(:,2);
-        Mesh.right_dof = reshape(Mesh.right_dof',numel(Mesh.right_dof),1);
-        
-        % Nodes and dofs on the top face of the domain
-        % (top and bottom are defined along the y-direction)
-        Mesh.top_nodes = find(Mesh.x(:,2)==max(Mesh.x(:,2)));
-        Mesh.top_dof = Mesh.DOF(Mesh.top_nodes,:);
-        Mesh.top_dofx = Mesh.top_dof(:,1);
-        Mesh.top_dofy = Mesh.top_dof(:,2);
-        Mesh.top_dof = reshape(Mesh.top_dof',numel(Mesh.top_dof),1);
+                    % Nodes and dofs on the right face of the domain
+                    Mesh.right_nodes = find(Mesh.x(:,1)==max(Mesh.x(:,1)));
+                    Mesh.right_dof = Mesh.DOF(Mesh.right_nodes,:);
+                    Mesh.right_dofx = Mesh.right_dof(:,1);
+                    Mesh.right_dofy = Mesh.right_dof(:,2);
+                    Mesh.right_dof = reshape(Mesh.right_dof',numel(Mesh.right_dof),1);
 
-        % Nodes and dofs on the bottom face of the domain
-        Mesh.bottom_nodes = find(Mesh.x(:,2)==min(Mesh.x(:,2)));
-        Mesh.bottom_dof =  Mesh.DOF(Mesh.bottom_nodes,:);
-        Mesh.bottom_dofx = Mesh.bottom_dof(:,1);
-        Mesh.bottom_dofy = Mesh.bottom_dof(:,2);
-        Mesh.bottom_dof = reshape(Mesh.bottom_dof',numel(Mesh.bottom_dof),1);
+                    % Nodes and dofs on the top face of the domain
+                    % (top and bottom are defined along the y-direction)
+                    Mesh.top_nodes = find(Mesh.x(:,2)==max(Mesh.x(:,2)));
+                    Mesh.top_dof = Mesh.DOF(Mesh.top_nodes,:);
+                    Mesh.top_dofx = Mesh.top_dof(:,1);
+                    Mesh.top_dofy = Mesh.top_dof(:,2);
+                    Mesh.top_dof = reshape(Mesh.top_dof',numel(Mesh.top_dof),1);
+
+                    % Nodes and dofs on the bottom face of the domain
+                    Mesh.bottom_nodes = find(Mesh.x(:,2)==min(Mesh.x(:,2)));
+                    Mesh.bottom_dof =  Mesh.DOF(Mesh.bottom_nodes,:);
+                    Mesh.bottom_dofx = Mesh.bottom_dof(:,1);
+                    Mesh.bottom_dofy = Mesh.bottom_dof(:,2);
+                    Mesh.bottom_dof = reshape(Mesh.bottom_dof',numel(Mesh.bottom_dof),1);
+            end
+        else % In case BuildMesh_structured.m is used 
+             % Nodes and dofs on the left face of the domain
+            % (left and right are defined along the x-direction)
+            Mesh.left_nodes = find(Mesh.x(:,1)==min(Mesh.x(:,1)));
+            Mesh.left_dof = Mesh.DOF(Mesh.left_nodes,:);        
+            Mesh.left_dofx = Mesh.left_dof(:,1);
+            Mesh.left_dofy = Mesh.left_dof(:,2);
+            Mesh.left_dof = reshape(Mesh.left_dof',numel(Mesh.left_dof),1);
+
+            % Nodes and dofs on the right face of the domain
+            Mesh.right_nodes = find(Mesh.x(:,1)==max(Mesh.x(:,1)));
+            Mesh.right_dof = Mesh.DOF(Mesh.right_nodes,:);
+            Mesh.right_dofx = Mesh.right_dof(:,1);
+            Mesh.right_dofy = Mesh.right_dof(:,2);
+            Mesh.right_dof = reshape(Mesh.right_dof',numel(Mesh.right_dof),1);
+
+            % Nodes and dofs on the top face of the domain
+            % (top and bottom are defined along the y-direction)
+            Mesh.top_nodes = find(Mesh.x(:,2)==max(Mesh.x(:,2)));
+            Mesh.top_dof = Mesh.DOF(Mesh.top_nodes,:);
+            Mesh.top_dofx = Mesh.top_dof(:,1);
+            Mesh.top_dofy = Mesh.top_dof(:,2);
+            Mesh.top_dof = reshape(Mesh.top_dof',numel(Mesh.top_dof),1);
+
+            % Nodes and dofs on the bottom face of the domain
+            Mesh.bottom_nodes = find(Mesh.x(:,2)==min(Mesh.x(:,2)));
+            Mesh.bottom_dof =  Mesh.DOF(Mesh.bottom_nodes,:);
+            Mesh.bottom_dofx = Mesh.bottom_dof(:,1);
+            Mesh.bottom_dofy = Mesh.bottom_dof(:,2);
+            Mesh.bottom_dof = reshape(Mesh.bottom_dof',numel(Mesh.bottom_dof),1);
+        end
         
         % DOFs in the x- and y- directions
         Mesh.xdofs = 1:2:Mesh.nDOF;
