@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit test - Manufactured Solution for Transient as part of RunTests
+% Runs unit test - Transient Solution as part of RunTests
 % ------------------------------------------------------------------------
 % Test consists of a 2D cantilever bar simulation where the left is fixed.
 % Boundary conditions at the fixed-end are restricted to displacements in
@@ -14,7 +14,7 @@
 
        
         testnum = testnum + 1;
-        testname = '2D transient cantilever beam manufactured solution';
+        testname = '2D transient cantilever beam solution';
         nameslist{testnum} = testname;
        
         % Create test VTK folder
@@ -28,7 +28,7 @@
     
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        config_name = 'ManufacturedSolution_Transient';
+        config_name = 'TransientTest';
         main_nonlinear % Runs calculation
 
         
@@ -46,10 +46,9 @@
         
         % Step 3 - Output results
         if test_pass
-            fprintf('\nPASSED Manufactured Solution\n')
+            fprintf('\nPASS Transient Solution')
         else
-            fprintf('\n\nFAILED  Manufactured Solution C\n')
-            return
+            fprintf('\nFAIL Transient Solution')
         end
         testpasssummary(testnum) = test_pass;
 

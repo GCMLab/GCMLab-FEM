@@ -11,7 +11,7 @@
     plot2vtk = 1;
 %      VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
 %     VTKFolder = 'C:\Users\nilsb\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
-    VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
+    VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
     
     % suppress progress messages
     progress_on = 0;
@@ -157,7 +157,7 @@
       run('Test Files/RunPlatewHole_hypermesh')   
 
 %% Test 28: Transient Test - Cantilever 2D bar with Time-Dependent Neumann B.C at free end 
-%  Pass Condtion: Displacement matches manufactured solution over time
+%  Pass Condtion: Displacement matches analytical solution over time
       run('Test Files\RunTransientTest')
 
 %% Test X: [Test Name] - Short Test Description
