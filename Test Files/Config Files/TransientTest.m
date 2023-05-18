@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = ManufacturedSolution_Transient(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
