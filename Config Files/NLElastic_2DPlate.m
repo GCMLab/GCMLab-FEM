@@ -290,7 +290,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 1*pi;
+        Control.EndTime   = 3;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
@@ -302,6 +302,10 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % DOF to plot
         Control.plotAt = Mesh.nDOF; % dof in y at bottom right node
         
+        % transient toggle
+        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
