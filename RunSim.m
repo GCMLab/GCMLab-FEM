@@ -81,7 +81,6 @@
         end_time = toc;
 
         disp(['run time: ' num2str(end_time - start_time)])
-        close all
     end
 
 % catch err
