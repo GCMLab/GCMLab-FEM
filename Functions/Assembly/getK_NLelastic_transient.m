@@ -155,12 +155,12 @@ end
 K = sparse(row, col, Kvec, Mesh.nDOF, Mesh.nDOF);
 
 % stiffness matrix in transient case
-K_hat = alpha*K+C./dt;
+K_hat = alpha*K + C./dt;
 
 % internal forces
-Fint = C*(d-dnm1)./dt+K*(1-alpha)*dnm1+alpha*K*d;
+Fint = C*(d-dnm1)./dt + K*(1-alpha)*dnm1 + alpha*K*d;
 
 % residual
-R_hat = alpha*Fext+(1-alpha)*Fextnm1 - Fint;
+R_hat = alpha*Fext + (1-alpha)*Fextnm1 - Fint;
 
 end
