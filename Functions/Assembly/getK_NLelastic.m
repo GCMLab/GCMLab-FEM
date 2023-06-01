@@ -54,6 +54,9 @@ row = zeros(vec_size, 1);                   % vector of row indices
 col = zeros(vec_size, 1);                   % vector of column indices
 Kvec = zeros(vec_size, 1);                  % vectorized stiffness matrix
 
+% initialize internal force vector
+Fint = zeros(Mesh.nDOF, 1);  
+
 count = 1;                                  % DOF counter
 
 % for each element, compute element stiffness matrix and add to global
@@ -86,6 +89,9 @@ for e = 1:Mesh.ne
 
         % initialize element stiffness matrix
         Ke = zeros(ndofE, ndofE); 
+        
+        % initialize element internal force vector
+        fe = zeros(ndofE, 1); 
 
         % loop through all quadrature points
         for q = 1:nq     
@@ -129,10 +135,20 @@ for e = 1:Mesh.ne
             strain_e = Bv'*de;
 
             % Compute constitutive matrix
-            D = feval(DMatrix_functn, nMat, Material, Mesh, strain_e);
+            [D, Material]  = feval(DMatrix_functn, nMat, Material, Mesh, strain_e);
+            
+            % strain invariant
+            I1 = (strain_e(1,1)+strain_e(2,1))^2;
+            
+            % strain trace
+            trE = strain_e(1,1)+strain_e(2,1);
 
             % Calculate local stiffness matrix
-            Ke = Ke + W(q)*Bv*D*Bv'*L*dJe;
+            Ke = Ke + W(q)*Bv*D*Bv'*L*dJe + W(q)*Bv*(D/Material.Prop(nMat).E)*(Bv'*de)*4*Material.Prop(nMat).E1*2*I1*trE*[dNdxi(1,1) dNdxi(2,1) dNdxi(1,2) dNdxi(2,2) dNdxi(1,3) dNdxi(2,3) dNdxi(1,4) dNdxi(2,4)]*L*dJe;
+            % Ke = Ke + W(q)*Bv*D*Bv'*L*dJe;
+            
+            % Calculate local internal force vector
+            fe = fe + W(q)*Bv*(D*strain_e)*L*dJe;
 
             % quadrature debug tool
             A = A + W(q)*dJe; 
@@ -148,13 +164,13 @@ for e = 1:Mesh.ne
         Kvec(count-ndofE^2:count-1) = Ke;
         row(count-ndofE^2:count-1) = rowe;
         col(count-ndofE^2:count-1) = cole;
+        
+    %% Assemble element internal forces
+        Fint(dofE) = Fint(dofE) + fe;
 end
 
 % sparse stiffness matrix
 K = sparse(row, col, Kvec, Mesh.nDOF, Mesh.nDOF);
-
-% internal forces
-Fint = K*d;
 
 % residual
 R = Fext - Fint;
