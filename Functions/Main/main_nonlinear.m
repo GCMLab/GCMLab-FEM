@@ -87,8 +87,14 @@
     K = Klin;
     
     % Export initial conditions
-        % Strain
-        [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
+        switch Material.ProblemType
+            case 1 % Equilibrium problem
+                % Stress/Strain
+                [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
+            case 2 % Diffusion problem
+                [flux] = getFlux_TH1(d0, Mesh, Material, Control.stress_calc, Quad);
+            %case 3 % Mixed problem
+        end
 
     % Internal force vectors
         if Control.transient == 1
@@ -104,7 +110,6 @@
         end
         step_count = step_count + 1;
        
-        
 %% Initialize variable tracking for time-dependent problems 
 % Not recommended, primarily for use in testing and debugging.
 % Output is saved in vtk files.
@@ -201,8 +206,6 @@ end
                     iter = iter + 1;
                 % Update internal force vector for normalization
                     FintPrev = Fint; 
-
-
             end
               
         
@@ -211,7 +214,6 @@ end
                 err_NR = sprintf('\n \t Newton-Raphson algorithm will not converge: The number of iterations in Newton-Raphson algorithm exceeds the maximum number of iteration');
                 error(err_NR)
             end
-        
     end
     
     % Output progress
@@ -224,7 +226,6 @@ end
             disp([num2str(toc),': Post-Processing...']);
         end
         [strain, stress] = feval(stressstrainfile_name, d, Mesh, Material, Control.stress_calc, Quad, dnm1);   
-
 
     % Write to vtk
         Fext(BC.fixed) = Fint(BC.fixed);   % Set external forces as equal to reaction forces at fixed dof for output
@@ -240,7 +241,6 @@ end
            loadSave(:,step_count+1) = Fext;
         end
         
-     
      % Break out of loop at end time
          if abs(t-Control.EndTime) < t_tol
             break

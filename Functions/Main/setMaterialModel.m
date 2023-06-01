@@ -15,7 +15,7 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
         case 'TH1'
             Material.ConstitutiveLawFile = 'getD_TH1';
             Material.StiffnessMatrixFile = 'getK_TH1';
-            Material.StressStrainFile = 'getStrain_TH1';
+            Material.StressStrainFile = 'getFlux_TH1';
             Material.ProblemType      = 2;
     end
 
