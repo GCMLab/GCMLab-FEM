@@ -125,9 +125,9 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = [20;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [1;1];
+            nex = [20;5];
             % element type ('Q4')
             type = 'Q4';
             
@@ -178,7 +178,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
     Material.Prop(1).E1 = 1e20; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     
@@ -290,7 +290,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 1*pi;
+        Control.EndTime   = 1;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
