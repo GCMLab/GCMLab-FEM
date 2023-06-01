@@ -1,4 +1,4 @@
-function [flux] = getFlux_TH1(d, Mesh, Material, calc_type, Quad, ~)
+function [flux, stress] = getFlux_TH1(d, Mesh, Material, calc_type, Quad, ~)
 %GETFLUX_TH1 Evaluate fluxes from a diffusion problem
 %   [flux] = GETFLUX_TH1(d, Mesh, Material) returns one matrix of 
 %   fluxes. The matrices are of size dim x ne, in which dim = 1 for 1D elements, 3 for 
@@ -54,7 +54,9 @@ if nargin < 4
     calc_type = 'center';
 end
 
-% Specify dimension of the strain/stress matrix
+stress = [];
+
+% Specify dimension of the flux matrix
 dim = Mesh.nsd;
 
 if strcmp(calc_type, 'none')
@@ -123,7 +125,7 @@ else
                     dNdxi = dNdxi';
                     B = Je\dNdxi;
 
-                    flux_e(:,n) = D*B'*de;
+                    flux_e(:,n) = D*B*de;
                 end
                 % Add to global strains
                     flux(:,enodes) = flux(:,enodes) + flux_e;
