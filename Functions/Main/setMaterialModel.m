@@ -1,5 +1,15 @@
 function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material)
 %SETMATERIALMODEL - creates pointers to material model files
+%           Sets Material
+%    .ConstitutiveLawFile:           Constitutive model file
+%    .StiffnessMatrixFile:           Stiffness matrix integration file
+%    .StressStrainFile:              File used for postprocessing results
+%    .PostProcessor:                 File which outputs results to vtk
+%    .ProblemType:                   Type of problem, specifies DoFs per node
+%           1 - Equilibrium / Deformation Problem
+%           2 - Diffusion Problem
+%           3 - Thermo-Elastic Problem (to be implemented)
+%           
 
     switch Material.Model
         case 'LE1' % Linear elasticity
@@ -14,7 +24,13 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
             Material.StressStrainFile = 'getStrain_ST1';
             Material.PostProcessor    = 'write2vtk_eqbm';
             Material.ProblemType      = 1;
-        case 'TH1'
+        case 'TR1' % Transient Linear Elastic
+            Material.ConstitutiveLawFile = 'getD';
+            Material.StiffnessMatrixFile = 'getK_LE1';
+            Material.StressStrainFile = 'getStrain';
+            Material.PostProcessor    = 'write2vtk_eqbm';
+            Material.ProblemType      = 1;
+        case 'TH1' % Thermal Diffusion (transient)
             Material.ConstitutiveLawFile = 'getD_TH1';
             Material.StiffnessMatrixFile = 'getK_TH1';
             Material.StressStrainFile = 'getFlux_TH1';

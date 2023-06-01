@@ -1,6 +1,6 @@
-function [K, R, Fint] = getK_transient(Mesh, Quad, Material, Fext, Fextnm1, Klin, M, d, dnm1, dnm2, dt, dtnm1,C,alpha);
-%GETK_ELASTIC Stiffness matrix for iterative elastic case
-%   [K, R, Fint] = GETK_ELASTIC(Mesh, Quad, Material) returns the stiffness
+function [K, R, Fint] = getK_TR1(~, ~, ~, Fext, Fextnm1, Klin, ~, d, dnm1, ~, dt, ~,C,alpha)
+%GETK_TR1 Stiffness matrix for iterative elastic case
+%   [K, R, Fint] = GETK_TR1(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 
 %   iterative solver where the problem uses a linear elastic material
 %   
