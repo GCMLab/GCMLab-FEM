@@ -141,7 +141,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
     end    
     
 %% Material Properties (Solid)
@@ -272,8 +272,13 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         % Usually more efficient at 2e5 dofs
         Control.parallel = 2;
         
+        % transient controls
+        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+
         
 end

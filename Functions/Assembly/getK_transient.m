@@ -1,4 +1,4 @@
-function [K, R, Fint] = getK_elastic(~, ~, ~, Fext, ~, Klin, ~, d, ~, ~, ~, ~,~,~)
+function [K, R, Fint] = getK_transient(Mesh, Quad, Material, Fext, Fextnm1, Klin, M, d, dnm1, dnm2, dt, dtnm1,C,alpha);
 %GETK_ELASTIC Stiffness matrix for iterative elastic case
 %   [K, R, Fint] = GETK_ELASTIC(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 
@@ -36,6 +36,7 @@ function [K, R, Fint] = getK_elastic(~, ~, ~, Fext, ~, Klin, ~, d, ~, ~, ~, ~,~,
 %               .t:         Material thickness
 %
 %   Fext:       External force vector at timestep n
+%   Fextnm1:    External force vector at timestep n-1
 %   Klin:       Linear elastic stiffness matrix
 %   M:          Mass matrix
 %   d:          unconverged degree of freedom vector at current timestep n and iteration
@@ -43,11 +44,11 @@ function [K, R, Fint] = getK_elastic(~, ~, ~, Fext, ~, Klin, ~, d, ~, ~, ~, ~,~,
 %   dnm2:       converged degree of freedom vector at timestep n-2
 %   dt:         timestep size between timesteps n-1 and n
 %   dtnm1:      timestep size between timesteps n-2 and n-1
+%   alpha:       intagration parameter
 
 
-K = Klin;
-Fint = K*d;
-R = Fext - Fint;
-
+K = alpha*Klin+C./dt;
+Fint = C*(d-dnm1)./dt+Klin*(1-alpha)*dnm1+alpha*Klin*d;
+R = alpha*Fext+(1-alpha)*Fextnm1 - Fint;
 
 end

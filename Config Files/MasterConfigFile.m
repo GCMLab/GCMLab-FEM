@@ -114,7 +114,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
     %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'MANUAL';        
     
@@ -132,7 +132,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             type = 'Q4';
             
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'GMSH'
+        case 'IMPORTED'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
@@ -144,8 +144,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % Optional 5th input in case Q8 with reduced integration is desired
             Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on);            
-%             Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
+%             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
             meshFileName = 'CricularInclusion.xlsx';
             % number of space dimensions
@@ -199,13 +199,21 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
-        % TIP selecting edges:
+        % TIP selecting edges - GMESH file or MANUAL mesh:
         % bottom_nodes = find(Mesh.x(:,2)==0); 
         % top_nodes = find(Mesh.x(:,2)==2);
         % left_nodes = find(Mesh.x(:,1)==0);
         % right_nodes = find(Mesh.x(:,1)==4);
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
+        
+        % TIP for .fem file - HYPERMESH
+        %   Fixed BC
+        %   temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
+        %   BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
+        %
+        %   temp = Mesh.BC_nN_n;
+        %   BC.traction_force_node = temp;
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
@@ -285,7 +293,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';    
+        Control.LinearSolver = 'LinearSolver1';
  
         % time controls
         Control.StartTime = 0;
@@ -302,8 +310,13 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % DOF to plot (only necessary if Control.plotLoadDispl = 1)
         Control.plotAt = 0; % [add DOF number]
         
+        % transient toggle
+        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
         
 end

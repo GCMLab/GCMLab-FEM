@@ -19,8 +19,6 @@
     [Mesh, Material, BC, Control] = ...
             feval(config_name, ConfigDir, progress_on);
         
-
-
 %% Set Default Values
     [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
 
@@ -62,13 +60,23 @@
     
 
 
+    % Compute linear damping stiffness matrix
+    if Control.transient == 1
+        if progress_on
+            disp([num2str(toc),': Assembling Damping Matrix...']);
+        else
+        end
+        C = getC(Mesh, Quad, Material); % Transient Case
+    else
+        C = sparse(Mesh.nDOF, Mesh.nDOF); % Static Case
+    end    
     
 
 %% Define initial conditions
-    
     d0 = BC.IC;
     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
     Fext = getFext(Mesh, BC, Quad,t-dt);
+    Fextnm1 = Fext; % Fext at timestep n-1
     d = d0;     % d at timestep n
     dnm1 = d0;  % d at timestep n-1
     dnm2 = d0;  % d at timestep n-2
@@ -79,7 +87,11 @@
         [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
 
     % Internal force vectors
-        Fint = K*d0;
+        if Control.transient == 1
+            Fint = (Control.alpha*Klin+(1/dt)*C)*d+((1-Control.alpha)*Klin-C./dt)*dnm1;
+        else
+            Fint = K*d0;
+        end
 
     % Write initial conditions to vtk
         if plot2vtk
@@ -87,6 +99,7 @@
                             Fint, Fext, step_count);
         end
         step_count = step_count + 1;
+       
         
 %% Initialize variable tracking for time-dependent problems 
 % Not recommended, primarily for use in testing and debugging.
@@ -108,7 +121,7 @@ if Control.dSave
     sSave(:,:,1) = stress;
     loadSave = zeros(length(d0),n_timesteps+1);     % Save applied load
 end
-        
+  
  %% Solve the time-dependent nonlinear problem
  % Set tolerance on the final end time
     t_tol = 1e-10; 
@@ -147,7 +160,7 @@ end
             end
       
         % Compute nonlinear stiffness matrix and internal forces
-            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fext, Klin, M, d, dnm1, dnm2, dt, dtnm1) ; 
+            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fext, Fextnm1, Klin, M, d, dnm1, dnm2, dt, dtnm1, C, Control.alpha); 
             ResForce(BC.fixed) = 0;
         
         % Calculate the norm of residual vector
@@ -184,6 +197,8 @@ end
                     iter = iter + 1;
                 % Update internal force vector for normalization
                     FintPrev = Fint; 
+
+
             end
               
         
@@ -239,8 +254,9 @@ end
      
      % Update vectors from previous timesteps
      dnm2 = dnm1;                       % d vector from timestep n-2
-     dnm1 = d;                          % d vector from timestep n-1     
-     
+     dnm1 = d;                          % d vector from timestep n-1
+     Fextnm1 = Fext;                    % Fext from timestep n-1
+ 
  end
      if Control.dSave
          d = dSave; 
@@ -252,4 +268,4 @@ end
  
      if progress_on
         disp('done')
-    end
+     end

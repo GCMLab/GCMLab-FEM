@@ -1,7 +1,7 @@
-function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_on)
-%PLATENLELASTIC Mesh, material parameters, boundary conditions, 
+function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
+%MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = PLATENLELASTIC() is a structure array with the
+%   Mesh = MASTERCONFIGFILE() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 
@@ -60,10 +60,10 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 %       
-%   Mesh = PLATENLELASTIC(config_dir) defines the mesh using GMSH file 
+%   Mesh = MASTERCONFIGFILE(config_dir) defines the mesh using GMSH file 
 %   import located in the directory config_dir
 %
-%   [Mesh, Material] = PLATENLELASTIC() also returns a
+%   [Mesh, Material] = MASTERCONFIGFILE() also returns a
 %   structure array with the following fields: 
 %       .nmp:           number of material properties
 %       .Prop:          Material properties
@@ -72,7 +72,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
 %       .Prop.t:        Material thickness
 % 
-%   [Mesh, Material, BC] = PLATENLELASTIC() also returns a structure
+%   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
 %   array with the following fields: 
 %       .fix_disp_dof:              Column vector of degrees of freedom 
 %                                   with prescribed displacements
@@ -90,11 +90,11 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %       .b                          Anonymous function of distributed
 %                                   body force (size 1 x nsd)
 % 
-%   [Mesh, Material, BC, Control] = PLATENLELASTIC() also returns a 
+%   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
-%                       ('none', 'nodal', 'center', 'L2projection')
+%                       ('none', 'nodal', 'center')
 %       .beta:          Penalty parameter  
 %       .LinearSolver   Method used for solving linear problem:
 %                       'LinearSolver1': Partitioning
@@ -125,9 +125,9 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = [1;0.1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [1;1];
+            nex = [2;2]*10;
             % element type ('Q4')
             type = 'Q4';
             
@@ -138,14 +138,11 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Unstructured_sample.msh';
+            meshFileName = '2DBarMesh.msh';
             % number of space dimensions 
             nsd = 2;
-            % Optional 5th input in case Q8 with reduced integration is desired
-            Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
-%             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on); 
         case 'EXCEL'
             meshFileName = 'CricularInclusion.xlsx';
             % number of space dimensions
@@ -168,20 +165,57 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % for different materials are saved in Material.Prop.
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
-        
-        
-    % Specify Material Model
-        % LE1 - Linear elasticity
-        % ST1 - Stiffening model with 1st invariant of strain
-    Material.Model = 'ST1';
-    
+
     % number of material properties
     Material.nmp = 1;
 
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).E1 = 1e20; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    Material.Prop(1).C = 0; % Damping Coefficent
+     
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
+
+    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
+    Material.Dtype = 'PlaneStress'; 
+
+    % Thickness (set as default to 1)
+    Material.t = @(x) 1;
+
+    % Alternatively, import a material file
+    % Material = Material_shale();
+
+%% Material Properties (Solid)
+
+    % NOTES-------------------------------------------------------------
+                                
+        % NOTE: anonymous functions are defined with respect to the variable x,
+        % which is a vector [x(1) x(2) x(3)] = [x y z]
+
+        % NOTE: Material properties must be continuous along an element, 
+        % otherwise, quadrature order must be increased significantly
+        
+        % NOTE: Number of material properties can be more than one. Properties
+        % for different materials are saved in Material.Prop.
+        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
+        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
+
+    % Specify stiffness matrix and stress/strain calculation files
+    Material.ConstitutiveLawFile = 'getD';
+    Material.StiffnessMatrixFile = 'getK_transient'; 
+    Material.StressStrainFile = 'getStrain';
+        
+    % number of material properties
+    Material.nmp = 1;
+
+    % Properties material 1
+    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    Material.Prop(1).C = 1e3; % Damping Coefficient
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -191,6 +225,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
+    
 
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
@@ -208,17 +243,28 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % right_nodes = find(Mesh.x(:,1)==4);
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
+        
+    % Manufactured solution
+    % ux = y*sin(omega1*t)
+    % uy = x*sin(omega2*t)
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
-        % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof;
+        % column vector of prescribed displacement dof 
+        BC.fix_disp_dof = [Mesh.left_dofx; Mesh.left_dofy(1)];
+        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1); 
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+
+        BC.fix_disp_value = @(t) 0;
 
     %% Neumann BC
     % -----------------------------------------------------------------
+
+        % Magnitude of amplitude of Fext applied to nodes at free-end of
+        % beam
+        BC.Fn = 10e5;
+
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
 
@@ -227,21 +273,11 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
+        BC.traction_force_node = [Mesh.right_nodes];  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e8/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), ones(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        
-        % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*t; 
+        omega = 1;
+        BC.traction_force_value = @(t) [BC.Fn*sin(omega*t) *ones(size(Mesh.right_nodes)), zeros(size(Mesh.right_nodes))];
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -251,7 +287,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t)[];    
+        BC.b = @(x,t)[];  
 
 %% Initial Conditions
         BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
@@ -271,7 +307,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        Control.stress_calc = 'L2projection';
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
@@ -291,20 +327,18 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 1*pi;
-        NumberOfSteps     = 50;
+        Control.EndTime   = 10; 
+        NumberOfSteps     = 1e1;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
-        % save displacements and stresses at each timestep in matlab 
-        % debugging and testing purposes only, vtk files are otherwise
-        % recommended
-        Control.dSave     = 1; 
-        % Plot load vs displacement curve
-        Control.plotLoadDispl = 1;
-        % DOF to plot
-        Control.plotAt = Mesh.nDOF; % dof in y at bottom right node
+        Control.dSave     = 1;
         
+        % transient controls
+        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+
         % Newton Raphson controls
-        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.r_tol = 1e-7; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
         
 end

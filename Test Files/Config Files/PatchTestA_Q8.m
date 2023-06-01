@@ -38,7 +38,7 @@ function [Mesh, Material, BC, Control] = PatchTestA_Q8(config_dir, progress_on)
             % Optional 5th input in case Q8 with reduced integration is desired
             Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on, Q8_reduced);               
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q8_reduced);               
     end    
     
 
@@ -164,8 +164,13 @@ function [Mesh, Material, BC, Control] = PatchTestA_Q8(config_dir, progress_on)
         % 'LinearSolver3': Penalty method
         Control.LinearSolver = 'LinearSolver1'; 
  
+        % transient controls
+        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
         
 end
