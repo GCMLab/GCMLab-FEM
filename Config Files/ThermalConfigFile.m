@@ -172,15 +172,16 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
     % Specify Material Model
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
-        % TH1 - Thermal Diffusion
+        % TH1 - Thermal diffusion
     Material.Model = 'TH1';
     
     % number of material properties
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).k = 45; % Conductivity [W/mK]
-    Material.Prop(1).cp = 500*7750;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
+    Material.Prop(1).k1 = 45; % Conductivity in the x-direction [W/mK]
+    Material.Prop(1).k2 = 45; % Conductivity in the y-direction [W/mK]
+    Material.Prop(1).C = 500*7750;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -188,7 +189,9 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
     % assign material type to elements
     Mesh.MatList(:) = 1;
 
-
+    % Constitutive law: 'ISO' or 'ORTHO'
+    Material.Dtype = 'ISO'; 
+    
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
