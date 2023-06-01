@@ -137,14 +137,28 @@ for e = 1:Mesh.ne
             % Compute constitutive matrix
             [D, Material]  = feval(DMatrix_functn, nMat, Material, Mesh, strain_e);
             
-            % strain invariant
-            I1 = (strain_e(1,1)+strain_e(2,1))^2;
-            
-            % strain trace
-            trE = strain_e(1,1)+strain_e(2,1);
+            switch Mesh.nsd
+                case 1
+                    % strain invariant
+                    I1 = strain_e(1,1)^2;
+                    % strain trace
+                    trE = strain_e(1,1);
+                    NK = [dNdxi(1,1) dNdxi(1,2)];
+                case 2
+                    % strain invariant
+                    I1 = (strain_e(1,1)+strain_e(2,1))^2;
+                    % strain trace
+                    trE = strain_e(1,1)+strain_e(2,1);
+                    NK = [dNdxi(1,1) dNdxi(2,1) dNdxi(1,2) dNdxi(2,2) dNdxi(1,3) dNdxi(2,3) dNdxi(1,4) dNdxi(2,4)];
+                case 3
+                    % strain invariant
+                    I1 = (strain_e(1,1)+strain_e(2,1)+ strain_e(3,1))^2;
+                    % strain trace
+                    trE = strain_e(1,1)+strain_e(2,1) + strain_e(3,1);
+            end
 
             % Calculate local stiffness matrix
-            Ke = Ke + W(q)*Bv*D*Bv'*L*dJe + W(q)*Bv*(D/Material.Prop(nMat).E)*(Bv'*de)*4*Material.Prop(nMat).E1*2*I1*trE*[dNdxi(1,1) dNdxi(2,1) dNdxi(1,2) dNdxi(2,2) dNdxi(1,3) dNdxi(2,3) dNdxi(1,4) dNdxi(2,4)]*L*dJe;
+            Ke = Ke + W(q)*Bv*D*Bv'*L*dJe + W(q)*Bv*(D/Material.Prop(nMat).E)*(Bv'*de)*4*Material.Prop(nMat).E1*2*I1*trE*NK*L*dJe;
             % Ke = Ke + W(q)*Bv*D*Bv'*L*dJe;
             
             % Calculate local internal force vector
