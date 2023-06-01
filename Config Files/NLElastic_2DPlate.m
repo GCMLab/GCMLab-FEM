@@ -174,7 +174,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
         % ST2 - Softening model with 1st invariant of strain
-    Material.Model = 'ST1';
+    Material.Model = 'ST2';
     
     % number of material properties
     Material.nmp = 1;
@@ -213,11 +213,12 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof;
+        BC.fix_disp_dof = [Mesh.left_dof, Mesh.right_dof];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
-
+        aux = 2.1e-3;
+        BC.fix_disp_value = @(t) [zeros(length(Mesh.left_dof),1), ones(length(Mesh.right_dof),1)*aux*t];
+        
     %% Neumann BC
     % -----------------------------------------------------------------
         % column vector of prescribed traction dofs
@@ -242,7 +243,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
         
         % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*t; 
+        BC.traction_force_value = @(t) BC.traction_force_value; 
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
