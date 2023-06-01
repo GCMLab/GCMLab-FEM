@@ -1,4 +1,4 @@
-function Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q8_reduced)
+function Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q8_reduced, problemtype)
 %BuildMesh_imported Import GMSH file or HYPERMESH file
 %    Mesh = BuildMesh_imported(meshFileName, nsd, config_dir) is a structure 
 %   array with the mesh description. The mesh is imported from the GMSH 
@@ -111,7 +111,7 @@ function Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q
     end
             
 %% Nodal DOFs
-    Mesh = NodeDOFs(Mesh);
+    Mesh = NodeDOFs(Mesh, problemtype);
 
 %% Element connectivity and neighbours
     if progress_on

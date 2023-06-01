@@ -59,14 +59,16 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         war_BC = sprintf('%s\t\t\tWarning #%d\t:\t There may be insufficient prescribed degrees of freedom to prevent rigid body motion in the x-direction\n',war_BC,war_count);
     end
 
-    if Mesh.nsd >= 2 && ~any(BC.fix_disp_dof(2:Mesh.nsd:end) == Mesh.ydofs, 'all') 
-        war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t There may be insufficient prescribed degrees of freedom to prevent rigid body motion in the y-direction\n',war_BC,war_count);
-    end
+    if Material.ProblemType ~= 2
+        if Mesh.nsd >= 2 && ~any(BC.fix_disp_dof(2:Mesh.nsd:end) == Mesh.ydofs, 'all') 
+            war_count = war_count+1;
+            war_BC = sprintf('%s\t\t\tWarning #%d\t:\t There may be insufficient prescribed degrees of freedom to prevent rigid body motion in the y-direction\n',war_BC,war_count);
+        end
 
-    if Mesh.nsd >= 3 && ~any(BC.fix_disp_dof(3:Mesh.nsd:end) == Mesh.zdofs, 'all') 
-        war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t There may be insufficient prescribed degrees of freedom to prevent rigid body motion in the z-direction\n',war_BC,war_count);
+        if Mesh.nsd >= 3 && ~any(BC.fix_disp_dof(3:Mesh.nsd:end) == Mesh.zdofs, 'all') 
+            war_count = war_count+1;
+            war_BC = sprintf('%s\t\t\tWarning #%d\t:\t There may be insufficient prescribed degrees of freedom to prevent rigid body motion in the z-direction\n',war_BC,war_count);
+        end
     end
 
     if any(BC.fix_disp_dof < 0)

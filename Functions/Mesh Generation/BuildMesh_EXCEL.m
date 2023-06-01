@@ -1,4 +1,4 @@
-function Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on)
+function Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, problemtype)
 %BuildMesh_EXCEL Import Excel file
 %   Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir) is a structure 
 %   array with the mesh description. The mesh is imported from the EXCEL 
@@ -105,7 +105,7 @@ function Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on)
     end
             
 %% Nodal DOFs
-    Mesh = NodeDOFs(Mesh);
+    Mesh = NodeDOFs(Mesh, problemtype);
 
 %% Element connectivity and neighbours
     if progress_on

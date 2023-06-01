@@ -51,7 +51,7 @@ function Mesh = NodeSets(Mesh)
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 
-switch Mesh.nsd
+switch Mesh.nDOFn
     case 1
         Mesh.left_nodes = find(Mesh.x(:,1)==min(Mesh.x(:,1)));
         Mesh.right_nodes = find(Mesh.x(:,1)==max(Mesh.x(:,1)));

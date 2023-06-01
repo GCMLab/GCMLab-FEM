@@ -107,55 +107,8 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
 %   config_dir:     (OPTIONAL) File path for the directory where 
 %                   unstructured mesh is stored
 
-%% Mesh Properties
-    if progress_on
-        disp([num2str(toc),': Building Mesh...']);
-    end
-    
-    % Mesh formats: 
-    %   'MANUAL'- In-house structured meshing
-    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
-    %   'EXCEL' - Import .xlsx file, structured or unstructured
-    MeshType = 'MANUAL';        
-    
-    switch MeshType
-        case 'MANUAL'
-            % location of initial node [m] [x0;y0;z0] 
-            x1 = [0;0;0];
-            % number of space dimensions 
-            nsd = 2;
-            % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
-            % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
-            % element type ('Q4')
-            type = 'Q4';
-            
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'IMPORTED'
-            % Allows input of files from GMSH
-            % Note: the only currently supported .msh file formatting is
-            % Version 2 ASCII
-            % Ctrl + e to export the mesh, specify extension .msh, specify
-            % format Version 2 ASCII
-            meshFileName = 'Unstructured_sample.msh';
-            % number of space dimensions 
-            nsd = 2;
-            % Optional 5th input in case Q8 with reduced integration is desired
-            Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
-            
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
-%             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
-        case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
-            % number of space dimensions
-            nsd = 2;
-            
-            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
-    end    
-    
-%% Material Properties (Solid)
 
+%% Material Properties (Solid)
     % NOTES-------------------------------------------------------------
                                 
         % NOTE: anonymous functions are defined with respect to the variable x,
@@ -180,15 +133,9 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
 
     % Properties material 1
     Material.Prop(1).k1 = 45; % Conductivity in the x-direction [W/mK]
-    Material.Prop(1).k2 = 45; % Conductivity in the y-direction [W/mK]
+    %Material.Prop(1).k2 = 45; % Conductivity in the y-direction [W/mK]
     Material.Prop(1).C = 500*7750;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
-    
-    % type of material per element
-    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
-    
-    % assign material type to elements
-    Mesh.MatList(:) = 1;
-
+   
     % Constitutive law: 'ISO' or 'ORTHO'
     Material.Dtype = 'ISO'; 
     
@@ -198,6 +145,62 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
 
     % Alternatively, import a material file
     % Material = Material_shale();
+    [Material, ~, ~] = setMaterialModel(Material);
+
+
+%% Mesh Properties
+    if progress_on
+        disp([num2str(toc),': Building Mesh...']);
+    end
+    
+    % Mesh formats: 
+    %   'MANUAL'- In-house structured meshing
+    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
+    MeshType = 'MANUAL';        
+    
+    switch MeshType
+        case 'MANUAL'
+            % location of initial node [m] [x0;y0;z0] 
+            x1 = [0;0;0];
+            % number of space dimensions 
+            nsd = 2;
+            % size of domain [m] [Lx;Ly;Lz] 
+            L = [1;1];
+            % number of elements in each direction [nex; ney; nez] 
+            nex = [2;2]*10;
+            % element type ('Q4')
+            type = 'Q4';
+            
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
+        case 'IMPORTED'
+            % Allows input of files from GMSH
+            % Note: the only currently supported .msh file formatting is
+            % Version 2 ASCII
+            % Ctrl + e to export the mesh, specify extension .msh, specify
+            % format Version 2 ASCII
+            meshFileName = 'Unstructured_sample.msh';
+            % number of space dimensions 
+            nsd = 2;
+            % Optional 5th input in case Q8 with reduced integration is desired
+            Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
+            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);            
+%             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
+        case 'EXCEL'
+            meshFileName = 'CricularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
+    end    
+    
+%% Assign Materials to Mesh
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------

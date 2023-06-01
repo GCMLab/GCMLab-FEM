@@ -1,4 +1,4 @@
-function Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on)
+function Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, problemtype)
 %BUILDMESH_STRUCTURED Structured mesh generator
 %   Mesh = BUILDMESH_STRUCTURED(nsd, x1, L, nex, type) is a structure 
 %   array with the structured mesh description. The mesh is built for a 
@@ -15,7 +15,7 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on)
 %   type:   the topological class of finite element; it is in the general
 %           form 'topology-#of nodes' ie a three node triangle is T3 a 
 %           four node quadralateral is Q4 a 4 node tetrahedra is H4 a 27 
-%           node brick is B27 etc. Presently defined are L2, Q4, and Q9.  
+%           node brick is B27 etc. Presently defined are L2, Q4, and Q9. 
 % 
 %   --------------------------------------------------------------------
 %   Output
@@ -326,7 +326,7 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on)
     end
 
 %% Nodal DOFs
-    Mesh = NodeDOFs(Mesh);
+    Mesh = NodeDOFs(Mesh, problemtype);
 
 %% Nodal Connectivity 
     % list of elements connected to each node
