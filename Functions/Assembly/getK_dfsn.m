@@ -56,7 +56,7 @@ for e = 1:Mesh.ne
         
     %% Constitutive matrix
         nMat = Mesh.MatList(e); % element material type
-        D = getD(nMat, Material, Mesh);
+        D = getD_TH1(nMat, Material, Mesh);
         
     %% Shape functions and derivatives in parent coordinates
         W = Quad.W;
@@ -95,6 +95,7 @@ for e = 1:Mesh.ne
             % (tensor form)
             dNdxi = dNdxi';
             B = Je\dNdxi;
+            B = B'
             
             % for 2D, volume integral includes the thickness
             switch Mesh.nsd 

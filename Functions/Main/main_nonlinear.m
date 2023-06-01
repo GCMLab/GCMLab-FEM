@@ -53,7 +53,7 @@
     if progress_on
         disp([num2str(toc),': Assembling Linear Elastic Stiffness Matrix...']);
     end
-    switch Material.Problemtype
+    switch Material.ProblemType
         case 1 % Equilibrium problem
             Klin = getK(Mesh, Quad, Material); % Linear elastic stiffness matrix
         case 2 % Diffusion problem

@@ -16,7 +16,7 @@ function D = getD_TH1(nMat, Material, ~)
 %   --------------------------------------------------------------------
 
 k1 = Material.Prop(nMat).k1;
-if isfield(Material.Prop(nMat).k2)
+if isfield(Material.Prop(nMat),'k2')
     k2 = Material.Prop(nMat).k2;
 end
 
