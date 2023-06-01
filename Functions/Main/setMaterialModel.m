@@ -12,9 +12,13 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
             Material.StressStrainFile = 'getStrain_ST1';
     end
 
-    % Create tangent matrix function pointer
-    
-    [~,stiffnessmatrixfile_name] = fileparts(Material.StiffnessMatrixFile);
-    [~,stressstrainfile_name] = fileparts(Material.StressStrainFile);
+    % Create function pointers
+        % Tangent Matrix
+        [~,stiffnessmatrixfile_name] = fileparts(Material.StiffnessMatrixFile);
+
+        % Stress/strain 
+        [~,stressstrainfile_name] = fileparts(Material.StressStrainFile);
+        
+    % D matrix is called inside assembly functions
 end
 
