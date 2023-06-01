@@ -27,6 +27,9 @@
         fprintf('%.2f: Checking for valid inputs...\n', toc);
     end
     [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control);
+    
+%% Set material model
+    [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material);
 
 %% Initialize time variables
     t = Control.StartTime;
@@ -55,10 +58,11 @@
     % Compute mass matrix
     M = 0; % placeholder
     
-    % Create tangent matrix function pointer
-    [~,stiffnessmatrixfile_name] = fileparts(Material.StiffnessMatrixFile);
-    [~,stressstrainfile_name] = fileparts(Material.StressStrainFile);
 
+<<<<<<< HEAD
+
+=======
+>>>>>>> 05207f82952b810a5e7bdc27a04221f57e504e8f
     % Compute linear damping stiffness matrix
     if Control.transient == 1
         if progress_on
