@@ -57,12 +57,7 @@
     
     % Compute mass matrix
     M = 0; % placeholder
-    
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 05207f82952b810a5e7bdc27a04221f57e504e8f
     % Compute linear damping stiffness matrix
     if Control.transient == 1
         if progress_on
