@@ -95,7 +95,7 @@ for e = 1:Mesh.ne
             % (tensor form)
             dNdxi = dNdxi';
             B = Je\dNdxi;
-            B = B'
+            B = B';
             
             % for 2D, volume integral includes the thickness
             switch Mesh.nsd 

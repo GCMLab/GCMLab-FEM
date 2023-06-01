@@ -166,7 +166,7 @@ end
 
 %% Apply pre-integrated boundary node point forces
 if ~isempty(BC.traction_force_node)
-    switch Mesh.nsd
+    switch Mesh.nDOFn
         case 1
             F(BC.traction_force_node) = F(BC.traction_force_node) + traction_value(:,1);
         case 2

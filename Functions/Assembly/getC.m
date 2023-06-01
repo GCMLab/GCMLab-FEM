@@ -34,7 +34,7 @@ function C = getC(Mesh, Quad, Material)
 % Acknowledgements: Jonathan Zingaro
 
 % initialize damping matrix
-vec_size = Mesh.ne*(Mesh.nne * Mesh.nsd)^2; % vector size (solid dofs)
+vec_size = Mesh.ne*(Mesh.nne * Mesh.nDOFn)^2; % vector size (solid dofs)
 row = zeros(vec_size, 1);                   % vector of row indices
 col = zeros(vec_size, 1);                   % vector of column indices
 Cvec = zeros(vec_size, 1);                  % vectorized damping matrix
@@ -92,7 +92,7 @@ for e = 1:Mesh.ne
             end
 
             % Convert N to Matrix to Voigt Form
-            Nv = getNv(N, Mesh.nsd);
+            Nv = getNv(N, Mesh.nDOFn);
 
             % for 2D, volume integral includes the thickness
             switch Mesh.nsd 
