@@ -134,7 +134,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
     % Properties material 1
     Material.Prop(1).k1 = 45; % Conductivity in the x-direction [W/mK]
     %Material.Prop(1).k2 = 45; % Conductivity in the y-direction [W/mK]
-    Material.Prop(1).C = 500*7750;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
+    Material.Prop(1).C = 5000;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
    
     % Constitutive law: 'ISO' or 'ORTHO'
     Material.Dtype = 'ISO'; 
@@ -145,6 +145,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
 
     % Alternatively, import a material file
     % Material = Material_shale();
+    
     [Material, ~, ~] = setMaterialModel(Material);
 
 
@@ -223,10 +224,10 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof;
+        BC.fix_disp_dof = [Mesh.left_dof; Mesh.bottom_dof];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) sin(t)*ones(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -252,7 +253,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
         BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
         
         % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
+        BC.traction_force_value = @(t) BC.traction_force_value; 
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -282,7 +283,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        Control.stress_calc = 'none';
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
@@ -302,8 +303,8 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 2*pi;
-        NumberOfSteps     = 50;
+        Control.EndTime   = 10;
+        NumberOfSteps     = 100;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise

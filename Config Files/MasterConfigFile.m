@@ -107,6 +107,47 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %   config_dir:     (OPTIONAL) File path for the directory where 
 %                   unstructured mesh is stored
 
+%% Material Properties (Solid)
+
+    % NOTES-------------------------------------------------------------
+                                
+        % NOTE: anonymous functions are defined with respect to the variable x,
+        % which is a vector [x(1) x(2) x(3)] = [x y z]
+
+        % NOTE: Material properties must be continuous along an element, 
+        % otherwise, quadrature order must be increased significantly
+        
+        % NOTE: Number of material properties can be more than one. Properties
+        % for different materials are saved in Material.Prop.
+        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
+        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
+        
+    % Specify Material Model
+        % LE1 - Linear elasticity
+        % ST1 - Stiffening model with 1st invariant of strain
+        % TH1 - Thermal Diffusion
+    Material.Model = 'LE1';
+    
+    % number of material properties
+    Material.nmp = 1;
+
+    % Properties material 1
+    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
+
+    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
+    Material.Dtype = 'PlaneStrain'; 
+
+    % Thickness (set as default to 1)
+    % 1D: [m2], 2D: [m]
+    Material.t = @(x) 1;
+
+    % Alternatively, import a material file
+    % Material = Material_shale();
+    
+    [Material, ~, ~] = setMaterialModel(Material);
+
+
 %% Mesh Properties
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
@@ -131,7 +172,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % element type ('Q4')
             type = 'Q4';
             
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
         case 'IMPORTED'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
@@ -144,58 +185,23 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % Optional 5th input in case Q8 with reduced integration is desired
             Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
             meshFileName = 'CricularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
-            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end    
     
-%% Material Properties (Solid)
+%% Assign Materials to Mesh
 
-    % NOTES-------------------------------------------------------------
-                                
-        % NOTE: anonymous functions are defined with respect to the variable x,
-        % which is a vector [x(1) x(2) x(3)] = [x y z]
-
-        % NOTE: Material properties must be continuous along an element, 
-        % otherwise, quadrature order must be increased significantly
-        
-        % NOTE: Number of material properties can be more than one. Properties
-        % for different materials are saved in Material.Prop.
-        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
-        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
-        
-    % Specify Material Model
-        % LE1 - Linear elasticity
-        % ST1 - Stiffening model with 1st invariant of strain
-    Material.Model = 'LE1';
-    
-    % number of material properties
-    Material.nmp = 1;
-
-    % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
-    
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements
     Mesh.MatList(:) = 1;
-
-    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
-
-    % Thickness (set as default to 1)
-    % 1D: [m2], 2D: [m]
-    Material.t = @(x) 1;
-
-    % Alternatively, import a material file
-    % Material = Material_shale();
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
