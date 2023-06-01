@@ -53,7 +53,13 @@
     if progress_on
         disp([num2str(toc),': Assembling Linear Elastic Stiffness Matrix...']);
     end
-    Klin = getK(Mesh, Quad, Material); % Linear elastic stiffness matrix
+    switch Material.Problemtype
+        case 1 % Equilibrium problem
+            Klin = getK(Mesh, Quad, Material); % Linear elastic stiffness matrix
+        case 2 % Diffusion problem
+            Klin = getK_dfsn(Mesh, Quad, Material); % Linear conductivity stiffness matrix
+        %case 3 % Mixed problem
+    end
     
     % Compute mass matrix
     M = 0; % placeholder
@@ -63,7 +69,6 @@
     if Control.transient == 1
         if progress_on
             disp([num2str(toc),': Assembling Damping Matrix...']);
-        else
         end
         C = getC(Mesh, Quad, Material); % Transient Case
     else
