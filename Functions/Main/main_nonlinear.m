@@ -53,24 +53,33 @@
     Klin = getK(Mesh, Quad, Material); % Linear elastic stiffness matrix
     
     % Compute mass matrix
-    M = 0; % placeholder
+    switch Control.TimeCase 
+        case 'dynamic'
+            if progress_on
+                disp([num2str(toc),': Assembling Mass Matrix...']);
+            end
+            M = getC(Mesh, Quad, Material); % Dynamic Case
+        otherwise
+            M = sparse(Mesh.nDOF, Mesh.nDOF); % Static and Transient Case
+    end 
     
     % Create tangent matrix function pointer
     [~,stiffnessmatrixfile_name] = fileparts(Material.StiffnessMatrixFile);
     [~,stressstrainfile_name] = fileparts(Material.StressStrainFile);
 
     % Compute linear damping stiffness matrix
-    if Control.transient == 1
-        if progress_on
-            disp([num2str(toc),': Assembling Damping Matrix...']);
-        else
-        end
-        C = getC(Mesh, Quad, Material); % Transient Case
-    else
-        C = sparse(Mesh.nDOF, Mesh.nDOF); % Static Case
-    end    
+    switch Control.TimeCase 
+        case 'static'
+            C = sparse(Mesh.nDOF, Mesh.nDOF); % Static Case
+        otherwise
+            % for Control.TimeCase = 'transient' or 'dynamic'
+            if progress_on
+                disp([num2str(toc),': Assembling Mass Matrix...']);
+            end
+            C = getC(Mesh, Quad, Material); % Transient Case          
+    end 
+ 
     
-
 %% Define initial conditions
     d0 = BC.IC;
     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
@@ -86,10 +95,15 @@
         [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
 
     % Internal force vectors
-        if Control.transient == 1
-            Fint = (Control.alpha*Klin+(1/dt)*C)*d+((1-Control.alpha)*Klin-C./dt)*dnm1;
-        else
-            Fint = K*d0;
+        switch Control.Timecase
+            case 'static'
+                Fint = K*d0;
+            case 'transient'
+                Fint = (Control.alpha*Klin+(1/dt)*C)*d+((1-Control.alpha)*Klin-C./dt)*dnm1;
+            case 'dynamic'
+                gam = 1/2-Control.alpha;
+                bet = (1-Control.alpha)^2/4;
+                Fint = (M/(dt^2*bet) + C*gam*(1+Control.alpha)/(dt*bet) + (1+Control.alpha)*K)*dnm1;
         end
 
     % Write initial conditions to vtk
