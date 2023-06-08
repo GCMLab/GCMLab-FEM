@@ -112,7 +112,7 @@ for e = 1:Mesh.ne
                 % Shape functions and derivatives in parent coordinates
                 N = Quad.Nq{q};
                 dNdxi = Quad.dNdxiq{q};
-                Nv = getNv(N, Mesh.nsd);
+                Nv = getNv(N, Mesh.nDOFn);
                 
                 % quadrature point in physical coordinates
                 Xi = xI'*N;
