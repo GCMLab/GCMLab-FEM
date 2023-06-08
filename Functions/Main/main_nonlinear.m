@@ -81,13 +81,23 @@
  
     
 %% Define initial conditions
-    d0 = BC.IC;
+    d0 = BC.IC_d; % Initial condition for displacement
+    v0 = BC.IC_v; % Initial condition for velocity
+    a0 = BC.IC_a; % Initial condition for acceleration
     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
+    v0(BC.fix_vel_dof) = BC.fix_vel_value(t-dt);
+    a0(BC.fix_acc_dof) = BC.fix_acc_value(t-dt);
     Fext = getFext(Mesh, BC, Quad,t-dt);
     Fextnm1 = Fext; % Fext at timestep n-1
     d = d0;     % d at timestep n
     dnm1 = d0;  % d at timestep n-1
     dnm2 = d0;  % d at timestep n-2
+    v = v0;     % v at timestep n
+    vnm1 = v0;  % v at timestep n-1
+    vnm2 = v0;  % v at timestep n-2
+    a = a0;     % a at timestep n
+    anm1 = a0;  % a at timestep n-1
+    anm2 = a0;  % a at timestep n-2
     K = Klin;
     
     % Export initial conditions
@@ -103,7 +113,10 @@
             case 'dynamic'
                 gam = 1/2-Control.alpha;
                 bet = (1-Control.alpha)^2/4;
-                Fint = (M/(dt^2*bet) + C*gam*(1+Control.alpha)/(dt*bet) + (1+Control.alpha)*K)*dnm1;
+                d_temp = dnm1 + dt*vnm1 + dt^2/2*(1-2*bet)*anm1;
+                v_temp = vnme + dt*(1-gam)*anm1;
+                Fint = (1+Control.alpha)*C*(v_temp-gam*d_temp/(dt*bet)+gam*d/(dt*bet))...
+                    +(1+Control.alpha)*K*d - Control.alpha*(C*vnm1 + K*dnm1);
         end
 
     % Write initial conditions to vtk
