@@ -178,7 +178,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     
     % type of material per element

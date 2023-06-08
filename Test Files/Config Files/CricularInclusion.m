@@ -174,7 +174,7 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
     Material.nmp = 2;
 
     % Properties material 1
-    Material.Prop(1).E = 1; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 1; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.25; % Poisson's ratio
     
     % Properties material 2
