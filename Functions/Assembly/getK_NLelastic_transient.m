@@ -1,4 +1,4 @@
-function [K_hat, R_hat, Fint] = getK_NLelastic_transient(Mesh, Quad, Material, Fext, Fextnm1, ~, ~, d, dnm1, ~, dt, ~, C, alpha)
+function [K_hat, R_hat, Fint] = getK_NLelastic_transient(Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, ~, ~, d, dnm1, ~, dt, ~, C, alpha)
 %GETK_NLELASTIC_TRANSIENT Stiffness matrix for iterative non linear elastic transient case
 %   [K, R, Fint] = GETK_NLELASTIC_TRANSIENT(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 
