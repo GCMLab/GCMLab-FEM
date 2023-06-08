@@ -1,6 +1,6 @@
-function [strain, stress] = getStrain_ST1(d, Mesh, Material, calc_type, Quad, dnm1)
+function [strain, stress] = getStrain_NLelastic(d, Mesh, Material, calc_type, Quad, dnm1)
 %GETSTRAIN Evaluate stress and strain
-%   [strain, stress] = GETSTRAIN_ST1(d, Mesh, Material) returns two 
+%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material) returns two 
 %   matrices of strains and stresses computed at the center of each element. 
 %   The matrices are of size dim x ne, in which dim = 1 for 1D elements, 3 
 %   for 2D elements, and 6 for 3D elements.

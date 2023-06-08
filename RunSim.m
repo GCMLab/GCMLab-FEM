@@ -76,6 +76,7 @@
         
         % run and time the simulation
         start_time = toc;
+%         run('Functions/Main/main')
         run('Functions/Main/main_nonlinear')
         end_time = toc;
 

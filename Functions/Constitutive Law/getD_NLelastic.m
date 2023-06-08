@@ -1,6 +1,6 @@
-function D = getD_ST1(nMat, Material, Mesh, strain_e)
+function [D, Material] = getD_NLelastic(nMat, Material, Mesh, strain_e)
 %GETD Elasticity tensor
-%   D = GETD_ST1(E, nu, nsd) is the elasticity tensor for a problem 
+%   D = GETD_NLelastic(E, nu, nsd) is the elasticity tensor for a problem 
 %   in which the constitutive law is a non linear elastic relation given by
 %   E = E0 + E1*I1^2
 % 
@@ -19,7 +19,7 @@ function D = getD_ST1(nMat, Material, Mesh, strain_e)
 %   strain_e:   element strains
 %   --------------------------------------------------------------------
 
-E0 = Material.Prop(nMat).E;
+E0 = Material.Prop(nMat).E0;
 E1 = Material.Prop(nMat).E1;
 nu = Material.Prop(nMat).nu;
 
@@ -63,5 +63,8 @@ switch Mesh.nsd
                                 0 0 0 0 (1-2*nu)/2 0;
                                 0 0 0 0 0 (1-2*nu)/2];
 end
+
+% Update Young's modulus
+Material.Prop(nMat).E = E;
 
 end

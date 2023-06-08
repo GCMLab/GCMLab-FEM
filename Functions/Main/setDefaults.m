@@ -139,12 +139,24 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         err_mat = sprintf('%s\t\t\tError #%d\t:\t Model thickness is not defined - Define Material.t\n',err_mat,err_count);
     end
     
-    if ~isfield(Material, 'Model')
-        Material.Model = 'LE1';
+    if ~isfield(Material, 'StiffnessMatrixFile')
+        Material.StiffnessMatrixFile = 'getK_elastic';
         war_count = war_count+1;
-        war_mat = sprintf('%s\t\t\tError #%d\t:\t Material model not defined, set to linear elastic\n',err_mat,err_count);
+        war_mat = sprintf('%s\t\t\tError #%d\t:\t Tangent matrix type not defined, set to linear elastic\n',err_mat,err_count);
     end
     
+    if ~isfield(Material, 'StressStrainFile')
+        Material.StressStrainFile = 'getStrain';
+        war_count = war_count+1;
+        war_mat = sprintf('%s\t\t\tError #%d\t:\t Stress-Strain type not defined, set to linear elastic\n',err_mat,err_count);
+    end
+    
+    if ~isfield(Material, 'ConstitutiveLawFile')
+        Material.ConstitutiveLawFile = 'getD';
+        war_count = war_count+1;
+        war_mat = sprintf('%s\t\t\tError #%d\t:\t Constitutive law file pointer not defined, set to linear elastic\n',err_mat,err_count);
+    end
+   
    
 %% Boundary conditions
     err_BC = sprintf('\t\tBoundary conditions \n');
