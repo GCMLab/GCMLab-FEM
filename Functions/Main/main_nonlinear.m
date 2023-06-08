@@ -73,6 +73,7 @@
         C = getC(Mesh, Quad, Material); % Transient Case
     else
         C = sparse(Mesh.nDOF, Mesh.nDOF); % Static Case
+        Control.alpha = 1;
     end    
     
 
