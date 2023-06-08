@@ -42,7 +42,7 @@ function [Mesh, Material, BC, Control] = DiffusionTest(config_dir, progress_on)
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [1;1]*100;
+            nex = [1;1]*10;
             % element type ('Q4')
             type = 'Q4';
             

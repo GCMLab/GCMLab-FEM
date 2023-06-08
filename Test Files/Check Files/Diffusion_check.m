@@ -19,7 +19,7 @@ function [TH_er] = Diffusion_check(d, Mesh)
 % T(x,y) = sin(pi*x) * sin(pi*y)
 
 % Calculate analytical temperature at reference node ni
-ni = 1078;
+ni = 14;
 xp = Mesh.x(ni,1);
 yp = Mesh.x(ni,2);
 T_exact = sin(pi*xp)*sin(pi*yp);

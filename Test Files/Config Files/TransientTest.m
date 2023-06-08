@@ -130,7 +130,7 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
     % Properties material 1
     Material.Prop(1).E = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.25; % Poisson's ratio
-    Material.Prop(1).C = 0; % Damping Coefficent
+    Material.Prop(1).C = 1e3; % Damping Coefficent
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 

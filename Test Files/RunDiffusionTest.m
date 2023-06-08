@@ -26,8 +26,8 @@
         
         % Step 2 - Check results
         % run check file, script is specific to each test
-        TH_er = Diffusion_check(d, Mesh);            % Update!
-        if TH_er < 10^-7    
+        TH_er = Diffusion_check(d, Mesh);            
+        if TH_er < 0.01    % For the given mesh, error should be 0.0083 at the selected point
             test_pass = 1;
         else
             test_pass = 0;

@@ -8,7 +8,7 @@
     tic;
     
     % Test VTK output
-    plot2vtk = 1;
+    plot2vtk = 0;
       VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
 %     VTKFolder = 'C:\Users\nilsb\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
 %    VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
@@ -29,7 +29,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 28; 
+    ntests = 29; 
     
     nameslist = {};
     testnum = 0;
@@ -38,11 +38,6 @@
     testpasssummary = zeros(ntests,1);
     
 %% Run Tests
-%% Test 29: Diffusion Test - Steady State Isotropic Heat Diffusion Problem
-%  Pass Condtion: Temperature at reference point matches analytical  solution
-      run('Test Files/RunDiffusionTest')
-      
-     return
 
 %% Test 1: Patch Test A - All nodal displacements prescribed Q4
 % Pass Condition: FEA solution displacements, stresses, and strains are exact
@@ -163,9 +158,12 @@
 
 %% Test 28: Transient Test - 2D elastic bar with Time-Dependent Neumann B.C at free end 
 %  Pass Condtion: Displacement matches analytical solution over time
-      run('Test Files\RunTransientTest')
+      run('Test Files/RunTransientTest')
 
-
+%% Test 29: Diffusion Test - Steady State Isotropic Heat Diffusion Problem
+%  Pass Condtion: Temperature at reference point matches analytical  solution
+      run('Test Files/RunDiffusionTest')
+      
 
 %% Test X: [Test Name] - Short Test Description
 %  Pass Condtion:
