@@ -132,12 +132,12 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).k1 = 45; % Conductivity in the x-direction [W/mK]
-    %Material.Prop(1).k2 = 45; % Conductivity in the y-direction [W/mK]
+    Material.Prop(1).k1 = 50; % Conductivity in the x-direction [W/mK]
+    Material.Prop(1).k2 = 25; % Conductivity in the y-direction [W/mK]
     Material.Prop(1).C = 5000;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
    
     % Constitutive law: 'ISO' or 'ORTHO'
-    Material.Dtype = 'ISO'; 
+    Material.Dtype = 'ORTHO'; 
     
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]

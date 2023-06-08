@@ -91,40 +91,33 @@ function write2vtk_dfsn(config_name, vtk_dir, Mesh, Control, ...
             
         case 2
             nodedata(end+1).name = 'U';
-            nodedata(end).data = [d(Mesh.DOF), zeros(size(Mesh.xdofs'))];
+            nodedata(end).data = [d(Mesh.DOF)];
             nodedata(end).type = 'float';
 
             nodedata(end+1).name = 'Fext';
-            nodedata(end).data = [Fext(Mesh.DOF), zeros(size(Mesh.xdofs'))];
+            nodedata(end).data = [Fext(Mesh.DOF)];
             nodedata(end).type = 'float';
             
             nodedata(end+1).name = 'Fint';
-            nodedata(end).data = [Fint(Mesh.DOF), zeros(size(Mesh.xdofs'))];
+            nodedata(end).data = [Fint(Mesh.DOF)];
             nodedata(end).type = 'float';
 
             nodedata(end+1).name = 'R';
-            nodedata(end).data = [R(Mesh.DOF), zeros(size(Mesh.xdofs'))];
+            nodedata(end).data = [R(Mesh.DOF)];
             nodedata(end).type = 'float';
             
 
             if strcmp(Control.stress_calc,'nodal') || strcmp(Control.stress_calc,'L2projection') 
-                nodedata(end+1).name = 'qx';
-                nodedata(end).data = flux(1,:)';
-                nodedata(end).type = 'float';
-
-                nodedata(end+1).name = 'qy';
-                nodedata(end).data = flux(2,:)';
+                nodedata(end+1).name = 'q';
+                nodedata(end).data = [flux(1,:)',flux(2,:)', zeros(size(Mesh.xdofs'))];
                 nodedata(end).type = 'float';
             
 
             elseif strcmp(Control.stress_calc, 'center')
-                elementdata(end+1).name = 'qx';
-                elementdata(end).data = flux(1,:)';
+                elementdata(end+1).name = 'q';
+                elementdata(end).data = [flux(1,:)', flux(2,:)', zeros(size(Mesh.xdofs'))];
                 elementdata(end).type = 'float';
 
-                elementdata(end+1).name = 'qy';
-                elementdata(end).data = flux(2,:)';
-                elementdata(end).type = 'float';
             end
     
         case 3
@@ -147,30 +140,14 @@ function write2vtk_dfsn(config_name, vtk_dir, Mesh, Control, ...
 
             if strcmp(Control.stress_calc,'nodal') || strcmp(Control.stress_calc,'L2projection') 
 
-                nodedata(end+1).name = 'qx';
-                nodedata(end).data = flux(1,:)';
+                nodedata(end+1).name = 'q';
+                nodedata(end).data = [flux(1,:)',flux(2,:)',flux(3,:)'];
                 nodedata(end).type = 'float';
-
-                nodedata(end+1).name = 'qy';
-                nodedata(end).data = flux(2,:)';
-                nodedata(end).type = 'float';
-
-                nodedata(end+1).name = 'qz';
-                nodedata(end).data = flux(3,:)';
-                nodedata(end).type = 'float';
- 
-
+                
             elseif strcmp(Control.stress_calc, 'center')
-                elementdata(end+1).name = 'qx';
-                elementdata(end).data = flux(1,:)';
-                elementdata(end).type = 'float';
 
-                elementdata(end+1).name = 'qy';
-                elementdata(end).data = flux(2,:)';
-                elementdata(end).type = 'float';
-
-                elementdata(end+1).name = 'qz';
-                elementdata(end).data = flux(3,:)';
+                elementdata(end+1).name = 'q';
+                elementdata(end).data = [flux(1,:)',flux(2,:)',flux(3,:)'];
                 elementdata(end).type = 'float';
 
 
