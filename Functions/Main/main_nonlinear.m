@@ -27,6 +27,9 @@
         fprintf('%.2f: Checking for valid inputs...\n', toc);
     end
     [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control);
+    
+%% Set material model
+    [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material);
 
 %% Initialize time variables
     t = Control.StartTime;
@@ -63,10 +66,6 @@
             M = sparse(Mesh.nDOF, Mesh.nDOF); % Static and Transient Case
     end 
     
-    % Create tangent matrix function pointer
-    [~,stiffnessmatrixfile_name] = fileparts(Material.StiffnessMatrixFile);
-    [~,stressstrainfile_name] = fileparts(Material.StressStrainFile);
-
     % Compute linear damping stiffness matrix
     switch Control.TimeCase 
         case 'static'
