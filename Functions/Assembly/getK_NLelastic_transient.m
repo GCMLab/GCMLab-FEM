@@ -57,6 +57,9 @@ Kvec = zeros(vec_size, 1);                  % vectorized stiffness matrix
 
 count = 1;                                  % DOF counter
 
+% initialize internal force vector
+Fint = zeros(Mesh.nDOF, 1);  
+
 % for each element, compute element stiffness matrix and add to global
 for e = 1:Mesh.ne
 
@@ -87,6 +90,9 @@ for e = 1:Mesh.ne
 
         % initialize element stiffness matrix
         Ke = zeros(ndofE, ndofE); 
+        
+        % initialize element internal force vector
+        fe = zeros(ndofE, 1); 
 
         % loop through all quadrature points
         for q = 1:nq     
@@ -130,10 +136,34 @@ for e = 1:Mesh.ne
             strain_e = Bv'*de;
 
             % Compute constitutive matrix
-            D = feval(DMatrix_functn, nMat, Material, Mesh, strain_e);
+            [D, Material] = feval(DMatrix_functn, nMat, Material, Mesh, strain_e);
+            
+            switch Mesh.nsd
+                case 1
+                    % strain invariant
+                    I1 = strain_e(1,1)^2;
+                    % strain trace
+                    trE = strain_e(1,1);
+                    NK = [dNdxi(1,1) dNdxi(1,2)];
+                case 2
+                    % strain invariant
+                    I1 = (strain_e(1,1)+strain_e(2,1))^2;
+                    % strain trace
+                    trE = strain_e(1,1)+strain_e(2,1);
+                    NK = [dNdxi(1,1) dNdxi(2,1) dNdxi(1,2) dNdxi(2,2) dNdxi(1,3) dNdxi(2,3) dNdxi(1,4) dNdxi(2,4)];
+                case 3
+                    % strain invariant
+                    I1 = (strain_e(1,1)+strain_e(2,1)+ strain_e(3,1))^2;
+                    % strain trace
+                    trE = strain_e(1,1)+strain_e(2,1) + strain_e(3,1);
+            end
 
             % Calculate local stiffness matrix
-            Ke = Ke + W(q)*Bv*D*Bv'*L*dJe;
+            Ke = Ke + W(q)*Bv*D*Bv'*L*dJe + W(q)*Bv*(D/Material.Prop(nMat).E)*(Bv'*de)*4*Material.Prop(nMat).E1*2*I1*trE*NK*L*dJe;
+            % Ke = Ke + W(q)*Bv*D*Bv'*L*dJe;
+            
+            % Calculate local internal force vector
+            fe = fe + W(q)*Bv*(D*strain_e)*L*dJe;
 
             % quadrature debug tool
             A = A + W(q)*dJe; 
@@ -149,6 +179,9 @@ for e = 1:Mesh.ne
         Kvec(count-ndofE^2:count-1) = Ke;
         row(count-ndofE^2:count-1) = rowe;
         col(count-ndofE^2:count-1) = cole;
+        
+        %% Assemble element internal forces
+        Fint(dofE) = Fint(dofE) + fe;
 end
 
 % sparse stiffness matrix
@@ -158,9 +191,9 @@ K = sparse(row, col, Kvec, Mesh.nDOF, Mesh.nDOF);
 K_hat = alpha*K + C./dt;
 
 % internal forces
-Fint = C*(d-dnm1)./dt + K*(1-alpha)*dnm1 + alpha*K*d;
+% Fint = C*(d-dnm1)./dt + K*(1-alpha)*dnm1 + alpha*K*d;
 
 % residual
-R_hat = alpha*Fext + (1-alpha)*Fextnm1 - Fint;
+R_hat = alpha*Fext + (1-alpha)*Fextnm1 - (C*(d-dnm1)./dt + alpha*Fint + (1-alpha)*Fintnm1);
 
 end
