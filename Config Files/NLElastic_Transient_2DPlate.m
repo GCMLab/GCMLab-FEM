@@ -291,7 +291,7 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DPlate(config_dir,
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 1*pi;
+        Control.EndTime   = 1;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
