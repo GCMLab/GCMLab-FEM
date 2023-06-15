@@ -147,7 +147,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'CircularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
