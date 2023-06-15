@@ -311,8 +311,15 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         Control.plotAt = 0; % [add DOF number]
         
         % transient toggle
-        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        Control.TimeCase = 'static';    
+                        % Static → Control.TimeCase = 'static;
+                        % Transient → Control.TimeCase = 'transient';
+                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
+        Control.alpha = 0.5; 
+        %   If Control.Timecase = 'transient'
+        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        %   If Control.Timecase = 'dynamic'
+        %           α [-1/3, 0]
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces

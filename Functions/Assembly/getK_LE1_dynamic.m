@@ -1,7 +1,7 @@
-function [K, R, Fint] = getK_LE1(~, ~, ~, Fext, ~, Klin, ~, d_m, ~, ~,~,~)
-%GETK_LE1 Stiffness matrix for iterative elastic case
-%   [K, R, Fint] = GETK_LE1(Mesh, Quad, Material) returns the stiffness
-%   matrix K, the residual vector R, and the internal force vector for the 
+function [K, R, Fint] = getK_LE1_dynamic(~, ~, ~, Fext, ~, Klin, M, d_m, dt, ~ ,C,alpha)
+%GETK_HHT Relevant matrices for HHT dynamic solver
+%   [K, R, Fint] = GETK_HHT(Mesh, Quad, Material) returns the coefficient matrix
+%   , the residual vector R, and the internal force vector for the 
 %   iterative solver where the problem uses a linear elastic material
 %   
 %   Template file for other tangent matrix files 
@@ -36,6 +36,7 @@ function [K, R, Fint] = getK_LE1(~, ~, ~, Fext, ~, Klin, ~, d_m, ~, ~,~,~)
 %               .t:         Material thickness
 %
 %   Fext:       External force vector at timestep n
+%   Fextnm1:    External force vector at timestep n-1
 %   Klin:       Linear elastic stiffness matrix
 %   M:          Mass matrix
 %   d_m:        Structure array with the following fields
@@ -45,12 +46,53 @@ function [K, R, Fint] = getK_LE1(~, ~, ~, Fext, ~, Klin, ~, d_m, ~, ~,~,~)
 %               dnm3:       converged degree of freedom vector at timestep n-3
 %   dt:         timestep size between timesteps n-1 and n
 %   dtnm1:      timestep size between timesteps n-2 and n-1
+%   alpha:       intagration parameter
+%   C:          Linear damping coefficient matrix
+
+% Compute constants
+gam = 1/2-alpha;
+bet = (1-alpha)^2/4;
 
 d = d_m.d;
+dnm1 = d_m.dnm1;
+dnm2 = d_m.dnm2;
+dnm3 = d_m.dnm3;
 
-K = Klin;
-Fint = K*d;
-R = Fext - Fint;
+% Step 1
+vnm3 = (dnm2 - dnm3)/dt;
 
+% Step 2
+vnm2 = (gam+gam*(1-2*bet)/(2*bet))^(-1) * (vnm3 - (1-gam)*vnm3 +...
+    gam*(dnm2/dt/bet - 1/dt/bet*(dnm3 + dt*vnm3 + dt/2*(1-2*bet)*(-vnm3) )));
+
+% Step 3
+anm3 = (vnm2 - vnm3)/dt;
+
+% Step 4
+d_temp_nm3 = dnm3+ dt*vnm3 + dt^2/2*(1-2*bet)*anm3;
+anm2 = 1/dt^2/bet * (dnm2 - d_temp_nm3);
+
+% Step 5
+d_temp_nm2 = dnm2+ dt*vnm2 + dt^2/2*(1-2*bet)*anm2;
+anm1 = 1/dt^2/bet * (dnm1 - d_temp_nm2);
+
+% Step 6
+v_temp_nm2 = vnm2 + dt*(1-gam)*anm2;
+vnm1 = v_temp_nm2 + dt*gam*anm1;
+
+% Step 7
+d_temp = dnm1+ dt*vnm1 + dt^2/2*(1-2*bet)*anm1;
+v_temp = vnm1 + dt*(1-gam)*anm1;
+
+% Internal forces
+Fint = M*a +(1+alpha)*C*(v_temp-gam*d_temp/(dt*bet)+gam*d/(dt*bet))...
+    +(1+alpha)*Klin*d - alpha*(C*vnm1 + Klin*dnm1);
+
+% Jacobian
+K = M/dt^2/bet + (1+alpha)*gam/dt/bet*C + (1+alpha)*Klin;
+
+% Residual
+R = Fext + alpha*(C*vnm1 + K*dnm1) + M*d_temp/dt^2/bet -...
+    (1+alpha)*C*(v_temp-gam*d_temp/dt/bet);
 
 end
