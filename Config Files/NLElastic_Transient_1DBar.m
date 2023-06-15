@@ -169,10 +169,11 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_1DBar(config_dir, p
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
         
-    % Specify stiffness matrix and stress/strain calculation files
-    Material.ConstitutiveLawFile = 'getD_NLelastic';
-    Material.StiffnessMatrixFile = 'getK_NLelastic_transient';
-    Material.StressStrainFile = 'getStrain_NLelastic';
+    % Specify Material Model
+        % LE1 - Linear elasticity
+        % ST1 - Stiffening model with 1st invariant of strain
+        % TR2 - Transient model with stiffening model via 1st invariant of strain
+    Material.Model = 'TR2';
     
     % number of material properties
     Material.nmp = 1;
