@@ -103,7 +103,7 @@
             case 'static'
                 Fint = K*d0;
             case 'transient'
-                Fint = (Control.alpha*Klin+(1/dt)*C)*d+((1-Control.alpha)*Klin-C./dt)*dnm1;
+                Fint = (Control.alpha*Klin+(1/dt)*C)*d_m.d+((1-Control.alpha)*Klin-C./dt)*dnm1;
             case 'dynamic'
                 d_temp = d_m.dnm1 + dt*vnm1 + dt^2/2*(1-2*bet)*anm1;
                 v_temp = vnm1 + dt*(1-gam)*anm1;
@@ -277,7 +277,7 @@ end
             t = Control.EndTime;
         end
      
-     % Update vectors or structures (only dynamic) from previous timesteps
+     % Update vectors or structures from previous timesteps
         d_m.dnm3 = d_m.dnm2;                       % d vector from timestep n-3
         d_m.dnm2 = d_m.dnm1;                       % d vector from timestep n-2
         d_m.dnm1 = d_m.d;                          % d vector from timestep n-1
@@ -285,9 +285,16 @@ end
  
  end
     
-%     if Control.dSave
+    if Control.dSave
         d = dSave;
-%     end
+    end
+    
+    switch Control.TimeCase
+        case 'dynamic'
+            %%%%
+        otherwise
+            d = d_m.d;
+    end
 
     if Control.plotLoadDispl
         plotLoadVsDispl(loadSave, dSave, Control);

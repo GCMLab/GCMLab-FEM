@@ -285,6 +285,8 @@ function [Mesh, Material, BC, Control] = CantileverBeam(config_dir, progress_on)
                         % Static → Control.TimeCase = 'static;
                         % Transient → Control.TimeCase = 'transient';
                         % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
