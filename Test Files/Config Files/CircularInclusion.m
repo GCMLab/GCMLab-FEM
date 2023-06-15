@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = CircularInclusion(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
