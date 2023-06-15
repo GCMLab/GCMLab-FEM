@@ -147,7 +147,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'CircularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
@@ -179,7 +179,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     
     % type of material per element

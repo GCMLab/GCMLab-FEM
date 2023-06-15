@@ -10,9 +10,9 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
             Material.ConstitutiveLawFile = 'getD_ST1';
             Material.StiffnessMatrixFile = 'getK_ST1';
             Material.StressStrainFile = 'getStrain_ST1';
-        case 'ST2' % Softening Model via 1st Invariant of strain
-            Material.ConstitutiveLawFile = 'getD_ST2';
-            Material.StiffnessMatrixFile = 'getK_ST1';
+        case 'TR2' % Transient model with stiffening model via 1st invariant of strain
+            Material.ConstitutiveLawFile = 'getD_ST1';
+            Material.StiffnessMatrixFile = 'getK_TR2';
             Material.StressStrainFile = 'getStrain_ST1';
     end
 

@@ -153,7 +153,7 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
         % otherwise, quadrature order must be increased significantly
 
     % Young's modulus [Pa]
-    Material.E = @(x) 2e11;  
+    Material.E0 = @(x) 2e11;  
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 

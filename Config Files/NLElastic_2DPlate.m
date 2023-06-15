@@ -125,9 +125,9 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = [20;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [1;1];
+            nex = [20;5];
             % element type ('Q4')
             type = 'Q4';
             
@@ -147,7 +147,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'CircularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
@@ -173,14 +173,13 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
     % Specify Material Model
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
-        % ST2 - Softening model with 1st invariant of strain
-    Material.Model = 'ST2';
+    Material.Model = 'ST1';
     
     % number of material properties
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
     Material.Prop(1).E1 = 1e20; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     
@@ -212,18 +211,12 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
-        % bottom node
-        botleftnode = find(Mesh.x(:,2) == min(Mesh.x(:,2)) & Mesh.x(:,1) == min(Mesh.x(:,1)));
-        % fixed displacement
-        BC.fix_disp_dof1 = [botleftnode*2; Mesh.left_dofx]; 
-        % load application (displacement control)
-        BC.fix_disp_dof2 = Mesh.right_dofy;
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [BC.fix_disp_dof1; BC.fix_disp_dof2];
+        BC.fix_disp_dof = Mesh.left_dof;
+
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        aux = 5e-3;
-        BC.fix_disp_value = @(t) [zeros(length(BC.fix_disp_dof1),1); ones(length(BC.fix_disp_dof2),1)*aux*t];
-        
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+
     %% Neumann BC
     % -----------------------------------------------------------------
         % column vector of prescribed traction dofs
@@ -234,8 +227,22 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = [];  
-   
+        BC.traction_force_node = Mesh.right_nodes;  
+
+        % prescribed traction [t1x t1y;t2x t2y;...] [N]
+        Fnode = 1e8/(length(BC.traction_force_node) - 1);
+        BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), ones(size(BC.traction_force_node))];
+        
+        % find the nodes in the top right and bottom right corners
+        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
+        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
+        
+        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
+        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
+        
+        % Make the vector into an anonymous function in time
+        BC.traction_force_value = @(t) BC.traction_force_value*t; 
+    
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
@@ -284,7 +291,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 3;
+        Control.EndTime   = 1;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
@@ -299,7 +306,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % transient toggle
         Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
         Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-
+        
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm

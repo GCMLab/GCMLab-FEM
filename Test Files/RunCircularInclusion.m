@@ -26,7 +26,7 @@
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
         global calc_type
-            config_name = 'CricularInclusion';
+            config_name = 'CircularInclusion';
             % run with nodal averaging
             calc_type = 'center';
 %       main  % Runs calculation
