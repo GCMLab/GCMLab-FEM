@@ -125,9 +125,9 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [20;1];
+            L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [20;5];
+            nex = [1;1];
             % element type ('Q4')
             type = 'Q4';
             
@@ -213,11 +213,16 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
+        % fixed displacement
+        BC.fix_disp_dof1 = Mesh.left_dof; 
+        % load application (displacement control)
+        BC.fix_disp_dof2 = Mesh.right_dofy;
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof;
+        BC.fix_disp_dof = [BC.fix_disp_dof1; BC.fix_disp_dof2];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+        aux = 3e-3;
+        BC.fix_disp_value = @(t) [zeros(length(BC.fix_disp_dof1),1); ones(length(BC.fix_disp_dof2),1)*aux*t];
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -229,22 +234,8 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
-
-        % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e8/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), ones(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        
-        % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*t; 
-    
+        BC.traction_force_node = [];  
+   
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
@@ -293,7 +284,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 1;
+        Control.EndTime   = 3;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
