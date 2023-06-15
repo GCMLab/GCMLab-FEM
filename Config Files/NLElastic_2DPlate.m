@@ -173,6 +173,8 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
     % Specify Material Model
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
+        % ST2 - Softening model with 1st invariant of strain
+        % TR2 - Transient model with stiffening model via 1st invariant of strain
     Material.Model = 'ST1';
     
     % number of material properties
