@@ -58,11 +58,6 @@
     % Compute mass matrix
     M = 0; % placeholder
     
-
-<<<<<<< HEAD
-
-=======
->>>>>>> 05207f82952b810a5e7bdc27a04221f57e504e8f
     % Compute linear damping stiffness matrix
     if Control.transient == 1
         if progress_on
@@ -95,6 +90,7 @@
         else
             Fint = K*d0;
         end
+        Fintnm1 = Fint; % Fint at timestep n-1
 
     % Write initial conditions to vtk
         if plot2vtk
@@ -163,7 +159,7 @@ end
             end
       
         % Compute nonlinear stiffness matrix and internal forces
-            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fext, Fextnm1, Klin, M, d, dnm1, dnm2, dt, dtnm1, C, Control.alpha); 
+            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d, dnm1, dnm2, dt, dtnm1, C, Control.alpha); 
             ResForce(BC.fixed) = 0;
         
         % Calculate the norm of residual vector
@@ -258,6 +254,7 @@ end
      % Update vectors from previous timesteps
      dnm2 = dnm1;                       % d vector from timestep n-2
      dnm1 = d;                          % d vector from timestep n-1
+     Fintnm1 = Fint;                    % Fint from timestep n-1
      Fextnm1 = Fext;                    % Fext from timestep n-1
  
  end

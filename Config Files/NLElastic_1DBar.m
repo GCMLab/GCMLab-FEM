@@ -147,7 +147,7 @@ function [Mesh, Material, BC, Control] = NLElastic_1DBar(config_dir, progress_on
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'CircularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
@@ -179,7 +179,7 @@ function [Mesh, Material, BC, Control] = NLElastic_1DBar(config_dir, progress_on
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
     Material.Prop(1).E1 = 1e20; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     
@@ -294,6 +294,10 @@ function [Mesh, Material, BC, Control] = NLElastic_1DBar(config_dir, progress_on
         Control.plotLoadDispl = 1;
         % DOF to plot
         Control.plotAt = Mesh.nDOF; % end node
+        
+        % transient toggle
+        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
