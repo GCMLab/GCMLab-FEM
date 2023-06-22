@@ -90,7 +90,7 @@ function write2vtk_dfsn(config_name, vtk_dir, Mesh, Control, ...
             end
             
         case 2
-            nodedata(end+1).name = 'U';
+            nodedata(end+1).name = 'T';
             nodedata(end).data = [d(Mesh.DOF)];
             nodedata(end).type = 'float';
 
@@ -122,7 +122,7 @@ function write2vtk_dfsn(config_name, vtk_dir, Mesh, Control, ...
     
         case 3
 
-            nodedata(end+1).name = 'U';
+            nodedata(end+1).name = 'T';
             nodedata(end).data = d(Mesh.DOF);
             nodedata(end).type = 'float';
 
