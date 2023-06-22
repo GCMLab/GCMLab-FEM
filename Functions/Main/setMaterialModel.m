@@ -6,6 +6,10 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
             Material.ConstitutiveLawFile = 'getD';
             Material.StiffnessMatrixFile = 'getK_LE1';
             Material.StressStrainFile = 'getStrain';
+        case 'LED1' % Linear elasticity and dynamic
+            Material.ConstitutiveLawFile = 'getD';
+            Material.StiffnessMatrixFile = 'getK_LE1_dynamic';
+            Material.StressStrainFile = 'getStrain';
         case 'ST1' % Stiffening Model via 1st Invariant of strain
             Material.ConstitutiveLawFile = 'getD_ST1';
             Material.StiffnessMatrixFile = 'getK_ST1';

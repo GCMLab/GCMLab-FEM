@@ -239,6 +239,10 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         Control.plotLoadDispl = 0;
     end
     
+    if ~isfield(Control, 'TimeCase')
+        Control.TimeCase = 'static';
+    end
+    
 %% Output
 
 war_message = sprintf('%s %s %s %s %s', war_message, war_mesh, war_mat, war_BC, war_control);
