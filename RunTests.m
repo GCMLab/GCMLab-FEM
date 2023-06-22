@@ -8,8 +8,8 @@
     tic;
     
     % Test VTK output
-    plot2vtk = 1;
-     VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+    plot2vtk = 0;
+     VTKFolder ='C:\Users\GZingaro\Desktop\Results';
 %     VTKFolder = 'C:\Users\nilsb\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
     
     % suppress progress messages
@@ -28,7 +28,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 28; 
+    ntests = 29; 
     
     nameslist = {};
     testnum = 0;
@@ -158,6 +158,10 @@
 %% Test 28: Transient Test - 2D elastic bar with Time-Dependent Neumann B.C at free end 
 %  Pass Condtion: Displacement matches analytical solution over time
       run('Test Files\RunTransientTest')
+
+%% Test 29: Kelvin-Voigt Linear Viscoelastic Model - Relaxation
+%  Pass Condtion:
+     run('Test Files/RunTestVE1')     
 
 %% Test X: [Test Name] - Short Test Description
 %  Pass Condtion:

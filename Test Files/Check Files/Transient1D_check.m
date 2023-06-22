@@ -1,4 +1,4 @@
-function [disp_er] = Transient1D_check(d, Material, Mesh, Control,BC);
+function [L2d] = Transient1D_check(d, Material, ~, Control,BC)
 %TEST1D_CHECK Calculates the error between FEA and analytical solutions
 %   [disp_er] = Test1D_check(d, Material, BC, Mesh)
 %   calculates the error between FEA and analytical displacements along the
@@ -24,23 +24,23 @@ function [disp_er] = Transient1D_check(d, Material, Mesh, Control,BC);
 % 2. Index 863 corresponds to the displacement in x along the free-end of the beam at the midpoint in the y-direction. 
 
 % Import Material Parameters
-C = Material.Prop.C;
-K = Material.Prop.E;
+C = Material.Prop(1).C;
+K = Material.Prop(1).E0;
 
 % Time-step Parameters
-t = Control.StartTime:Control.TimeStep:Control.EndTime;
+t = Control.StartTime+Control.TimeStep:Control.TimeStep:Control.EndTime;
 
 % Force at Free End
-F = 21*BC.Fn;
+F = BC.Fn;
 
 % Compute Exact Solution
 dsoln = @(t) ((F./(C.^2+K.^2)).*(-C.*cos(t)+K.*sin(t)+C.*cos(t).*exp(-K.*t./C)))*10;
 dexact = dsoln(t);
 
 % Index Displacements at Mid-Height at the Free-end of Bar
-dnum = d(863,:);
+dnum = d(863,2:end);
 
 % Calculate the error
-disp_er = abs(dnum - dexact)/abs(dexact);
+L2d = norm(dnum-dexact);
 
 end

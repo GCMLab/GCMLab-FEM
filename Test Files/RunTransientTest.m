@@ -33,12 +33,12 @@
 
         
         % Step 2 - Check results
-        error = Transient1D_check(d, Material, Mesh, Control,BC);
+        L2d = Transient1D_check(d, Material, Mesh, Control,BC);
         
-        fprintf('\nT3 Transient Cantilever Bar Test : Displacement error at free-end of cantilever bar is %.2f',error)
-        
-        convergence_tolerance = 1e-1;
-        if error <= convergence_tolerance
+        fprintf('\nT3 Transient Cantilever Bar Test: L2-norm of the displacement error at free-end of cantilever bar is %.2e', L2d);
+
+        convergence_tolerance = 1e-2;
+        if L2d <= convergence_tolerance
             test_pass = 1;
         else
             test_pass = 0;
@@ -46,9 +46,9 @@
         
         % Step 3 - Output results
         if test_pass
-            fprintf('\nPASS Transient Solution')
+            fprintf('\nPASS')
         else
-            fprintf('\nFAIL Transient Solution')
+            fprintf('\nFAIL')
         end
         testpasssummary(testnum) = test_pass;
 

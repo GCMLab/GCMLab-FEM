@@ -9,9 +9,9 @@
  
 %% Input (these variables must be modified by the user)
     % Folder name where config files are stored
-    DirFolder = 'Config Files';
+    DirFolder = 'Test Files';
     % Config files to run. Choose either 'all' or give the file name.
-    FileList = 'NLElastic_Transient_2DPlate';
+    FileList = 'RunTestVE1.m';
     
     
     % Directory for VTK Files (end with \)
