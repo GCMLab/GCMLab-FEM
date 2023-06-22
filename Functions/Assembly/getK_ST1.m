@@ -1,5 +1,5 @@
 function [K, R, Fint] = getK_ST1(Mesh, Quad, Material, Fext, ~, ~, d, ~, ~, ~, ~)
-%GETK_NLELASTIC Stiffness matrix for iterative non linear elastic case
+%GETK_ST1 Stiffness matrix for iterative non linear elastic case
 %   [K, R, Fint] = GETK_ST1(Mesh, Quad, Material) returns the 
 %   stiffness matrix K, the residual vector R, and the internal force 
 %   vector for the iterative solver where the problem uses a non linear 
