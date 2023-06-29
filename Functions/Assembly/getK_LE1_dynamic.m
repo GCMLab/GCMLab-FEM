@@ -57,34 +57,17 @@ d = d_m.d;
 dnm1 = d_m.dnm1;
 dnm2 = d_m.dnm2;
 dnm3 = d_m.dnm3;
+dnm4 = d_m.dnm4;
 
-% Step 1
-vnm3 = (dnm2 - dnm3)/dt;
+% 2nd order accurate backwards difference approximation
+vnm1 = 1/2/dt* (3*dnm1 - 4*dnm2 + dnm3);
+anm1 = 1/dt^2 * (2*dnm1  - 5*dnm2 + 4*dnm3 - dnm4);
 
-% Step 2
-vnm2 = (gam+gam*(1-2*bet)/(2*bet))^(-1) * (vnm3 - (1-gam)*vnm3 +...
-    gam*(dnm2/dt/bet - 1/dt/bet*(dnm3 + dt*vnm3 + dt/2*(1-2*bet)*(-vnm3) )));
-
-% Step 3
-anm3 = (vnm2 - vnm3)/dt;
-
-% Step 4
-d_temp_nm3 = dnm3+ dt*vnm3 + dt^2/2*(1-2*bet)*anm3;
-anm2 = 1/dt^2/bet * (dnm2 - d_temp_nm3);
-
-% Step 5
-d_temp_nm2 = dnm2+ dt*vnm2 + dt^2/2*(1-2*bet)*anm2;
-anm1 = 1/dt^2/bet * (dnm1 - d_temp_nm2);
-
-% Step 6
-v_temp_nm2 = vnm2 + dt*(1-gam)*anm2;
-vnm1 = v_temp_nm2 + dt*gam*anm1;
-
-% Step 7
 d_temp = dnm1+ dt*vnm1 + dt^2/2*(1-2*bet)*anm1;
 v_temp = vnm1 + dt*(1-gam)*anm1;
 
 % Internal forces
+a = (d - d_temp)./dt^2/bet;
 Fint = M*a +(1+alpha)*C*(v_temp-gam*d_temp/(dt*bet)+gam*d/(dt*bet))...
     +(1+alpha)*Klin*d - alpha*(C*vnm1 + Klin*dnm1);
 

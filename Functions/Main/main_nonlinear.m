@@ -81,13 +81,17 @@
     
 %% Define initial conditions
 
-    d0 = BC.IC; % Initial condition for displacement
+    d0 = BC.IC(t-dt); % Initial condition for displacement
     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
     Fext = getFext(Mesh, BC, Quad,t-dt);
     Fextnm1 = Fext; % Fext at timestep n-1
     d_m.d = d0;     % d at timestep n (trial)
     K = Klin;
-
+    d_m.dnm1 = d0;  % d at timestep n-1
+    d_m.dnm2 = d0;  % d at timestep n-2
+    d_m.dnm3 = d0;  % d at timestep n-3
+    d_m.dnm4 = d0;  % d at timestep n-4            
+    
     % Export initial conditions
         % Strain
         [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
@@ -97,10 +101,9 @@
             case 'static'
                 Fint = K*d0;
             case 'transient'
-                d_m.dnm1 = d0;  % d at timestep n-1
                 Fint = (Control.alpha*Klin+(1/dt)*C)*d_m.d+((1-Control.alpha)*Klin-C./dt)*dnm1;
             case 'dynamic'
-                d_m.d = d0;  % d at timestep n-2
+                d_m.d = d0;  % d at timestep n-1
                 d_m.d(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
                 d_m.dnm1 = d0;  % d at timestep n-2
                 d_m.dnm1(BC.fix_disp_dof) = BC.fix_disp_value(t-2*dt);
@@ -108,7 +111,9 @@
                 d_m.dnm2(BC.fix_disp_dof) = BC.fix_disp_value(t-3*dt);
                 d_m.dnm3 = d0;  % d at timestep n-4
                 d_m.dnm3(BC.fix_disp_dof) = BC.fix_disp_value(t-4*dt);
-                
+                d_m.dnm4 = d0;  % d at timestep n-5
+                d_m.dnm4(BC.fix_disp_dof) = BC.fix_disp_value(t-5*dt);
+                                
                 alpha = Control.alpha;
                 
                 % Compute constants
@@ -119,34 +124,17 @@
                 dnm1 = d_m.dnm1;
                 dnm2 = d_m.dnm2;
                 dnm3 = d_m.dnm3;
+                dnm4 = d_m.dnm4;
 
-                % Step 1
-                vnm3 = (dnm2 - dnm3)/dt;
+                % 2nd order accurate backwards difference approximation
+                vnm1 = 1/2/dt* (3*dnm1 - 4*dnm2 + dnm3);
+                anm1 = 1/dt^2 * (2*dnm1  - 5*dnm2 + 4*dnm3 - dnm4);
 
-                % Step 2
-                vnm2 = (gam+gam*(1-2*bet)/(2*bet))^(-1) * (vnm3 - (1-gam)*vnm3 +...
-                    gam*(dnm2/dt/bet - 1/dt/bet*(dnm3 + dt*vnm3 + dt/2*(1-2*bet)*(-vnm3) )));
-
-                % Step 3
-                anm3 = (vnm2 - vnm3)/dt;
-
-                % Step 4
-                d_temp_nm3 = dnm3+ dt*vnm3 + dt^2/2*(1-2*bet)*anm3;
-                anm2 = 1/dt^2/bet * (dnm2 - d_temp_nm3);
-
-                % Step 5
-                d_temp_nm2 = dnm2+ dt*vnm2 + dt^2/2*(1-2*bet)*anm2;
-                anm1 = 1/dt^2/bet * (dnm1 - d_temp_nm2);
-
-                % Step 6
-                v_temp_nm2 = vnm2 + dt*(1-gam)*anm2;
-                vnm1 = v_temp_nm2 + dt*gam*anm1;
-
-                % Step 7
                 d_temp = dnm1+ dt*vnm1 + dt^2/2*(1-2*bet)*anm1;
                 v_temp = vnm1 + dt*(1-gam)*anm1;
 
                 % Internal forces
+                a = (d - d_temp)./dt.^2./bet; %Acceleration at n-1
                 Fint = M*a +(1+alpha)*C*(v_temp-gam*d_temp/(dt*bet)+gam*d/(dt*bet))...
                     +(1+alpha)*Klin*d - alpha*(C*vnm1 + Klin*dnm1);
                 
@@ -321,6 +309,7 @@ end
         end
      
      % Update vectors or structures from previous timesteps
+        d_m.dnm4 = d_m.dnm3;                       % d vector from timestep n-4
         d_m.dnm3 = d_m.dnm2;                       % d vector from timestep n-3
         d_m.dnm2 = d_m.dnm1;                       % d vector from timestep n-2
         d_m.dnm1 = d_m.d;                          % d vector from timestep n-1
