@@ -71,13 +71,18 @@
     
 
     % Compute linear damping stiffness matrix
-    if Material.transient == 1
+    if Material.Transient == 1                  % Transient Case
         if progress_on
-            disp([num2str(toc),': Assembling Damping Matrix...']);
+            switch Material.ProblemType
+                case 1
+                    disp([num2str(toc),': Assembling Damping Matrix...']);
+                otherwise
+                    disp([num2str(toc),': Assembling Capacity Matrix...']);
+            end
         end
-        C = getC(Mesh, Quad, Material); % Transient Case
-    else
-        C = sparse(Mesh.nDOF, Mesh.nDOF); % Static Case
+        C = getC(Mesh, Quad, Material); 
+    else                                       % Static Case
+        C = sparse(Mesh.nDOF, Mesh.nDOF); 
         Control.alpha = 1;
     end    
     
@@ -103,7 +108,7 @@
         end
 
     % Internal force vectors
-        if Material.transient == 1
+        if Material.Transient == 1
             Fint = (Control.alpha*Klin+(1/dt)*C)*d+((1-Control.alpha)*Klin-C./dt)*dnm1;
         else
             Fint = K*d0;
