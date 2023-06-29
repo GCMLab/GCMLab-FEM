@@ -1,8 +1,12 @@
 function C = getC(Mesh, Quad, Material)
-%GETC Damping matrix 
+%GETC Damping/Capacity matrix 
 %   C = GETC(Mesh, Quad, Material) is the global damping matrix for 
 %   parameters defined in the structure arrays Mesh, Quad, and Material. 
-%   The sparse matrix has size Mesh.nDOF x Mesh.nDOF
+%   The sparse matrix has size Mesh.nDOF x Mesh.nDOF.
+%
+%   This function also assembles the capacity matrix for diffusion
+%   problems. In this case, the damping coefficient is replaced with the
+%   heat capacity: (specific heat * density) = [J/K kg]*[kg/m^3] = [J/K m^3]
 %   
 %   --------------------------------------------------------------------
 %   Input
@@ -29,7 +33,7 @@ function C = getC(Mesh, Quad, Material)
 % 
 %   Material:   Structure array with the following fields,
 %               .t:         Material thickness
-%               .c:         Damping Coefficient
+%               .C:         Damping Coefficient / heat capacity
 
 % Acknowledgements: Jonathan Zingaro
 
