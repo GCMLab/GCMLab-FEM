@@ -18,6 +18,8 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
     err_mat = sprintf('\t\tMat \n');
     war_mat = sprintf('\t\tMat \n');
     
+    % Elasticity problems
+    
     if isfield(Material.Prop, 'E')
         for ii = 1 : Material.nmp
             if any(Material.Prop(ii).E < 0, 'all')
@@ -47,7 +49,25 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
             err_mat = sprintf('%s\t\t\tError #%d\t:\t The thickness is non-positive inside the domain\n',err_mat,err_count);
         end
     end
+    
+    % Diffusion problems
+    if isfield(Material.Prop, 'k1')
+        for ii = 1 : Material.nmp
+            if any(Material.Prop(ii).k1 < 0, 'all')
+                err_count = err_count+1;
+                err_mat = sprintf('%s\t\t\tError #%d\t:\t The conductivity is non-positive inside the domain\n',err_mat,err_count);
+            end
+        end
+    end
 
+    if isfield(Material.Prop, 'C')
+        for ii = 1 : Material.nmp
+            if any(Material.Prop(ii).C < 0, 'all')
+                err_count = err_count+1;
+                err_mat = sprintf('%s\t\t\tError #%d\t:\t The heat capacity is non-positive inside the domain\n',err_mat,err_count);
+            end
+        end
+    end
 
 %% Boundary conditions
     err_BC = sprintf('\t\tBoundary conditions \n');
