@@ -1,10 +1,13 @@
 function [K, R, Fint] = getK_TH1(~, ~, ~, Fext, Fextnm1, Klin, ~, d, dnm1, ~, dt, ~, C, alpha)
-%GETK_TH1 Conductivity matrix for transient diffusion case
+%GETK_TH1 Conductivity matrix for diffusion case
 %   [K, R, Fint] = GETK_TH1(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 
 %   iterative solver where the problem uses a linear elastic material
-%   
-%   Template file for other tangent matrix files 
+
+%   This file generates the stiffness matrices for both TH1 (Steady-state)
+%   and TH2 (transient) diffusion cases. In the steady-state case, C is 
+%   automatically set to zero and alpha is automatically set to 1.
+
 %   --------------------------------------------------------------------
 %   Accepted Inputs (in order)
 %   --------------------------------------------------------------------
