@@ -50,13 +50,18 @@
 %% Compute system matrices 
 
     % Compute linear elastic stiffness matrix
-    if progress_on
-        disp([num2str(toc),': Assembling Linear Elastic Stiffness Matrix...']);
-    end
+
     switch Material.ProblemType
+
         case 1 % Equilibrium problem
+            if progress_on
+                disp([num2str(toc),': Assembling Linear Elastic Stiffness Matrix...']);
+            end
             Klin = getK(Mesh, Quad, Material); % Linear elastic stiffness matrix
         case 2 % Diffusion problem
+            if progress_on
+                disp([num2str(toc),': Assembling Linear Conductivity Matrix...']);
+            end
             Klin = getK_dfsn(Mesh, Quad, Material); % Linear conductivity stiffness matrix
         %case 3 % Mixed problem
     end
@@ -66,7 +71,7 @@
     
 
     % Compute linear damping stiffness matrix
-    if Control.transient == 1
+    if Material.transient == 1
         if progress_on
             disp([num2str(toc),': Assembling Damping Matrix...']);
         end
@@ -98,7 +103,7 @@
         end
 
     % Internal force vectors
-        if Control.transient == 1
+        if Material.transient == 1
             Fint = (Control.alpha*Klin+(1/dt)*C)*d+((1-Control.alpha)*Klin-C./dt)*dnm1;
         else
             Fint = K*d0;

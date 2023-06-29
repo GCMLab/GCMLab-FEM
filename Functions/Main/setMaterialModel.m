@@ -26,16 +26,24 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
             Material.ProblemType      = 1;
         case 'TR1' % Transient Linear Elastic
             Material.ConstitutiveLawFile = 'getD';
-            Material.StiffnessMatrixFile = 'getK_LE1';
+            Material.StiffnessMatrixFile = 'getK_TR1';
             Material.StressStrainFile = 'getStrain';
             Material.PostProcessor    = 'write2vtk_eqbm';
             Material.ProblemType      = 1;
-        case 'TH1' % Thermal Diffusion (transient)
+            Material.Transient        = 1;
+        case 'TH1' % Thermal Diffusion (Steady-state)
             Material.ConstitutiveLawFile = 'getD_TH1';
             Material.StiffnessMatrixFile = 'getK_TH1';
             Material.StressStrainFile = 'getFlux_TH1';
             Material.PostProcessor    = 'write2vtk_dfsn';
             Material.ProblemType      = 2;
+        case 'TH2' % Thermal Diffusion (Transient)
+            Material.ConstitutiveLawFile = 'getD_TH1';
+            Material.StiffnessMatrixFile = 'getK_TH1';
+            Material.StressStrainFile = 'getFlux_TH1';
+            Material.PostProcessor    = 'write2vtk_dfsn';
+            Material.ProblemType      = 2;
+            Material.Transient        = 1;
     end
 
     % Create function pointers
