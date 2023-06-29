@@ -125,7 +125,8 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
     % Specify Material Model
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
-        % TH1 - Thermal diffusion
+        % TH1 - Thermal diffusion (Steady-State)
+        % TH2 - Thermal diffusion (Transient)
     Material.Model = 'TH1';
     
     % number of material properties
@@ -227,7 +228,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
         BC.fix_disp_dof = [Mesh.left_dof; Mesh.bottom_dof];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = @(t) [zeros(length(Mesh.left_dof),1); 25*ones(length(Mesh.bottom_dof),1)];  
 
     %% Neumann BC
     % -----------------------------------------------------------------

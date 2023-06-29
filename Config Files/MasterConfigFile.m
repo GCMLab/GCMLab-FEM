@@ -125,7 +125,9 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % Specify Material Model
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
-        % TH1 - Thermal Diffusion
+        % TR1 - Transient Linear Elasticity
+        % TH1 - Thermal Diffusion (Steady-State)
+        % TH2 - Thermal Diffusion (Transient)
     Material.Model = 'LE1';
     
     % number of material properties
