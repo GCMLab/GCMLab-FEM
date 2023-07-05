@@ -61,7 +61,7 @@
             if progress_on
                 disp([num2str(toc),': Assembling Mass Matrix...']);
             end
-            M = getC(Mesh, Quad, Material); % Dynamic Case
+            M = getM(Mesh, Quad, Material); % Dynamic Case
         otherwise
             M = sparse(Mesh.nDOF, Mesh.nDOF); % Static and Transient Case
     end 
@@ -83,7 +83,12 @@
 
     d0 = BC.IC(t-dt); % Initial condition for displacement
     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
-    Fext = getFext(Mesh, BC, Quad,t-dt);
+    switch Control.TimeCase
+        case 'dynamic'
+            Fext = getFext(Mesh, BC, Quad, t - dt + Control.alpha * dt);
+        otherwise
+            Fext = getFext(Mesh, BC, Quad, t - dt);
+    end
     Fextnm1 = Fext; % Fext at timestep n-1
     d_m.d = d0;     % d at timestep n (trial)
     K = Klin;
@@ -139,6 +144,7 @@
                     +(1+alpha)*Klin*d - alpha*(C*vnm1 + Klin*dnm1);
                 
                 % Update vectors or structures from previous timesteps
+                d_m.dnm4 = d_m.dnm3;                       % d vector from timestep n-4
                 d_m.dnm3 = d_m.dnm2;                       % d vector from timestep n-3
                 d_m.dnm2 = d_m.dnm1;                       % d vector from timestep n-2
                 d_m.dnm1 = d_m.d;                          % d vector from timestep n-1
@@ -196,7 +202,7 @@ end
         end
         switch Control.TimeCase
             case 'dynamic'
-                Fext = getFext(Mesh, BC, Quad, t - dt + Control.alpha * dt);
+                Fext = getFext(Mesh, BC, Quad, t + Control.alpha * dt);
             otherwise
                 Fext = getFext(Mesh, BC, Quad, t);
         end
@@ -328,8 +334,6 @@ end
         d = dSave;
     end
     
-
-
     if Control.plotLoadDispl
         plotLoadVsDispl(loadSave, dSave, Control);
     end

@@ -67,15 +67,21 @@ d_temp = dnm1+ dt*vnm1 + dt^2/2*(1-2*bet)*anm1;
 v_temp = vnm1 + dt*(1-gam)*anm1;
 
 % Internal forces
-a = (d - d_temp)./dt^2/bet;
-Fint = M*a +(1+alpha)*C*(v_temp-gam*d_temp/(dt*bet)+gam*d/(dt*bet))...
-    +(1+alpha)*Klin*d - alpha*(C*vnm1 + Klin*dnm1);
+a = (d - d_temp)./dt^2./bet;
+Fint = M*a +(1+alpha).*C*(v_temp-gam*d_temp./(dt*bet)+gam*d./(dt*bet))...
+    +(1+alpha).*Klin*d - alpha.*(C*vnm1 + Klin*dnm1);
 
 % Jacobian
-K = M/dt^2/bet + (1+alpha)*gam/dt/bet*C + (1+alpha)*Klin;
+K = M./dt^2./bet + (1+alpha).*gam./dt./bet.*C + (1+alpha).*Klin;
 
 % Residual
-R = Fext + alpha*(C*vnm1 + K*dnm1) + M*d_temp/dt^2/bet -...
-    (1+alpha)*C*(v_temp-gam*d_temp/dt/bet);
+% R = K*d - (Fext + alpha.*(C*vnm1 + K*dnm1) + M*d_temp./dt^2./bet -...
+%     (1+alpha).*C*(v_temp-gam.*d_temp./dt./bet));
+
+% Residual in terms of dnm1, vnm1, and anm1 (from maple)
+R = - K*d + (Fext - ...
+    (((-alpha*K*dt^2*bet - C*gam*(1 + alpha)*dt - M)/(dt^2*bet))*dnm1 + ...
+    ((C*((-alpha - 1)*gam + bet)*dt - M)/(dt*bet))*vnm1 + ...
+    (((2*C*(1 + alpha)*dt + 2*M)*bet - C*gam*(1 + alpha)*dt - M)/(2*bet))*anm1));
 
 end

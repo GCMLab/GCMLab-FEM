@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = ManufacturedSolution_Dynamic(config_dir, progress_on)
-global quadorder E nu rho
+global nex quadorder E nu rho alpha tf n_steps
 
 %% Mesh Properties
     if progress_on
@@ -21,7 +21,7 @@ global quadorder E nu rho
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
+%             nex = [2;2]*10;
             % element type ('Q4')
             type = 'Q4';
             
@@ -103,20 +103,17 @@ global quadorder E nu rho
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
         
     % Manufactured solution
-    % ux = y*sin(omega1*t)
-    % uy = x*sin(omega2*t)
+    % u := (x1, x2, t) -> -1/1000*sin(1/2*pi*x1)*sin(1/2*pi*x2)*sin(2*pi*t)
+    % v := (x1, x2, t) -> 1/1000*cos(1/2*pi*x1)*cos(1/2*pi*x2)*cos(2*pi*t)
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        % u := (x1, x2, t) -> -sin(2*pi*x1)*cos(2*pi*x2)*sin(2*pi*t)
-        % v := (x1, x2, t) -> cos(2*pi*x1)*sin(2*pi*x2)*cos(2*pi*t)
-%         
-%         BC.UU = @(x,t) - sin(2.*pi.*x(:,1)).*cos(2.*pi.*x(:,2)).*sin(2.*pi.*t);
-%         BC.VV = @(x,t)   cos(2.*pi.*x(:,1)).*sin(2.*pi.*x(:,2)).*cos(2.*pi.*t);
-        
-        BC.UUx = @(x) - sin(pi.*x(:,1)./2).*sin(pi.*x(:,2)./2);
-        BC.VVx = @(x)   cos(pi.*x(:,1)./2).*cos(pi.*x(:,2)./2);
+        % u := (x1, x2, t) -> -sin(pi*x1/2)*sin(pi*x2/2)*sin(2*pi*t)/1000
+        % v := (x1, x2, t) -> cos(pi*x1/2)*cos(pi*x2/2)*cos(2*pi*t)/1000
+
+        BC.UUx = @(x) - sin(pi.*x(:,1)./2).*sin(pi.*x(:,2)./2)./1000;
+        BC.VVx = @(x)   cos(pi.*x(:,1)./2).*cos(pi.*x(:,2)./2)./1000;
         
         % Column vector of prescribed dispalcements
         BC.fix_disp_dof1 = Mesh.left_dof;
@@ -136,6 +133,29 @@ global quadorder E nu rho
         BC.VV_temp(2:2:end) = ones(length( BC.VV_temp(1:2:end)),1);
         
         BC.fix_disp_value = @(t) BC.fix_disp_value.*BC.UU_temp.*sin(2.*pi.*t) + BC.fix_disp_value.*BC.VV_temp.*cos(2.*pi.*t) ;
+        
+        
+%         BC.AAx = @(x) 4.*sin(pi.*x(:,1)./2).*sin(pi.*x(:,2)./2).*pi.^2;
+%         BC.BBx = @(x)   -4.*cos(pi.*x(:,1)./2).*cos(pi.*x(:,2)./2).*pi.^2;
+% 
+%         % Column vector of prescribed dispalcements
+%         BC.fix_disp_dof1 = Mesh.left_dof;
+%         BC.fix_disp_dof2 = Mesh.right_dof;
+%         BC.fix_disp_dof3 = Mesh.bottom_dof;
+%         BC.fix_disp_dof4 = Mesh.top_dof;
+%         BC.fix_disp_dof = unique([BC.fix_disp_dof1;BC.fix_disp_dof2;BC.fix_disp_dof3;BC.fix_disp_dof4]);
+% 
+%         % Prescribed dispalcement
+%         BC.acc_disp_value = zeros(length(BC.fix_disp_dof),1);
+%         BC.acc_disp_value(1:2:end) = BC.AAx([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
+%         BC.acc_disp_value(2:2:end) = BC.BBx([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
+% 
+%         BC.AA_temp = zeros(length(BC.fix_disp_dof),1); 
+%         BC.AA_temp(1:2:end) = ones(length( BC.AA_temp(1:2:end)),1);
+%         BC.BB_temp = zeros(length(BC.fix_disp_dof),1); 
+%         BC.BB_temp(2:2:end) = ones(length( BC.BB_temp(1:2:end)),1);
+% 
+%         BC.acc_disp_value = @(t) BC.acc_disp_value.*BC.AA_temp.*sin(2.*pi.*t) + BC.acc_disp_value.*BC.BB_temp.*cos(2.*pi.*t) ;
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -165,18 +185,21 @@ global quadorder E nu rho
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t)[-E*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) - ...
-            E*nu*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/(4*(-nu^2 + 1)) -...
-            E*(1/2 - nu/2)*(sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t)/8 +...
-            pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/8)/(-nu^2 + 1) +...
-            4*rho*sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t); 
-            -E*(1/2 - nu/2)*(-pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/8 -...
+        BC.b = @(x,t) [ -E*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) -...
+            E*nu*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/(4*(-nu^2 + 1)) - ...
+            E*(1/2 - nu/2)*(sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t)/8 + ...
+            pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/8)/(-nu^2 + 1) + ...
+            4*rho*sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t); ...
+            -E*(1/2 - nu/2)*(-pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/8 - ...
             cos(pi*x(1)/2)*cos(pi*x(2)/2)*pi^2*cos(2*pi*t)/8)/(-nu^2 + 1) +...
-            E*nu*pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) -...
-            4*rho*cos(pi*x(1)/2)*cos(pi*x(2)/2)*pi^2*cos(2*pi*t)];  
+            E*nu*pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) + ...
+            E*cos(pi*x(1)/2)*pi^2*cos(pi*x(2)/2)*cos(2*pi*t)/(4*(-nu^2 + 1)) -...
+            4*rho*cos(pi*x(1)/2)*cos(pi*x(2)/2)*pi^2*cos(2*pi*t)]./1000;
 
 %% Initial Conditions
-        BC.IC = BC.fix_disp_value(t);
+        BC.IC_temp = zeros(Mesh.nDOF,1);
+%         BC.IC_temp(BC.fix_disp_dof) = ones(length(BC.fix_disp_dof),1);
+%         BC.IC = @(t) BC.IC_temp.*   BC.fix_disp_value(t);
         
 %% Computation controls
 
@@ -213,8 +236,8 @@ global quadorder E nu rho
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 1; 
-        NumberOfSteps     = 100;
+        Control.EndTime   = tf; 
+        NumberOfSteps     = n_steps;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
         
@@ -223,7 +246,7 @@ global quadorder E nu rho
                         % Static → Control.TimeCase = 'static;
                         % Transient → Control.TimeCase = 'transient';
                         % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0; %
+        Control.alpha = alpha; %
         %   If Control.Timecase = 'transient'
         %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         %   If Control.Timecase = 'dynamic'

@@ -260,7 +260,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.b = @(x,t)[];    
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 
