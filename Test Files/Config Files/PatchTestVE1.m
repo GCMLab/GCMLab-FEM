@@ -117,7 +117,7 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
     %   'MANUAL'- In-house structured meshing
     % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
     %   'EXCEL' - Import .xlsx file, structured or unstructured
-    MeshType = 'EXCEL';        
+    MeshType = 'MANUAL';        
     
     switch MeshType
         case 'MANUAL'
@@ -146,7 +146,7 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
             
             Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on); 
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'Mesh Files\CricularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
