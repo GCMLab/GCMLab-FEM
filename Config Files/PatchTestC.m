@@ -1,5 +1,46 @@
 function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
 
+%% Material Properties (Solid)
+    E = 2340;
+    nu = 0.3;
+    t = 3.495;
+
+    % NOTES-------------------------------------------------------------
+                                
+        % NOTE: anonymous functions are defined with respect to the variable x,
+        % which is a vector [x(1) x(2) x(3)] = [x y z]
+
+        % NOTE: Material properties must be continuous along an element, 
+        % otherwise, quadrature order must be increased significantly
+        
+        % NOTE: Number of material properties can be more than one. Properties
+        % for different materials are saved in Material.Prop.
+        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
+        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
+        
+        % Specify Material Model
+        % LE1 - Linear elasticity
+    Material.Model = 'LE1';    
+        
+    % number of material properties
+    Material.nmp = 1;
+    
+    % Properties material 1
+    Material.Prop(1).E = E; % Young's modulus [Pa]
+    Material.Prop(1).nu = nu; % Poisson's ratio
+   
+
+    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
+    Material.Dtype = 'PlaneStress'; 
+
+    % Thickness (set as default to 1)
+    Material.t = @(x) 1;
+
+    % Alternatively, import a material file
+    % Material = Material_shale();
+    
+    [Material, ~, ~] = setMaterialModel(Material);
+
 %% Mesh Properties
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
@@ -24,7 +65,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
             % element type ('Q4')
             type = 'Q4';
             
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
         case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
@@ -35,55 +76,21 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);            
         case 'EXCEL'
             meshFileName = 'CricularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
-            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end    
     
-
-%% Material Properties (Solid)
-    E = 2340;
-    nu = 0.3;
-    t = 3.495;
-
-    % NOTES-------------------------------------------------------------
-                                
-        % NOTE: anonymous functions are defined with respect to the variable x,
-        % which is a vector [x(1) x(2) x(3)] = [x y z]
-
-        % NOTE: Material properties must be continuous along an element, 
-        % otherwise, quadrature order must be increased significantly
-        
-        % NOTE: Number of material properties can be more than one. Properties
-        % for different materials are saved in Material.Prop.
-        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
-        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
-        
-    % number of material properties
-    Material.nmp = 1;
-    
-    % Properties material 1
-    Material.Prop(1).E = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
-    
+%% Asssign materials to mesh
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements
     Mesh.MatList(:) = 1;
-
-    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
-
-    % Thickness (set as default to 1)
-    Material.t = @(x) 1;
-
-    % Alternatively, import a material file
-    % Material = Material_shale();
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
@@ -116,7 +123,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
         BC.fix_disp_value1 = BC.UU([Mesh.x(Mesh.left_nodes,1),Mesh.x(Mesh.left_nodes,2)]);
         BC.fix_disp_value2 = BC.VV([Mesh.x(Mesh.bottom_nodes,1),Mesh.x(Mesh.bottom_nodes,2)]);
-        BC.fix_disp_value = [BC.fix_disp_value1;BC.fix_disp_value2];  
+        BC.fix_disp_value = @(t) [BC.fix_disp_value1;BC.fix_disp_value2];  
 
     %% Neumann BC
     % -----------------------------------------------------------------
