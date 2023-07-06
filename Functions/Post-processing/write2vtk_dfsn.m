@@ -115,7 +115,7 @@ function write2vtk_dfsn(config_name, vtk_dir, Mesh, Control, ...
 
             elseif strcmp(Control.stress_calc, 'center')
                 elementdata(end+1).name = 'q';
-                elementdata(end).data = [flux(1,:)', flux(2,:)', zeros(size(Mesh.xdofs'))];
+                elementdata(end).data = [flux(1,:)', flux(2,:)', zeros(Mesh.ne,1)];
                 elementdata(end).type = 'float';
 
             end

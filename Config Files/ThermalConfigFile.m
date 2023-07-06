@@ -127,7 +127,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
         % ST1 - Stiffening model with 1st invariant of strain
         % TH1 - Thermal diffusion (Steady-State)
         % TH2 - Thermal diffusion (Transient)
-    Material.Model = 'TH1';
+    Material.Model = 'TH2';
     
     % number of material properties
     Material.nmp = 1;
@@ -284,7 +284,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        Control.stress_calc = 'nodal';
+        Control.stress_calc = 'L2projection';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3

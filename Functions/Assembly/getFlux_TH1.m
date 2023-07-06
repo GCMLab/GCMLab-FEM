@@ -102,7 +102,7 @@ else
                 [~, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
                 Je = dNdxi'*xI;
                 B = Je\(dNdxi');
-                flux(:, e) = D*B'*de;
+                flux(:, e) = D*B*de;
             case 'nodal'
                 % initialize flux element
                 flux_e = zeros(dim, Mesh.nne);   
@@ -155,7 +155,7 @@ else
                     B = Je\dNdxi;
 
                     % calculate stress and strain at quadrature point
-                    flux_q = D*B'*de;
+                    flux_q = D*B*de;
 
                     % Element level integral of L2-projections
                     A_e = A_e + N'*N*Quad.W(q)*dJe;
