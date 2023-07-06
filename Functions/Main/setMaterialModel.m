@@ -11,6 +11,7 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name, Control] = 
             Material.ConstitutiveLawFile = 'getD';
             Material.StiffnessMatrixFile = 'getK_LET1';
             Material.StressStrainFile = 'getStrain';
+            Material.DampingFile = 'getC'; 
             Control.transient = 1; 
         case 'ST1' % Stiffening Model via 1st Invariant of strain
             Material.ConstitutiveLawFile = 'getD_ST1';
