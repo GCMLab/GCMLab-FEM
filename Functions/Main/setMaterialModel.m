@@ -1,4 +1,4 @@
-function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material,Control)
+function [Material, stiffnessmatrixfile_name, stressstrainfile_name, Control] = setMaterialModel(Material, Control)
 %SETMATERIALMODEL - creates pointers to material model files
 
     switch Material.Model

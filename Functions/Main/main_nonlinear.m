@@ -26,10 +26,10 @@
     if progress_on
         fprintf('%.2f: Checking for valid inputs...\n', toc);
     end
-    [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control);
+    [Mesh, Material, BC, ~] = cleanInput(Mesh, Material, BC, Control);
     
 %% Set material model
-    [Material, stiffnessmatrixfile_name, stressstrainfile_name,] = setMaterialModel(Material);
+    [Material, stiffnessmatrixfile_name, stressstrainfile_name, Control] = setMaterialModel(Material, Control);
 
 %% Initialize time variables
     t = Control.StartTime;
