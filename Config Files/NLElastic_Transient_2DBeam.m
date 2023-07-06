@@ -172,6 +172,7 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, 
     % Specify Material Model
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
+        % ST2 - Softening model with 1st invariant of strain
         % TR2 - Transient model with stiffening model via 1st invariant of strain
     Material.Model = 'TR2';
     
