@@ -36,5 +36,4 @@ sigma_xy = stress(3,:,1);
 % Calculate the error
 time_er = sqrt(sum((sigma_xy_exact - sigma_xy).^2)/sum(sigma_xy_exact.^2));
 
-
 end

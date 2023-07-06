@@ -26,10 +26,10 @@
     if progress_on
         fprintf('%.2f: Checking for valid inputs...\n', toc);
     end
-    [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control);
+    [Mesh, Material, BC, ~] = cleanInput(Mesh, Material, BC, Control);
     
 %% Set material model
-    [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material);
+    [Material, stiffnessmatrixfile_name, stressstrainfile_name, Control] = setMaterialModel(Material, Control);
 
 %% Initialize time variables
     t = Control.StartTime;
@@ -58,17 +58,16 @@
     % Compute mass matrix
     M = 0; % placeholder
     
-    % Compute linear damping stiffness matrix
-    if Control.transient == 1
-        if progress_on
-            disp([num2str(toc),': Assembling Damping Matrix...']);
-        else
-        end
-        C = getC(Mesh, Quad, Material); % Transient Case
-    else
-        C = sparse(Mesh.nDOF, Mesh.nDOF); % Static Case
-    end    
-    
+    % Compute Damping Matrix
+    switch Control.transient
+        case 0
+            C = sparse(Mesh.nDOF, Mesh.nDOF); % Static Case
+        case 1
+            if progress_on
+                disp([num2str(toc),': Assembling Damping Matrix...']);
+            end
+            C = feval(Material.DampingFile, Mesh, Quad, Material);
+    end 
 
 %% Define initial conditions
     d0 = BC.IC;
@@ -120,7 +119,7 @@ if Control.dSave
     sSave(:,:,1) = stress;
     loadSave = zeros(length(d0),n_timesteps+1);     % Save applied load
 end
-  
+ 
  %% Solve the time-dependent nonlinear problem
  % Set tolerance on the final end time
     t_tol = 1e-10; 
@@ -197,16 +196,13 @@ end
                 % Update internal force vector for normalization
                     FintPrev = Fint; 
 
-
             end
               
-        
         % Case of divergence in Newton Raphson algorithm
             if iter > Control.iter_max 
                 err_NR = sprintf('\n \t Newton-Raphson algorithm will not converge: The number of iterations in Newton-Raphson algorithm exceeds the maximum number of iteration');
                 error(err_NR)
-            end
-        
+            end  
     end
     
     % Output progress
@@ -256,7 +252,6 @@ end
      dnm1 = d;                          % d vector from timestep n-1
      Fintnm1 = Fint;                    % Fint from timestep n-1
      Fextnm1 = Fext;                    % Fext from timestep n-1
- 
  end
      if Control.dSave
          d = dSave; 
@@ -269,3 +264,4 @@ end
      if progress_on
         disp('done')
      end
+

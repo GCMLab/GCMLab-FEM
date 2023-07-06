@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -111,12 +111,13 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
     end
+
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
     % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
     %   'EXCEL' - Import .xlsx file, structured or unstructured
-    MeshType = 'MANUAL';        
+    MeshType = 'GMSH';        
     
     switch MeshType
         case 'MANUAL'
@@ -126,8 +127,9 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;0.1];
-            % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
+            % number of elements in each direction [nex; ney; nez]
+            n = 10;
+            nex = [2;2]*n;
             % element type ('Q4')
             type = 'Q4';
             
@@ -138,11 +140,11 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = '2DBarMesh.msh';
+            meshFileName = 'Mesh Files\PlateWithHole.msh';
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on); 
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on); 
         case 'EXCEL'
             meshFileName = 'CricularInclusion.xlsx';
             % number of space dimensions
@@ -166,18 +168,17 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
 
-    % Define material model
-    Material.Model = 'LET1';
-
+    % Specify Material Model
+    Material.Model = 'VE1';
+        
     % number of material properties
     Material.nmp = 1;
-    
 
     % Properties material 1
-    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 1e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.25; % Poisson's ratio
-    Material.Prop(1).C = 0; % Damping Coefficent
-     
+    Material.Prop(1).C = 1e10; % Damping Coefficient
+    
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
@@ -186,8 +187,9 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
-
+    
     % Thickness (set as default to 1)
+    % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
 
     % Alternatively, import a material file
@@ -211,18 +213,15 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof 
         BC.fix_disp_dof = [Mesh.left_dofx; Mesh.left_dofy(1)];
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1); 
-
-        % prescribed displacement for each dof [u1; u2; ...] [m]
-
-        BC.fix_disp_value = @(t) 0;
+        BC.fix_disp_value = @(t) [zeros(length([Mesh.left_dofx; Mesh.left_dofy(1)]),1)];
 
     %% Neumann BC
     % -----------------------------------------------------------------
 
         % Magnitude of amplitude of Fext applied to nodes at free-end of
         % beam
-        BC.Fn = 10e5;
+        BC.Fn_total = 5e7;
+        BC.Fn = BC.Fn_total/(2*n+1);
 
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
@@ -235,8 +234,8 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
         BC.traction_force_node = [Mesh.right_nodes];  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        omega = 1;
-        BC.traction_force_value = @(t) [BC.Fn*sin(omega*t) *ones(size(Mesh.right_nodes)), zeros(size(Mesh.right_nodes))];
+        tload = 0.5;
+        BC.traction_force_value = @(t) [(t<=tload)*BC.Fn*ones(size(Mesh.right_nodes)), zeros(size(Mesh.right_nodes))];
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -286,13 +285,13 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 10; 
+        Control.EndTime   = 1; 
         NumberOfSteps     = 1e2;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
         
         % transient controls
-        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.transient = 1; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
         Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
 
         % Newton Raphson controls

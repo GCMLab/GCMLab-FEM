@@ -11,12 +11,12 @@
     % Folder name where config files are stored
     DirFolder = 'Config Files';
     % Config files to run. Choose either 'all' or give the file name.
-    FileList = 'NLElastic_Transient_2DPlate';
+    FileList = 'Viscoelastic_Shear_Problem';
     
     
     % Directory for VTK Files (end with \)
     if ispc
-        VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
+        VTKFolder ='C:\Users\GZingaro\Desktop\Results';
         %VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
     else
         VTKFolder = '/Users/jonathanzingaro/Documents/MATLAB Results';
