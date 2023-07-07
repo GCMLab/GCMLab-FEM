@@ -29,7 +29,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 28; 
+    ntests = 29; 
     
     nameslist = {};
     testnum = 0;
@@ -160,6 +160,11 @@
 %  Pass Condtion: Displacement matches analytical solution over time
       run('Test Files\RunTransientTest')
 
+%% Test 29 Dynamic Test - Manufacture solution
+%  Pass Condtion: Discrete norm of displacemets vs exact solution and
+%                 stored solution from previous run
+      run('Test Files\RunDynamicManufacture')
+      
 %% Test X: [Test Name] - Short Test Description
 %  Pass Condtion:
 %      run('Test Files/RunTestX')

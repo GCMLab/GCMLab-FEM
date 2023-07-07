@@ -103,7 +103,7 @@ for sim = 1:3
             uyh_p = N*d(Mesh.ydofs(enodes));
             % exact displacement at quadrature point
             uxe_p = N*d_exact(Mesh.xdofs(enodes));
-            uye_p = N*d_exact(Mesh.xdofs(enodes));
+            uye_p = N*d_exact(Mesh.ydofs(enodes));
             % L2 norm
             eL2_num = eL2_num + [uxh_p - uxe_p , uyh_p - uye_p] * [uxh_p - uxe_p ; uyh_p - uye_p] * wp * det(Je);
             eL2_den = eL2_den + [uxe_p , uye_p] * [uxe_p ; uye_p] * wp * det(Je);

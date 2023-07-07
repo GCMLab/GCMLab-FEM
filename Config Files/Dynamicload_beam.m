@@ -1,5 +1,4 @@
-function [Mesh, Material, BC, Control] = ManufacturedSolution_Dynamic(config_dir, progress_on)
-global nex quadorder E nu rho alpha tf n_steps
+function [Mesh, Material, BC, Control] = Dynamicload_beam(config_dir, progress_on)
 
 %% Mesh Properties
     if progress_on
@@ -19,9 +18,9 @@ global nex quadorder E nu rho alpha tf n_steps
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = [5;1];
             % number of elements in each direction [nex; ney; nez] 
-%             nex = [2;2]*10;
+            nex = [5;1]*10;
             % element type ('Q4')
             type = 'Q4';
             
@@ -70,10 +69,10 @@ global nex quadorder E nu rho alpha tf n_steps
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
     Material.Prop(1).C = 0; % Damping Coefficient
-    Material.Prop(1).rho = rho; % Poisson's ratio
+    Material.Prop(1).rho = 2400; % Poisson's ratio
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -109,31 +108,15 @@ global nex quadorder E nu rho alpha tf n_steps
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        % u := (x1, x2, t) -> -sin(pi*x1/2)*sin(pi*x2/2)*sin(2*pi*t)/1000
-        % v := (x1, x2, t) -> cos(pi*x1/2)*cos(pi*x2/2)*cos(2*pi*t)/1000
+        % u := (0, 1, t) -> sin(pi*t/2);
+        % v := (0, 1, t) -> 0
 
-        BC.UUx = @(x) - sin(pi.*x(:,1)./2).*sin(pi.*x(:,2)./2)./1000;
-        BC.VVx = @(x)   cos(pi.*x(:,1)./2).*cos(pi.*x(:,2)./2)./1000;
-        
-        % Column vector of prescribed dispalcements
-        BC.fix_disp_dof1 = Mesh.left_dof;
-        BC.fix_disp_dof2 = Mesh.right_dof;
-        BC.fix_disp_dof3 = Mesh.bottom_dof;
-        BC.fix_disp_dof4 = Mesh.top_dof;
-        BC.fix_disp_dof = unique([BC.fix_disp_dof1;BC.fix_disp_dof2;BC.fix_disp_dof3;BC.fix_disp_dof4]);
+        BC.fix_disp_dof = [Mesh.left_dofy(end); Mesh.right_dofx;  Mesh.right_dofy];
         
         % Prescribed dispalcement
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
-        BC.fix_disp_value(1:2:end) = BC.UUx([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
-        BC.fix_disp_value(2:2:end) = BC.VVx([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
         
-        BC.UU_temp = zeros(length(BC.fix_disp_dof),1); 
-        BC.UU_temp(1:2:end) = ones(length( BC.UU_temp(1:2:end)),1);
-        BC.VV_temp = zeros(length(BC.fix_disp_dof),1); 
-        BC.VV_temp(2:2:end) = ones(length( BC.VV_temp(1:2:end)),1);
-        
-        BC.fix_disp_value = @(t) round(BC.fix_disp_value.*BC.UU_temp.*sin(2.*pi.*t) + BC.fix_disp_value.*BC.VV_temp.*cos(2.*pi.*t), 15) ;
-        
+%         BC.fix_disp_value = @(t) [1*sin(pi*t/2)*(t < 8); zeros(length(BC.fix_disp_dof(2:end)),1)];
+        BC.fix_disp_value = @(t) [1*(t < 1); zeros(length(BC.fix_disp_dof(2:end)),1)];
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -163,26 +146,15 @@ global nex quadorder E nu rho alpha tf n_steps
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t) [ -E*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) -...
-            E*nu*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/(4*(-nu^2 + 1)) - ...
-            E*(1/2 - nu/2)*(sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t)/8 + ...
-            pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/8)/(-nu^2 + 1) + ...
-            4*rho*sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t); ...
-            -E*(1/2 - nu/2)*(-pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/8 - ...
-            cos(pi*x(1)/2)*cos(pi*x(2)/2)*pi^2*cos(2*pi*t)/8)/(-nu^2 + 1) +...
-            E*nu*pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) + ...
-            E*cos(pi*x(1)/2)*pi^2*cos(pi*x(2)/2)*cos(2*pi*t)/(4*(-nu^2 + 1)) -...
-            4*rho*cos(pi*x(1)/2)*cos(pi*x(2)/2)*pi^2*cos(2*pi*t)]./1000;
+        BC.b = @(x,t) [ ];
 
 %% Initial Conditions
         BC.IC_temp = zeros(Mesh.nDOF,1);
-%         BC.IC_temp(BC.fix_disp_dof) = ones(length(BC.fix_disp_dof),1);
-%         BC.IC = @(t) BC.IC_temp.*   BC.fix_disp_value(t);
         
 %% Computation controls
 
         % quadrature order
-        Control.qo = quadorder;
+        Control.qo = 2;
 
         % Calculation of values for discontinuous variables 
         % (i.e. stress/strain)
@@ -214,8 +186,9 @@ global nex quadorder E nu rho alpha tf n_steps
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = tf; 
-        NumberOfSteps     = n_steps;
+%         Control.EndTime   = 32; 
+        Control.EndTime   = 4; 
+        NumberOfSteps     = 100;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
         
@@ -224,7 +197,7 @@ global nex quadorder E nu rho alpha tf n_steps
                         % Static → Control.TimeCase = 'static;
                         % Transient → Control.TimeCase = 'transient';
                         % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = alpha; %
+        Control.alpha = 0; %
         %   If Control.Timecase = 'transient'
         %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         %   If Control.Timecase = 'dynamic'

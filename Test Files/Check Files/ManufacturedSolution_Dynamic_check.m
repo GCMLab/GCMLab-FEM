@@ -1,8 +1,10 @@
-function [m_L2, m_e] = ManufacturedSolution_PlaneStress_check(d1, d2, d3, s1, s2, s3, e1, e2, e3, Mesh1, Mesh2, Mesh3)
+function [m_L2, m_e] = ManufacturedSolution_Dynamic_check(d1, d2, d3, s1, s2, s3, e1, e2, e3, Mesh1, Mesh2, Mesh3)
 %MANUFACTUREDSOLUTION_CHECK Calculates the convergence rates
 %   [m_L2, m_e] = ManufacturedSolution_check(d1, d2, d3, s1, s2, s3, Mesh1,
 %   Mesh2, Mesh3) calculates the rates of convergence of the L2 error norm
 %   and the energy norm for using a manufactured solution
+%
+%   Does this for the final time step
 %
 %   ----------------------------------------------------------
 %   Input
@@ -18,18 +20,12 @@ function [m_L2, m_e] = ManufacturedSolution_PlaneStress_check(d1, d2, d3, s1, s2
 %   1 - coarsest mesh, 2 - medium mesh, 3 - finest mesh
 
 % Manufactured solution
-%   ux = x^5 + x*y^3 - y^6
-%   uy = x^5 + x*y^3 - y^6
-%   exx = 5x^4 + y^3
-%   eyy = 3xy^2 - 6y^5
-%   exy = (3xy^2 - 6y^5 + 5x^4 + y^3) 
-%   sxx = E/(1-v^2) * [   exx + v*eyy ]
-%   syy = E/(1-v^2) * [ v*exx +   eyy ]
-%   sxy = E/(1-v^2) * (1-v)/2 * exy
+% u := (x1, x2, t) -> -sin(2*pi*x1)*cos(2*pi*x2)*sin(2*pi*t)
+% v := (x1, x2, t) -> cos(2*pi*x1)*sin(2*pi*x2)*cos(2*pi*t)
 
 % Acknowledgements: Bruce Gee
 
-global quadorder E nu
+global quadorder E nu tf
 
 plot_on = 0; % turn plots on/off - debugging tool
 
@@ -41,17 +37,17 @@ h   = zeros(3,1);
 for sim = 1:3
     switch sim
         case 1
-            d = d1;
+            d = d1(:,end);
             s = s1;
             e = e1;
             Mesh = Mesh1;
         case 2
-            d = d2;
+            d = d2(:,end);
             s = s2;
             e = e2;
             Mesh = Mesh2;
         case 3
-            d = d3;
+            d = d3(:,end);
             s = s3;
             e = e3;
             Mesh = Mesh3;
@@ -65,19 +61,19 @@ for sim = 1:3
     x = Mesh.x(:,1);
     y = Mesh.x(:,2);
     d_exact = zeros(2*Mesh.nn,1);
-    d_exact(1:2:end) = x.^5 + x.*y.^3 - y.^6;
-    d_exact(2:2:end) = x.^5 + x.*y.^3 - y.^6;
+    d_exact(1:2:end) =  round(-sin(pi.*x./2).*sin(pi.*y./2).*sin(2.*pi.*tf)./1000,15);
+    d_exact(2:2:end) = round(cos(pi.*x./2).*cos(pi.*y./2).*cos(2.*pi.*tf)./1000,15);
     
     e_exact = zeros(3, Mesh.nn);
     s_exact = zeros(3, Mesh.nn);
     
-    e_exact(1,:) = 5*x'.^4 + y'.^3;
-    e_exact(2,:) = 3*x'.*y'.^2 - 6*y'.^5;
-    e_exact(3,:) = ( 5*x'.^4 + y'.^3 + 3*x'.*y'.^2 - 6*y'.^5 );
+    e_exact(1,:) = round(-pi.*cos(pi.*x./2).*sin(pi.*y./2).*sin(2.*pi.*tf)./2./1000,15);
+    e_exact(2,:) = round(-cos(pi.*x./2).*pi.*sin(pi.*y./2).*cos(2.*pi.*tf)./2./1000,15);
+    e_exact(3,:) = round(-sin(pi.*x./2).*pi.*cos(pi.*y./2).*sin(2.*pi.*tf)./4 - pi.*sin(pi.*x./2).*cos(pi.*y./2).*cos(2.*pi.*tf)./4./1000,15);
     
-    s_exact(1,:) = E/(1-nu^2)* (e_exact(1,:) + nu*e_exact(2,:));
-    s_exact(2,:) = E/(1-nu^2)* (nu*e_exact(1,:) + e_exact(2,:));
-    s_exact(3,:) = E/(1-nu^2)* (1-nu)/2 * e_exact(3,:);
+    s_exact(1,:) = round(-E.*pi.*cos(pi.*x./2).*sin(pi.*y./2).*sin(2.*pi.*tf)./(2.*(-nu^2 + 1)) - E.*nu.*cos(pi.*x./2).*pi.*sin(pi.*y./2).*cos(2.*pi.*tf)./(2.*(-nu^2 + 1))./1000,15);
+    s_exact(2,:) = round(-E.*nu.*pi.*cos(pi.*x./2).*sin(pi.*y./2).*sin(2.*pi.*tf)./(2.*(-nu^2 + 1)) - E.*cos(pi.*x./2).*pi.*sin(pi.*y./2).*cos(2.*pi.*tf)./(2.*(-nu^2 + 1))./1000,15);
+    s_exact(3,:) = round(E.*(1./2 - nu./2).*(-sin(pi.*x./2).*pi.*cos(pi.*y./2).*sin(2.*pi.*tf)./4 - pi.*sin(pi.*x./2).*cos(pi.*y./2).*cos(2.*pi.*tf)./4)./(-nu^2 + 1)./1000,15);
     
     % Calculate error norms
     Quad = GlobalQuad(Mesh.nsd, Mesh.type, quadorder);
@@ -139,21 +135,21 @@ m_e = pEN(1);
 
 % Step 2 - Calculate the slope of each curve
 if plot_on
-figure(1)
-loglog(h,eL2,'o')
-hold on
-loglog(h,exp(pL2(2))*h.^pL2(1))
-hold off
-xlabel('Mesh size')
-ylabel('L2-norm')
+    figure(3)
+    loglog(h,eL2,'o')
+    hold on
+    loglog(h,exp(pL2(2))*h.^pL2(1))
+    hold off
+    xlabel('Mesh size')
+    ylabel('L2-norm')
 
-figure(2)
-loglog(h,eEN,'o')
-hold on
-loglog(h,exp(pEN(2))*h.^pEN(1))
-hold off
-xlabel('Mesh size')
-ylabel('e-norm')
+    figure(4)
+    loglog(h,eEN,'o')
+    hold on
+    loglog(h,exp(pEN(2))*h.^pEN(1))
+    hold off
+    xlabel('Mesh size')
+    ylabel('e-norm')
 end
 
 
