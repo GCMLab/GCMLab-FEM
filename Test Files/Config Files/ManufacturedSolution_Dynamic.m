@@ -70,7 +70,7 @@ global nex quadorder E nu rho alpha tf n_steps
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = E; % Young's modulus [Pa]
+    Material.Prop(1).E0 = E; % Young's modulus [Pa]
     Material.Prop(1).nu = nu; % Poisson's ratio
     Material.Prop(1).C = 0; % Damping Coefficient
     Material.Prop(1).rho = rho; % Poisson's ratio

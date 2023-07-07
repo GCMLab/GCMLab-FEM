@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = Viscoelastic_Shear_Problem(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -115,8 +115,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
     % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
-    %   'EXCEL' - Import .xlsx file, structured or unstructured
-    MeshType = 'MANUAL';        
+    MeshType = 'IMPORTED';      
     
     switch MeshType
         case 'MANUAL'
@@ -138,20 +137,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Unstructured_sample.msh';
+            meshFileName = 'Shear_Mesh.fem';
             % number of space dimensions 
             nsd = 2;
-            % Optional 5th input in case Q8 with reduced integration is desired
-            Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
-%             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
-        case 'EXCEL'
-            meshFileName = 'CircularInclusion.xlsx';
-            % number of space dimensions
-            nsd = 2;
-            
-            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
     end    
     
 %% Material Properties (Solid)
@@ -171,20 +161,17 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         
     % Specify Material Model
         % LE1 - Linear elasticity
-        % LE1 - Linear elasticity and dynamic
-        % LET1 - Lienar elastic and transient
         % ST1 - Stiffening model with 1st invariant of strain
-        % ST2 - Softening model with 1st invariant of strain
-        % TR2 - Transient model with stiffening model via 1st invariant of strain
-        % VE1 - Linear Viscoelastic Kelvin-Voigt Model
-    Material.Model = 'LE1';
+        % VE1 - Kelvin-Voigt Linear Viscoelastic Model
+    Material.Model = 'VE1'; 
     
     % number of material properties
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    Material.Prop(1).E0 = 1e9; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    Material.Prop(1).C = 1e8; % Damping Coefficient
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -193,7 +180,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
+    Material.Dtype = 'PlaneStress'; 
 
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
@@ -204,29 +191,23 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
-        % TIP selecting edges - GMESH file or MANUAL mesh:
+        % TIP selecting edges:
         % bottom_nodes = find(Mesh.x(:,2)==0); 
         % top_nodes = find(Mesh.x(:,2)==2);
         % left_nodes = find(Mesh.x(:,1)==0);
         % right_nodes = find(Mesh.x(:,1)==4);
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
-        
-        % TIP for .fem file - HYPERMESH
-        %   Fixed BC
-        %   temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
-        %   BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
-        %
-        %   temp = Mesh.BC_nN_n;
-        %   BC.traction_force_node = temp;
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof;
+%         BC.fix_disp_dof = [Mesh.left_dofx; Mesh.bottom_dofy];
+        temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
+        BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) sin(t)/1e5*ones(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -238,22 +219,20 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
+%         BC.traction_force_node = Mesh.right_nodes;  
+%         temp = Mesh.DOF(Mesh.BC_nN_n,:).*Mesh.BC_N_n;
+%         BC.traction_force_node = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
+
+        temp = Mesh.BC_nN_n;
+        BC.traction_force_node = temp;
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e7/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        traction = 1e7; % uniform tensile stress applied to right edge
+        tload = 0.5; % Time until Creep Load is removed
+        BC.N_traction_force_nodes = size(BC.traction_force_node);
+        BC.traction_force_value = @(t) -1*(t<=tload)*traction*(max(Mesh.x(:,2))/(length(BC.traction_force_node) - 1))*[zeros(size(BC.traction_force_node)),[0.5;ones(BC.N_traction_force_nodes(1)-2,BC.N_traction_force_nodes(2));0.5]];
         
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        
-        % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
-    
+   
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
@@ -262,10 +241,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t)[];    
+        BC.b = @(x)[];    
+
 
 %% Initial Conditions
-        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 
@@ -302,8 +282,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 2*pi;
-        NumberOfSteps     = 50;
+        Control.EndTime   = 1;
+        NumberOfSteps     = 250;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise
@@ -316,15 +296,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         Control.plotAt = 0; % [add DOF number]
         
         % transient toggle
-        Control.TimeCase = 'static';    
-                        % Static → Control.TimeCase = 'static;
-                        % Transient → Control.TimeCase = 'transient';
-                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0.5; 
-        %   If Control.Timecase = 'transient'
-        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        %   If Control.Timecase = 'dynamic'
-        %           α [-1/3, 0]
+        Control.transient = 1; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 1.0; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces

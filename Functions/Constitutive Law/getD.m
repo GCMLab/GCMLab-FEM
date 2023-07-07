@@ -19,7 +19,7 @@ function D = getD(nMat, Material, Mesh)
 %               .nu: Poisson's ratio
 %   --------------------------------------------------------------------
 
-E = Material.Prop(nMat).E;
+E = Material.Prop(nMat).E0;
 nu = Material.Prop(nMat).nu;
 
 switch Mesh.nsd

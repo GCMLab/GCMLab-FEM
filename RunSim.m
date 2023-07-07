@@ -17,7 +17,7 @@
     % Directory for VTK Files (end with \)
     if ispc
 %         VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
-        %VTKFolder ='C:\Users\endri\Documents\Matlab Results\';
+%         VTKFolder ='C:\Users\GZingaro\Desktop\Results';
         VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results\';
     else
         VTKFolder = '/Users/jonathanzingaro/Documents/MATLAB Results';
@@ -81,7 +81,6 @@
         end_time = toc;
 
         disp(['run time: ' num2str(end_time - start_time)])
-        close all
     end
 
 % catch err

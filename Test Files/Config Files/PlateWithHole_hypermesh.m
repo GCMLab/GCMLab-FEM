@@ -159,16 +159,16 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
 
-    % Specify stiffness matrix and stress/strain calculation files
-    Material.ConstitutiveLawFile = 'getD';
-    Material.StiffnessMatrixFile = 'getK_elastic';
-    Material.StressStrainFile = 'getStrain';
+    % Specify Material Model
+        % LE1 - Linear elasticity
+        % ST1 - Stiffening model with 1st invariant of strain
+    Material.Model = 'LE1';
 
     % number of material properties
     Material.nmp = 1;
         
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     
     % type of material per element

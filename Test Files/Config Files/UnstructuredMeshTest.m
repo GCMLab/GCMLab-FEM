@@ -59,7 +59,7 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
     Material.nmp = 1;
         
     % Properties material 1
-    Material.Prop(1).E = 4; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 4; % Young's modulus [Pa]
     Material.Prop(1).nu = 0; % Poisson's ratio
     
     % type of material per element

@@ -1,15 +1,14 @@
-function [K, R, Fint] = getK_ST1(Mesh, Quad, Material, ~, Fext, ~, ~, d_m, ~, ~, ~, ~)
-%GETK_NLELASTIC Stiffness matrix for iterative non linear elastic case
-%   [K, R, Fint] = GETK_ST1(Mesh, Quad, Material) returns the 
-%   stiffness matrix K, the residual vector R, and the internal force 
-%   vector for the iterative solver where the problem uses a non linear 
-%   elastic material
+function [K_hat, R_hat, Fint] = getK_TR2(Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, ~, ~, d, dnm1, ~, dt, ~, C, alpha)
+%GETK_NLELASTIC_TRANSIENT Stiffness matrix for iterative non linear elastic transient case
+%   [K, R, Fint] = GETK_NLELASTIC_TRANSIENT(Mesh, Quad, Material) returns the stiffness
+%   matrix K, the residual vector R, and the internal force vector for the 
+%   iterative solver where the problem uses a nonlinear elastic material
 %   
 %   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
 %   Accepted Inputs (in order)
 %   --------------------------------------------------------------------
-%   getK_NLelastic(Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1)
+%   getK_elastic(Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1)
 %   Mesh:       Structure array with the following fields, may be updated
 %               with new fields
 %               .ne:    Total number of elements in the mesh
@@ -37,17 +36,15 @@ function [K, R, Fint] = getK_ST1(Mesh, Quad, Material, ~, Fext, ~, ~, d_m, ~, ~,
 %               .t:         Material thickness
 %
 %   Fext:       External force vector at timestep n
+%   Fextnm1:    External force vector at timestep n-1
 %   Klin:       Linear elastic stiffness matrix
 %   M:          Mass matrix
-%   d_m:        Structure array with the following fields
-%               d:          unconverged degree of freedom vector at current timestep n and iteration
-%               dnm1:       converged degree of freedom vector at timestep n-1
-%               dnm2:       converged degree of freedom vector at timestep n-2
-%               dnm3:       converged degree of freedom vector at timestep n-3
+%   d:          unconverged degree of freedom vector at current timestep n and iteration
+%   dnm1:       converged degree of freedom vector at timestep n-1
+%   dnm2:       converged degree of freedom vector at timestep n-2
 %   dt:         timestep size between timesteps n-1 and n
 %   dtnm1:      timestep size between timesteps n-2 and n-1
-
-d = d_m.d; %Get data from d_m structure
+%   alpha:       intagration parameter
 
 % initialize D matrix file pointer
 [~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);
@@ -93,10 +90,10 @@ for e = 1:Mesh.ne
 
         % initialize element stiffness matrix
         Ke = zeros(ndofE, ndofE); 
-
+        
         % initialize element internal force vector
         fe = zeros(ndofE, 1); 
-        
+
         % loop through all quadrature points
         for q = 1:nq     
 
@@ -140,7 +137,7 @@ for e = 1:Mesh.ne
 
             % Compute constitutive matrix
             [D, Material] = feval(DMatrix_functn, nMat, Material, Mesh, strain_e);
-
+            
             switch Mesh.nsd
                 case 1
                     % strain invariant
@@ -163,10 +160,11 @@ for e = 1:Mesh.ne
 
             % Calculate local stiffness matrix
             Ke = Ke + W(q)*Bv*D*Bv'*L*dJe + W(q)*Bv*(D/Material.Prop(nMat).E)*(Bv'*de)*4*Material.Prop(nMat).E1*2*I1*trE*NK*L*dJe;
-
+            % Ke = Ke + W(q)*Bv*D*Bv'*L*dJe;
+            
             % Calculate local internal force vector
             fe = fe + W(q)*Bv*(D*strain_e)*L*dJe;
-            
+
             % quadrature debug tool
             A = A + W(q)*dJe; 
         end
@@ -182,14 +180,20 @@ for e = 1:Mesh.ne
         row(count-ndofE^2:count-1) = rowe;
         col(count-ndofE^2:count-1) = cole;
         
-    %% Assemble element internal forces
+        %% Assemble element internal forces
         Fint(dofE) = Fint(dofE) + fe;
 end
 
 % sparse stiffness matrix
 K = sparse(row, col, Kvec, Mesh.nDOF, Mesh.nDOF);
 
+% stiffness matrix in transient case
+K_hat = alpha*K + C./dt;
+
+% internal forces
+% Fint = C*(d-dnm1)./dt + K*(1-alpha)*dnm1 + alpha*K*d;
+
 % residual
-R = Fext - Fint;
+R_hat = alpha*Fext + (1-alpha)*Fextnm1 - (C*(d-dnm1)./dt + alpha*Fint + (1-alpha)*Fintnm1);
 
 end

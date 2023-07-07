@@ -1,4 +1,4 @@
-function [K, R, Fint] = getK_LE1_dynamic(~, ~, ~, Fext, ~, Klin, M, d_m, dt, ~ ,C,alpha)
+function [K, R, Fint] = getK_LE1_dynamic(~, ~, ~, ~, Fext, ~, Klin, M, d_m, dt, ~ ,C,alpha)
 %GETK_HHT Relevant matrices for HHT dynamic solver
 %   [K, R, Fint] = GETK_HHT(Mesh, Quad, Material) returns the coefficient matrix
 %   , the residual vector R, and the internal force vector for the 
@@ -34,7 +34,8 @@ function [K, R, Fint] = getK_LE1_dynamic(~, ~, ~, Fext, ~, Klin, M, d_m, dt, ~ ,
 %   Material:   Structure array with the following fields, may be updated
 %               with new fields
 %               .t:         Material thickness
-%
+%   
+%   Fintnm1:    Internal force vector at timestep n-1
 %   Fext:       External force vector at timestep n
 %   Fextnm1:    External force vector at timestep n-1
 %   Klin:       Linear elastic stiffness matrix

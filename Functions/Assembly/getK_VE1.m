@@ -1,8 +1,8 @@
-function [K, R, Fint] = getK_transient(~, ~, ~, Fext, Fextnm1, Klin, ~, d_m, dt, ~,C,alpha)
-%GETK_ELASTIC Stiffness matrix for iterative elastic case
+function [K, R, Fint] = getK_VE1(Mesh, Quad, Material, ~, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1,C,alpha)
+%GETK_VE1 Stiffness matrix for iterative linear viscoelastic case
 %   [K, R, Fint] = GETK_ELASTIC(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 
-%   iterative solver where the problem uses a linear elastic material
+%   iterative solver where the problem uses a Kelvin-Voigt Model.
 %   
 %   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
@@ -39,20 +39,21 @@ function [K, R, Fint] = getK_transient(~, ~, ~, Fext, Fextnm1, Klin, ~, d_m, dt,
 %   Fextnm1:    External force vector at timestep n-1
 %   Klin:       Linear elastic stiffness matrix
 %   M:          Mass matrix
-%   d_m:        Structure array with the following fields
-%               d:          unconverged degree of freedom vector at current timestep n and iteration
-%               dnm1:       converged degree of freedom vector at timestep n-1
-%               dnm2:       converged degree of freedom vector at timestep n-2
-%               dnm3:       converged degree of freedom vector at timestep n-3
+%   d:          unconverged degree of freedom vector at current timestep n and iteration
+%   dnm1:       converged degree of freedom vector at timestep n-1
+%   dnm2:       converged degree of freedom vector at timestep n-2
 %   dt:         timestep size between timesteps n-1 and n
 %   dtnm1:      timestep size between timesteps n-2 and n-1
 %   alpha:       intagration parameter
 
-dnm1 = d_m.dnm1;
-d = d_m.d;
 
-K = alpha*Klin+C./dt;
-Fint = C*(d-dnm1)./dt+Klin*(1-alpha)*dnm1+alpha*Klin*d;
-R = alpha*Fext+(1-alpha)*Fextnm1 - Fint;
+% stiffness matrix in KV Model
+K = alpha*Klin + C./dt;
+
+% internal forces
+Fint = C*(d_m.d-d_m.dnm1)./dt + Klin*(1-alpha)*d_m.dnm1 + alpha*Klin*d_m.d;
+
+% residual
+R = alpha*Fext + (1-alpha)*Fextnm1 - Fint;
 
 end

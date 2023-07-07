@@ -26,10 +26,10 @@
     if progress_on
         fprintf('%.2f: Checking for valid inputs...\n', toc);
     end
-    [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control);
+    [Mesh, Material, BC, ~] = cleanInput(Mesh, Material, BC, Control);
     
 %% Set material model
-    [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material);
+    [Material, stiffnessmatrixfile_name, stressstrainfile_name, Control] = setMaterialModel(Material, Control);
 
 %% Initialize time variables
     t = Control.StartTime;
@@ -65,7 +65,7 @@
         otherwise
             M = sparse(Mesh.nDOF, Mesh.nDOF); % Static and Transient Case
     end 
-    
+
     % Compute linear damping stiffness matrix
     switch Control.TimeCase 
         case 'static'
@@ -75,10 +75,9 @@
             if progress_on
                 disp([num2str(toc),': Assembling Mass Matrix...']);
             end
-            C = getC(Mesh, Quad, Material); % Transient Case          
+            C = feval(Material.DampingFile, Mesh, Quad, Material);
     end 
- 
-    
+
 %% Define initial conditions
 
     d0 = BC.IC(t-dt); % Initial condition for displacement
@@ -106,7 +105,7 @@
             case 'static'
                 Fint = K*d0;
             case 'transient'
-                Fint = (Control.alpha*Klin+(1/dt)*C)*d_m.d+((1-Control.alpha)*Klin-C./dt)*dnm1;
+                Fint = (Control.alpha*Klin+(1/dt)*C)*d_m.d+((1-Control.alpha)*Klin-C./dt)*d_m.dnm1;
             case 'dynamic'
                 d_m.d = d0;  % d at timestep n-1
                 d_m.d(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
@@ -149,6 +148,7 @@
                 d_m.dnm2 = d_m.dnm1;                       % d vector from timestep n-2
                 d_m.dnm1 = d_m.d;                          % d vector from timestep n-1
         end
+        Fintnm1 = Fint; % Fint at timestep n-1
 
     % Write initial conditions to vtk
         if plot2vtk
@@ -179,7 +179,7 @@ if Control.dSave
     sSave(:,:,1) = stress;
     loadSave = zeros(length(d0),n_timesteps+1);     % Save applied load
 end
-  
+ 
  %% Solve the time-dependent nonlinear problem
  % Set tolerance on the final end time
     t_tol = 1e-10; 
@@ -223,7 +223,8 @@ end
             end
       
         % Compute nonlinear stiffness matrix and internal forces
-            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha); 
+            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha); 
+
             ResForce(BC.fixed) = 0;
         
         % Calculate the norm of residual vector
@@ -261,16 +262,13 @@ end
                 % Update internal force vector for normalization
                     FintPrev = Fint; 
 
-
             end
               
-        
         % Case of divergence in Newton Raphson algorithm
             if iter > Control.iter_max 
                 err_NR = sprintf('\n \t Newton-Raphson algorithm will not converge: The number of iterations in Newton-Raphson algorithm exceeds the maximum number of iteration');
                 error(err_NR)
-            end
-        
+            end  
     end
     
     % Output progress
@@ -320,12 +318,13 @@ end
         d_m.dnm2 = d_m.dnm1;                       % d vector from timestep n-2
         d_m.dnm1 = d_m.d;                          % d vector from timestep n-1
         Fextnm1 = Fext;                    % Fext from timestep n-1
- 
+        Fintnm1 = Fint;                    % Fint from timestep n-1
+
  end
     
     switch Control.TimeCase
         case 'dynamic'
-            %%%%
+            % 
         otherwise
             d = d_m.d;
     end

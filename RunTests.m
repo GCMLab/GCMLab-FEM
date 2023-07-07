@@ -8,11 +8,12 @@
     tic;
     
     % Test VTK output
-    plot2vtk = 1;
+    plot2vtk = 0;
 %      VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
     VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results\';
 %     VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
-    
+%     VTKFolder ='C:\Users\GZingaro\Desktop\Results';
+
     % suppress progress messages
     progress_on = 0;
     
@@ -29,7 +30,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 29; 
+    ntests = 30; 
     
     nameslist = {};
     testnum = 0;
@@ -160,11 +161,15 @@
 %  Pass Condtion: Displacement matches analytical solution over time
       run('Test Files\RunTransientTest')
 
-%% Test 29 Dynamic Test - Manufacture solution
+%% Test 29: Kelvin-Voigt Linear Viscoelastic Model - Relaxation
+%  Pass Condtion:
+     run('Test Files/RunTestVE1')     
+     
+ %% Test 30 Dynamic Test - Manufacture solution
 %  Pass Condtion: Discrete norm of displacemets vs exact solution and
 %                 stored solution from previous run
       run('Test Files\RunDynamicManufacture')
-      
+
 %% Test X: [Test Name] - Short Test Description
 %  Pass Condtion:
 %      run('Test Files/RunTestX')

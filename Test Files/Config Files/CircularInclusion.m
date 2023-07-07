@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = CircularInclusion(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -174,11 +174,11 @@ function [Mesh, Material, BC, Control] = CricularInclusion(config_dir, progress_
     Material.nmp = 2;
 
     % Properties material 1
-    Material.Prop(1).E = 1; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 1; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.25; % Poisson's ratio
     
     % Properties material 2
-    Material.Prop(2).E = 10; % Young's modulus [Pa]
+    Material.Prop(2).E0 = 10; % Young's modulus [Pa]
     Material.Prop(2).nu = 0.3; % Poisson's ratio
     
     % type of material per element

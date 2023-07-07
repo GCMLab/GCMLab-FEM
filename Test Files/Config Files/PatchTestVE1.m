@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -94,7 +94,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
-%                       ('none', 'nodal', 'center', 'L2projection')
+%                       ('none', 'nodal', 'center')
 %       .beta:          Penalty parameter  
 %       .LinearSolver   Method used for solving linear problem:
 %                       'LinearSolver1': Partitioning
@@ -111,10 +111,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
     end
+
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
+    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
     %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'MANUAL';        
     
@@ -125,29 +126,27 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
-            % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
+            L = [1;0.1];
+            % number of elements in each direction [nex; ney; nez]
+            n = 10;
+            nex = [2;2]*n;
             % element type ('Q4')
             type = 'Q4';
             
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'IMPORTED'
+        case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Unstructured_sample.msh';
+            meshFileName = 'Mesh Files\PlateWithHole.msh';
             % number of space dimensions 
             nsd = 2;
-            % Optional 5th input in case Q8 with reduced integration is desired
-            Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
-%             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on); 
         case 'EXCEL'
-            meshFileName = 'CircularInclusion.xlsx';
+            meshFileName = 'Mesh Files\CricularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
@@ -168,23 +167,17 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % for different materials are saved in Material.Prop.
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
-        
+
     % Specify Material Model
-        % LE1 - Linear elasticity
-        % LE1 - Linear elasticity and dynamic
-        % LET1 - Lienar elastic and transient
-        % ST1 - Stiffening model with 1st invariant of strain
-        % ST2 - Softening model with 1st invariant of strain
-        % TR2 - Transient model with stiffening model via 1st invariant of strain
-        % VE1 - Linear Viscoelastic Kelvin-Voigt Model
-    Material.Model = 'LE1';
-    
+    Material.Model = 'VE1';
+        
     % number of material properties
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    Material.Prop(1).E0 = 1e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    Material.Prop(1).C = 1e10; % Damping Coefficient
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -193,8 +186,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
-
+    Material.Dtype = 'PlaneStress'; 
+    
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
@@ -204,7 +197,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
-        % TIP selecting edges - GMESH file or MANUAL mesh:
+        % TIP selecting edges:
         % bottom_nodes = find(Mesh.x(:,2)==0); 
         % top_nodes = find(Mesh.x(:,2)==2);
         % left_nodes = find(Mesh.x(:,1)==0);
@@ -212,24 +205,24 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
         
-        % TIP for .fem file - HYPERMESH
-        %   Fixed BC
-        %   temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
-        %   BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
-        %
-        %   temp = Mesh.BC_nN_n;
-        %   BC.traction_force_node = temp;
+    % Manufactured solution
+    % ux = y*sin(omega1*t)
+    % uy = x*sin(omega2*t)
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
-        % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof;
-
-        % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) sin(t)/1e5*ones(length(BC.fix_disp_dof),1);  
+        % column vector of prescribed displacement dof 
+        BC.fix_disp_dof = [Mesh.left_dofx; Mesh.left_dofy(1)];
+        BC.fix_disp_value = @(t) [zeros(length([Mesh.left_dofx; Mesh.left_dofy(1)]),1)];
 
     %% Neumann BC
     % -----------------------------------------------------------------
+
+        % Magnitude of amplitude of Fext applied to nodes at free-end of
+        % beam
+        BC.Fn_total = 5e7;
+        BC.Fn = BC.Fn_total/(2*n+1);
+
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
 
@@ -238,21 +231,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
+        BC.traction_force_node = [Mesh.right_nodes];  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e7/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        
-        % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
+        tload = 0.5;
+        BC.traction_force_value = @(t) [(t<=tload)*BC.Fn*ones(size(Mesh.right_nodes)), zeros(size(Mesh.right_nodes))];
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -262,7 +245,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t)[];    
+        BC.b = @(x,t)[];  
 
 %% Initial Conditions
         BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
@@ -282,7 +265,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        Control.stress_calc = 'L2projection';
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
@@ -298,36 +281,28 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';
+        Control.LinearSolver = 'LinearSolver1';    
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 2*pi;
-        NumberOfSteps     = 50;
+        Control.EndTime   = 1; 
+        NumberOfSteps     = 1e2;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
-        % save displacements and stresses at each timestep in matlab 
-        % debugging and testing purposes only, vtk files are otherwise
-        % recommended
-        Control.dSave     = 0; 
-        % Plot load vs displacement curve (if not included, default is set
-        % to 0)
-        Control.plotLoadDispl = 0;
-        % DOF to plot (only necessary if Control.plotLoadDispl = 1)
-        Control.plotAt = 0; % [add DOF number]
+        Control.dSave     = 1;
         
-        % transient toggle
-        Control.TimeCase = 'static';    
-                        % Static → Control.TimeCase = 'static;
-                        % Transient → Control.TimeCase = 'transient';
-                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0.5; 
+        % transient controls
+        Control.TimeCase = 'transient';    
+                % Static → Control.TimeCase = 'static;
+                % Transient → Control.TimeCase = 'transient';
+                % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         %   If Control.Timecase = 'transient'
         %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         %   If Control.Timecase = 'dynamic'
         %           α [-1/3, 0]
-        
+
         % Newton Raphson controls
-        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.r_tol = 1e-7; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
         
         

@@ -1,7 +1,7 @@
-function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_on)
-%MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
+function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, progress_on)
+%PLATENLELASTIC Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = MASTERCONFIGFILE() is a structure array with the
+%   Mesh = PLATENLELASTIC() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 
@@ -60,10 +60,10 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 %       
-%   Mesh = MASTERCONFIGFILE(config_dir) defines the mesh using GMSH file 
+%   Mesh = PLATENLELASTIC(config_dir) defines the mesh using GMSH file 
 %   import located in the directory config_dir
 %
-%   [Mesh, Material] = MASTERCONFIGFILE() also returns a
+%   [Mesh, Material] = PLATENLELASTIC() also returns a
 %   structure array with the following fields: 
 %       .nmp:           number of material properties
 %       .Prop:          Material properties
@@ -72,7 +72,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
 %       .Prop.t:        Material thickness
 % 
-%   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
+%   [Mesh, Material, BC] = PLATENLELASTIC() also returns a structure
 %   array with the following fields: 
 %       .fix_disp_dof:              Column vector of degrees of freedom 
 %                                   with prescribed displacements
@@ -90,7 +90,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %       .b                          Anonymous function of distributed
 %                                   body force (size 1 x nsd)
 % 
-%   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
+%   [Mesh, Material, BC, Control] = PLATENLELASTIC() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
@@ -114,7 +114,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
+    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
     %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'MANUAL';        
     
@@ -125,14 +125,14 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = [20;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
+            nex = [20;5];
             % element type ('Q4')
             type = 'Q4';
             
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'IMPORTED'
+        case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
@@ -171,20 +171,19 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         
     % Specify Material Model
         % LE1 - Linear elasticity
-        % LE1 - Linear elasticity and dynamic
-        % LET1 - Lienar elastic and transient
         % ST1 - Stiffening model with 1st invariant of strain
         % ST2 - Softening model with 1st invariant of strain
         % TR2 - Transient model with stiffening model via 1st invariant of strain
-        % VE1 - Linear Viscoelastic Kelvin-Voigt Model
-    Material.Model = 'LE1';
+    Material.Model = 'TR2';
     
     % number of material properties
     Material.nmp = 1;
 
     % Properties material 1
     Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E1 = 1e20; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
+    Material.Prop(1).C = 1e3; % Damping Coefficient
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -193,7 +192,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
+    Material.Dtype = 'PlaneStress'; 
 
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
@@ -204,21 +203,13 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
-        % TIP selecting edges - GMESH file or MANUAL mesh:
+        % TIP selecting edges:
         % bottom_nodes = find(Mesh.x(:,2)==0); 
         % top_nodes = find(Mesh.x(:,2)==2);
         % left_nodes = find(Mesh.x(:,1)==0);
         % right_nodes = find(Mesh.x(:,1)==4);
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
-        
-        % TIP for .fem file - HYPERMESH
-        %   Fixed BC
-        %   temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
-        %   BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
-        %
-        %   temp = Mesh.BC_nN_n;
-        %   BC.traction_force_node = temp;
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
@@ -226,7 +217,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.fix_disp_dof = Mesh.left_dof;
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) sin(t)/1e5*ones(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -241,8 +232,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.traction_force_node = Mesh.right_nodes;  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e7/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        Fnode = 1e8/(length(BC.traction_force_node) - 1);
+        BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), ones(size(BC.traction_force_node))];
         
         % find the nodes in the top right and bottom right corners
         toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
@@ -252,7 +243,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
         
         % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
+        BC.traction_force_value = @(t) BC.traction_force_value*t; 
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -265,7 +256,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.b = @(x,t)[];    
 
 %% Initial Conditions
-        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 
@@ -298,37 +289,28 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';
+        Control.LinearSolver = 'LinearSolver1';    
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 2*pi;
+        Control.EndTime   = 1;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise
         % recommended
-        Control.dSave     = 0; 
-        % Plot load vs displacement curve (if not included, default is set
-        % to 0)
-        Control.plotLoadDispl = 0;
-        % DOF to plot (only necessary if Control.plotLoadDispl = 1)
-        Control.plotAt = 0; % [add DOF number]
-        
-        % transient toggle
-        Control.TimeCase = 'static';    
-                        % Static → Control.TimeCase = 'static;
-                        % Transient → Control.TimeCase = 'transient';
-                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0.5; 
-        %   If Control.Timecase = 'transient'
-        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        %   If Control.Timecase = 'dynamic'
-        %           α [-1/3, 0]
+        Control.dSave     = 1; 
+        % Plot load vs displacement curve
+        Control.plotLoadDispl = 1;
+        % DOF to plot
+        Control.plotAt = Mesh.nDOF; % dof in y at bottom right node
+
+        % transient controls
+        Control.transient = 1; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
-        
         
 end

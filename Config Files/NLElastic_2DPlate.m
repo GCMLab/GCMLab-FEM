@@ -147,7 +147,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'CircularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
@@ -173,13 +173,15 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
     % Specify Material Model
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
+        % ST2 - Softening model with 1st invariant of strain
+        % TR2 - Transient model with stiffening model via 1st invariant of strain
     Material.Model = 'ST1';
     
     % number of material properties
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
     Material.Prop(1).E1 = 1e20; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     
@@ -211,11 +213,16 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
+        % fixed displacement
+        BC.fix_disp_dof1 = Mesh.left_dof; 
+        % load application (displacement control)
+        BC.fix_disp_dof2 = Mesh.right_dofy;
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = Mesh.left_dof;
+        BC.fix_disp_dof = [BC.fix_disp_dof1; BC.fix_disp_dof2];
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+        aux = 3e-3;
+        BC.fix_disp_value = @(t) [zeros(length(BC.fix_disp_dof1),1); ones(length(BC.fix_disp_dof2),1)*aux*t];
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -227,22 +234,8 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
-
-        % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e8/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), ones(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        
-        % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*t; 
-    
+        BC.traction_force_node = [];  
+   
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
@@ -291,7 +284,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 1*pi;
+        Control.EndTime   = 3;
         NumberOfSteps     = 50;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
@@ -302,6 +295,10 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         Control.plotLoadDispl = 1;
         % DOF to plot
         Control.plotAt = Mesh.nDOF; % dof in y at bottom right node
+        
+        % transient toggle
+        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces

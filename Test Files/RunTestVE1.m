@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit test - Transient Solution as part of RunTests
+% Runs unit test - Kelvin-Voigt Linear Viscoelastic Model as part of RunTests
 % ------------------------------------------------------------------------
 % Test consists of a 2D cantilever bar simulation where the left is fixed.
 % Boundary conditions at the fixed-end are restricted to displacements in
@@ -7,14 +7,10 @@
 % in both the x and y directions to avoid 2d effects. An external force is
 % applied to all nodes at the free end of the bar. The solution is compared
 % to the 1D analytical solution whereby the displacement at node 863 
-% (i.e. midpoint in y-direction at free-end) is compared over time. A 
-% slight variation in the numerical and analytical solution is expected due 
-% to the truncation error and the comparison to an exact one-dimensional 
-% solution. 
-
+% (i.e. midpoint in y-direction at free-end) is compared over time. 
        
         testnum = testnum + 1;
-        testname = '2D transient cantilever beam solution';
+        testname = '2D Kelvin-Voigt Cantilever Beam Solution';
         nameslist{testnum} = testname;
        
         % Create test VTK folder
@@ -28,17 +24,17 @@
     
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        config_name = 'TransientTest';
+        config_name = 'PatchTestVE1';
         main_nonlinear % Runs calculation
 
         
         % Step 2 - Check results
-        L2d = Transient1D_check(d, Material, Mesh, Control,BC);
+        error = VE1_1D_check(d, Material, Mesh, Control,BC);
         
-        fprintf('\nT3 Transient Cantilever Bar Test: L2-norm of the displacement error at free-end of cantilever bar is %.2e', L2d);
-
-        convergence_tolerance = 1e-2;
-        if L2d <= convergence_tolerance
+        fprintf('\nT3 Kelvin-Voigt Cantilever Bar Test: Displacement error at the free end of the cantilever bar is %.3e', error);
+        
+        convergence_tolerance = 1e-1;
+        if error <= convergence_tolerance
             test_pass = 1;
         else
             test_pass = 0;

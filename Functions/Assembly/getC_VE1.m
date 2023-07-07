@@ -1,17 +1,18 @@
-function [K, R, Fint] = getK_ST1(Mesh, Quad, Material, ~, Fext, ~, ~, d_m, ~, ~, ~, ~)
-%GETK_NLELASTIC Stiffness matrix for iterative non linear elastic case
-%   [K, R, Fint] = GETK_ST1(Mesh, Quad, Material) returns the 
-%   stiffness matrix K, the residual vector R, and the internal force 
-%   vector for the iterative solver where the problem uses a non linear 
-%   elastic material
+function C = getC_VE1(Mesh, Quad, Material)
+%   GETC_VE1 Damping matrix 
+%   C = GETC_VE1(Mesh, Quad, Material) is the damping matrix for the
+%   Kelvin-Voigt model. Please see Chapter 5 of the textbook "Creep and
+%   relaation of non-linear viscoelastic materials; with an introduction to
+%   linear viscoelasticty by Findley (1989). 
+% 
+%   The damping matrix is computed using the parameters defined in the 
+%   structure arrays Mesh, Quad, and Material. The sparse matrix has size 
+%   Mesh.nDOF x Mesh.nDOF
 %   
-%   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
-%   Accepted Inputs (in order)
+%   Input
 %   --------------------------------------------------------------------
-%   getK_NLelastic(Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1)
-%   Mesh:       Structure array with the following fields, may be updated
-%               with new fields
+%   Mesh:       Structure array with the following fields,
 %               .ne:    Total number of elements in the mesh
 %               .nne:   Vector of number of nodes per element (size nsd x 1)
 %               .nsd:   Number of spatial dimensions
@@ -22,8 +23,7 @@ function [K, R, Fint] = getK_ST1(Mesh, Quad, Material, ~, Fext, ~, ~, d_m, ~, ~,
 %               .nDOFe: Number of DOFs per element
 %               .nDOF:  Total number of DOFs
 %  
-%   Quad:       Structure array with the following fields, may be updated
-%               with new fields
+%   Quad:       Structure array with the following fields,
 %               .W:      Vector of quadrature weights (size nq x 1)      
 %               .nq:     Number of quadrature points 
 %               .Nq:     Cell array (size nq x 1) with shape functions  
@@ -32,38 +32,21 @@ function [K, R, Fint] = getK_ST1(Mesh, Quad, Material, ~, Fext, ~, ~, d_m, ~, ~,
 %                        functions w.r.t. parent coordinates evaluated at 
 %                        each quadrature point
 % 
-%   Material:   Structure array with the following fields, may be updated
-%               with new fields
+%   Material:   Structure array with the following fields,
 %               .t:         Material thickness
-%
-%   Fext:       External force vector at timestep n
-%   Klin:       Linear elastic stiffness matrix
-%   M:          Mass matrix
-%   d_m:        Structure array with the following fields
-%               d:          unconverged degree of freedom vector at current timestep n and iteration
-%               dnm1:       converged degree of freedom vector at timestep n-1
-%               dnm2:       converged degree of freedom vector at timestep n-2
-%               dnm3:       converged degree of freedom vector at timestep n-3
-%   dt:         timestep size between timesteps n-1 and n
-%   dtnm1:      timestep size between timesteps n-2 and n-1
 
-d = d_m.d; %Get data from d_m structure
+% Acknowledgements: Chris Ladubec, Modified by Jonathan Zingaro for
+% KV-Model
 
-% initialize D matrix file pointer
-[~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);
-
-% initialize stiffness matrix
+% initialize damping matrix
 vec_size = Mesh.ne*(Mesh.nne * Mesh.nsd)^2; % vector size (solid dofs)
 row = zeros(vec_size, 1);                   % vector of row indices
 col = zeros(vec_size, 1);                   % vector of column indices
-Kvec = zeros(vec_size, 1);                  % vectorized stiffness matrix
+Cvec = zeros(vec_size, 1);                  % vectorized stiffness matrix
 
 count = 1;                                  % DOF counter
 
-% initialize internal force vector
-Fint = zeros(Mesh.nDOF, 1);  
-
-% for each element, compute element stiffness matrix and add to global
+% for each element, compute element damping matrix and add to global
 for e = 1:Mesh.ne
 
     %% Element variables
@@ -76,11 +59,11 @@ for e = 1:Mesh.ne
         dofE = reshape(dofE',Mesh.nDOFe,[]);
         % number of degrees of freedom
         ndofE = numel(dofE);
-        % displacements of the element's nodes
-        de = d(dofE);
-        % element material type
-        nMat = Mesh.MatList(e); 
-
+        
+    %% Constitutive matrix
+        nMat = Mesh.MatList(e); % element material type
+        ce = Material.Prop(nMat).C; % viscosity of element material properties
+        
     %% Shape functions and derivatives in parent coordinates
         W = Quad.W;
         nq = Quad.nq;
@@ -92,11 +75,8 @@ for e = 1:Mesh.ne
         A = 0;
 
         % initialize element stiffness matrix
-        Ke = zeros(ndofE, ndofE); 
+        Ce = zeros(ndofE, ndofE); 
 
-        % initialize element internal force vector
-        fe = zeros(ndofE, 1); 
-        
         % loop through all quadrature points
         for q = 1:nq     
 
@@ -135,61 +115,26 @@ for e = 1:Mesh.ne
                     L = 1;                
             end
 
-            % compute strains in quadrature point
-            strain_e = Bv'*de;
+            % Calculate local damping matrix
+            Ce = Ce + W(q)*Bv*ce*Bv'*L*dJe;
 
-            % Compute constitutive matrix
-            [D, Material] = feval(DMatrix_functn, nMat, Material, Mesh, strain_e);
-
-            switch Mesh.nsd
-                case 1
-                    % strain invariant
-                    I1 = strain_e(1,1)^2;
-                    % strain trace
-                    trE = strain_e(1,1);
-                    NK = [dNdxi(1,1) dNdxi(1,2)];
-                case 2
-                    % strain invariant
-                    I1 = (strain_e(1,1)+strain_e(2,1))^2;
-                    % strain trace
-                    trE = strain_e(1,1)+strain_e(2,1);
-                    NK = [dNdxi(1,1) dNdxi(2,1) dNdxi(1,2) dNdxi(2,2) dNdxi(1,3) dNdxi(2,3) dNdxi(1,4) dNdxi(2,4)];
-                case 3
-                    % strain invariant
-                    I1 = (strain_e(1,1)+strain_e(2,1)+ strain_e(3,1))^2;
-                    % strain trace
-                    trE = strain_e(1,1)+strain_e(2,1) + strain_e(3,1);
-            end
-
-            % Calculate local stiffness matrix
-            Ke = Ke + W(q)*Bv*D*Bv'*L*dJe + W(q)*Bv*(D/Material.Prop(nMat).E)*(Bv'*de)*4*Material.Prop(nMat).E1*2*I1*trE*NK*L*dJe;
-
-            % Calculate local internal force vector
-            fe = fe + W(q)*Bv*(D*strain_e)*L*dJe;
-            
             % quadrature debug tool
             A = A + W(q)*dJe; 
         end
    
     %% Forming the vectorized stiffness matrix
         count = count + ndofE^2;
-        Ke = reshape(Ke, [ndofE^2, 1]);
+        Ce = reshape(Ce, [ndofE^2, 1]);
         rowmatrix = dofE*ones(1,ndofE);        
         rowe = reshape(rowmatrix,[ndofE^2, 1]);
         cole = reshape(rowmatrix',[ndofE^2, 1]);
         
-        Kvec(count-ndofE^2:count-1) = Ke;
+        Cvec(count-ndofE^2:count-1) = Ce;
         row(count-ndofE^2:count-1) = rowe;
         col(count-ndofE^2:count-1) = cole;
-        
-    %% Assemble element internal forces
-        Fint(dofE) = Fint(dofE) + fe;
 end
 
 % sparse stiffness matrix
-K = sparse(row, col, Kvec, Mesh.nDOF, Mesh.nDOF);
-
-% residual
-R = Fext - Fint;
+C = sparse(row, col, Cvec, Mesh.nDOF, Mesh.nDOF);
 
 end
