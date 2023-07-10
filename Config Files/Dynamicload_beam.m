@@ -1,12 +1,15 @@
-function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = Dynamicload_beam(config_dir, progress_on)
 
 %% Mesh Properties
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
     end
     
-    % Mesh format - 'STRUCTURED', 'UNSTRUCTURED'
-    MeshType = 'GMSH';        
+    % Mesh formats: 
+    %   'MANUAL'- In-house structured meshing
+    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
+    MeshType = 'MANUAL';        
     
     switch MeshType
         case 'MANUAL'
@@ -15,27 +18,31 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
             % number of space dimensions 
             nsd = 2;
             % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
+            L = [5;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*20;
+            nex = [5;1]*10;
             % element type ('Q4')
             type = 'Q4';
             
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type);
-        case 'UNSTRUCTURED'
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
         case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Unstructured_sample.msh';
+            meshFileName = '2DBarMesh.msh';
             % number of space dimensions 
             nsd = 2;
-          
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
+            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on); 
+        case 'EXCEL'
+            meshFileName = 'CricularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
     end    
-    
 
 %% Material Properties (Solid)
 
@@ -51,16 +58,21 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         % for different materials are saved in Material.Prop.
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
+
     % Specify Material Model
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
-    Material.Model = 'LE1';
+        % LED1 - Linear elasticity dynamic
+    Material.Model = 'LED1';
+        
     % number of material properties
     Material.nmp = 1;
-        
+
     % Properties material 1
-    Material.Prop(1).E0 = 4; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0; % Poisson's ratio
+    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
+    Material.Prop(1).C = 0; % Damping Coefficient
+    Material.Prop(1).rho = 2400; % Poisson's ratio
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
@@ -69,9 +81,11 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
     Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
+    Material.Dtype = 'PlaneStress'; 
+    
 
     % Thickness (set as default to 1)
+    % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
 
     % Alternatively, import a material file
@@ -86,17 +100,31 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         % right_nodes = find(Mesh.x(:,1)==4);
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
+        
+    % Manufactured solution
+    % u := (x1, x2, t) -> -1/1000*sin(1/2*pi*x1)*sin(1/2*pi*x2)*sin(2*pi*t)
+    % v := (x1, x2, t) -> 1/1000*cos(1/2*pi*x1)*cos(1/2*pi*x2)*cos(2*pi*t)
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
-        % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [Mesh.left_dof];
-
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
+        % u := (0, 1, t) -> sin(pi*t/2);
+        % v := (0, 1, t) -> 0
+
+        BC.fix_disp_dof = [Mesh.left_dofy(end); Mesh.right_dofx;  Mesh.right_dofy];
+        
+        % Prescribed dispalcement
+        
+%         BC.fix_disp_value = @(t) [1*sin(pi*t/2)*(t < 8); zeros(length(BC.fix_disp_dof(2:end)),1)];
+        BC.fix_disp_value = @(t) [1*(t < 1); zeros(length(BC.fix_disp_dof(2:end)),1)];
 
     %% Neumann BC
     % -----------------------------------------------------------------
+
+        % Magnitude of amplitude of Fext applied to nodes at free-end of
+        % beam
+        BC.Fn = [];
+
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
 
@@ -105,18 +133,10 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
+        BC.traction_force_node = [];  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
+        BC.traction_force_value = @(t) [];
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -126,38 +146,66 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[];    
+        BC.b = @(x,t) [ ];
 
+%% Initial Conditions
+        BC.IC_temp = zeros(Mesh.nDOF,1);
+        
 %% Computation controls
 
         % quadrature order
         Control.qo = 2;
 
-        % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal', 'center'
-        Control.stress_calc = 'center';
+        % Calculation of values for discontinuous variables 
+        % (i.e. stress/strain)
+        % 'none': calculated at each node for each element separately; 
+        %           no output in vtk
+        % 'nodal': averaged at each node for all elements attached to 
+        %           the node; output as nodal values in vtk
+        % 'center': calculated at the center of each element; output as 
+        %           single value for each element in vtk
+        % 'L2projection': Least squares projection of stress and strain,
+        %           output as nodal values
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
         Control.beta = 10^10;
+        
+        % parallel inversion
+        % Use parallel processing to invert the matrix.
+        % Usually more efficient at 2e5 dofs
+        Control.parallel = 1;
 
         % method used for solving linear problem:
         % 'LinearSolver1': Partitioning
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';
-
+        Control.LinearSolver = 'LinearSolver1';    
+ 
+        % time controls
+        Control.StartTime = 0;
+%         Control.EndTime   = 32; 
+        Control.EndTime   = 4; 
+        NumberOfSteps     = 100;
+        Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
+        Control.dSave     = 1;
+        
         % transient controls
-        Control.TimeCase = 'static';    
+        Control.TimeCase = 'dynamic';    
                         % Static → Control.TimeCase = 'static;
                         % Transient → Control.TimeCase = 'transient';
                         % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        Control.alpha = 0; %
+        %   If Control.Timecase = 'transient'
+        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        %   If Control.Timecase = 'dynamic'
+        %           α [-1/3, 0]
 
         % Newton Raphson controls
-        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.r_tol = 1e-7; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
- 
+        
         
 end

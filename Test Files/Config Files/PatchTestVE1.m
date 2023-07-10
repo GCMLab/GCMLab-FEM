@@ -248,7 +248,7 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
         BC.b = @(x,t)[];  
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 
@@ -291,8 +291,15 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
         Control.dSave     = 1;
         
         % transient controls
-        Control.transient = 1; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.TimeCase = 'transient';    
+                % Static → Control.TimeCase = 'static;
+                % Transient → Control.TimeCase = 'transient';
+                % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
         Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        %   If Control.Timecase = 'transient'
+        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        %   If Control.Timecase = 'dynamic'
+        %           α [-1/3, 0]
 
         % Newton Raphson controls
         Control.r_tol = 1e-7; % Tolerance on residual forces

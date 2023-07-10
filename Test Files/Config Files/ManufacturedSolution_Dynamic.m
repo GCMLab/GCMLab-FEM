@@ -1,5 +1,5 @@
-function [Mesh, Material, BC, Control] = ManufacturedSolution_PlaneStrain(config_dir, progress_on)
-global meshfilename quadorder E nu
+function [Mesh, Material, BC, Control] = ManufacturedSolution_Dynamic(config_dir, progress_on)
+global nex quadorder E nu rho alpha tf n_steps
 
 %% Mesh Properties
     if progress_on
@@ -7,10 +7,10 @@ global meshfilename quadorder E nu
     end
     
     % Mesh formats: 
-    %   'MANUAL'    - In-house structured meshing
-    % 	'GMSH'      - Import .msh file from GMSH, structured or unstructured
-    MeshType = 'GMSH';        
-
+    %   'MANUAL'- In-house structured meshing
+    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
+    MeshType = 'MANUAL';        
     
     switch MeshType
         case 'MANUAL'
@@ -21,7 +21,7 @@ global meshfilename quadorder E nu
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*20;
+%             nex = [2;2]*10;
             % element type ('Q4')
             type = 'Q4';
             
@@ -32,14 +32,18 @@ global meshfilename quadorder E nu
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = meshfilename;
-
+            meshFileName = '2DBarMesh.msh';
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on); 
+        case 'EXCEL'
+            meshFileName = 'CricularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
     end    
-    
 
 %% Material Properties (Solid)
 
@@ -59,23 +63,30 @@ global meshfilename quadorder E nu
     % Specify Material Model
         % LE1 - Linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
-    Material.Model = 'LE1';
+        % LED1 - Linear elasticity dynamic
+    Material.Model = 'LED1';
+        
     % number of material properties
     Material.nmp = 1;
-        
+
     % Properties material 1
     Material.Prop(1).E0 = E; % Young's modulus [Pa]
     Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).C = 0; % Damping Coefficient
+    Material.Prop(1).rho = rho; % Poisson's ratio
     
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements
     Mesh.MatList(:) = 1;
+
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStrain'; 
+    Material.Dtype = 'PlaneStress'; 
+    
 
     % Thickness (set as default to 1)
+    % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
 
     % Alternatively, import a material file
@@ -90,30 +101,47 @@ global meshfilename quadorder E nu
         % right_nodes = find(Mesh.x(:,1)==4);
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
+        
+    % Manufactured solution
+    % u := (x1, x2, t) -> -1/1000*sin(1/2*pi*x1)*sin(1/2*pi*x2)*sin(2*pi*t)
+    % v := (x1, x2, t) -> 1/1000*cos(1/2*pi*x1)*cos(1/2*pi*x2)*cos(2*pi*t)
 
-    % Dirichlet boundary conditions (essential) according to manufactured
-    % solution
-    % ux = x^5 + x*y^3 - y^6
-    % uy = x^5 + x*y^3 - y^6
+    % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
-        BC.UU = @(x) x(:,1).^5 + x(:,1).*x(:,2).^3 - x(:,2).^6;
-        BC.VV = @(x) x(:,1).^5 + x(:,1).*x(:,2).^3 - x(:,2).^6;
+        % prescribed displacement for each dof [u1; u2; ...] [m]
+        % u := (x1, x2, t) -> -sin(pi*x1/2)*sin(pi*x2/2)*sin(2*pi*t)/1000
+        % v := (x1, x2, t) -> cos(pi*x1/2)*cos(pi*x2/2)*cos(2*pi*t)/1000
 
-        % column vector of prescribed displacement dof  
+        BC.UUx = @(x) - sin(pi.*x(:,1)./2).*sin(pi.*x(:,2)./2)./1000;
+        BC.VVx = @(x)   cos(pi.*x(:,1)./2).*cos(pi.*x(:,2)./2)./1000;
+        
+        % Column vector of prescribed dispalcements
         BC.fix_disp_dof1 = Mesh.left_dof;
         BC.fix_disp_dof2 = Mesh.right_dof;
         BC.fix_disp_dof3 = Mesh.bottom_dof;
         BC.fix_disp_dof4 = Mesh.top_dof;
         BC.fix_disp_dof = unique([BC.fix_disp_dof1;BC.fix_disp_dof2;BC.fix_disp_dof3;BC.fix_disp_dof4]);
-
-        % prescribed displacement for each dof [u1; u2; ...] [m]
+        
+        % Prescribed dispalcement
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
-        BC.fix_disp_value(1:2:end) = BC.UU([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
-        BC.fix_disp_value(2:2:end) = BC.VV([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
-        BC.fix_disp_value = @(t) BC.fix_disp_value;
+        BC.fix_disp_value(1:2:end) = BC.UUx([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
+        BC.fix_disp_value(2:2:end) = BC.VVx([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
+        
+        BC.UU_temp = zeros(length(BC.fix_disp_dof),1); 
+        BC.UU_temp(1:2:end) = ones(length( BC.UU_temp(1:2:end)),1);
+        BC.VV_temp = zeros(length(BC.fix_disp_dof),1); 
+        BC.VV_temp(2:2:end) = ones(length( BC.VV_temp(1:2:end)),1);
+        
+        BC.fix_disp_value = @(t) round(BC.fix_disp_value.*BC.UU_temp.*sin(2.*pi.*t) + BC.fix_disp_value.*BC.VV_temp.*cos(2.*pi.*t), 15) ;
+        
 
     %% Neumann BC
     % -----------------------------------------------------------------
+
+        % Magnitude of amplitude of Fext applied to nodes at free-end of
+        % beam
+        BC.Fn = [];
+
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
 
@@ -122,31 +150,40 @@ global meshfilename quadorder E nu
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
+        BC.traction_force_node = [];  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        BC.traction_force_value = @(t) [];
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
-        % magnitude of distributed body force [N/m] [bx;by] according to
-        % the manufactured solution:
-        % bx = -E /(1+v)/(1-2v) * ( (1-v)*20x^3                     + v*3y^2           + (1-2v)/2*[ 6xy - 30y^4 + 3y^2 ])
-        % by = -E /(1+v)/(1-2v) * ( (1-2v)/2*[3y^2 + 20x^3]         + v*3y^2           + (1-v)*(6xy - 30y^4) )
+        % magnitude of distributed body force [N/m] [bx;by]
             % 1D: [N/m], 2D: [N/m2]
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t)[-E /(1+nu)/(1-2*nu) * ( (1-nu)*20*x(1).^3                    + nu*3*x(2).^2        + (1-2*nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2 ));
-                    -E /(1+nu)/(1-2*nu) * ( (1-2*nu)/2*(3*x(2).^2 + 20*x(1).^3)  + nu*3*x(2).^2        + (1-nu)*(6*x(1).*x(2) - 30*x(2).^4) )];
+        BC.b = @(x,t) [ -E*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) -...
+            E*nu*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/(4*(-nu^2 + 1)) - ...
+            E*(1/2 - nu/2)*(sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t)/8 + ...
+            pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/8)/(-nu^2 + 1) + ...
+            4*rho*sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t); ...
+            -E*(1/2 - nu/2)*(-pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/8 - ...
+            cos(pi*x(1)/2)*cos(pi*x(2)/2)*pi^2*cos(2*pi*t)/8)/(-nu^2 + 1) +...
+            E*nu*pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) + ...
+            E*cos(pi*x(1)/2)*pi^2*cos(pi*x(2)/2)*cos(2*pi*t)/(4*(-nu^2 + 1)) -...
+            4*rho*cos(pi*x(1)/2)*cos(pi*x(2)/2)*pi^2*cos(2*pi*t)]./1000;
 
+%% Initial Conditions
+        BC.IC_temp = zeros(Mesh.nDOF,1);
+%         BC.IC_temp(BC.fix_disp_dof) = ones(length(BC.fix_disp_dof),1);
+%         BC.IC = @(t) BC.IC_temp.*   BC.fix_disp_value(t);
+        
 %% Computation controls
 
         % quadrature order
         Control.qo = quadorder;
-        
+
         % Calculation of values for discontinuous variables 
         % (i.e. stress/strain)
         % 'none': calculated at each node for each element separately; 
@@ -159,27 +196,42 @@ global meshfilename quadorder E nu
         %           output as nodal values
         Control.stress_calc = 'nodal';
 
-
         % penalty parameter for solution of static problem with 
         % LinearSolver3
         Control.beta = 10^10;
+        
+        % parallel inversion
+        % Use parallel processing to invert the matrix.
+        % Usually more efficient at 2e5 dofs
+        Control.parallel = 1;
 
         % method used for solving linear problem:
         % 'LinearSolver1': Partitioning
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1'; 
+        Control.LinearSolver = 'LinearSolver1';    
  
+        % time controls
+        Control.StartTime = 0;
+        Control.EndTime   = tf; 
+        NumberOfSteps     = n_steps;
+        Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
+        Control.dSave     = 1;
+        
         % transient controls
-        Control.TimeCase = 'static';    
+        Control.TimeCase = 'dynamic';    
                         % Static → Control.TimeCase = 'static;
                         % Transient → Control.TimeCase = 'transient';
                         % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson 
-        
+        Control.alpha = alpha; %
+        %   If Control.Timecase = 'transient'
+        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        %   If Control.Timecase = 'dynamic'
+        %           α [-1/3, 0]
+
         % Newton Raphson controls
-        Control.r_tol = 1e-5; % Tolerance on residual forces
+        Control.r_tol = 1e-7; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
         
         

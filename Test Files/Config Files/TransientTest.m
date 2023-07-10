@@ -249,7 +249,7 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
         BC.b = @(x,t)[];  
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 
@@ -292,7 +292,10 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
         Control.dSave     = 1;
         
         % transient controls
-        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.TimeCase = 'static';    
+                        % Static → Control.TimeCase = 'static;
+                        % Transient → Control.TimeCase = 'transient';
+                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
         Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
 
         % Newton Raphson controls

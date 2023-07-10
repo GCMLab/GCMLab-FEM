@@ -1,4 +1,4 @@
-function [K, R, Fint] = getK_LE1(~, ~, ~, ~, Fext, ~, Klin, ~, d, ~, ~, ~, ~,~,~)
+function [K, R, Fint] = getK_LE1(~, ~, ~, ~, Fext, ~, Klin, ~, d_m, ~, ~,~,~)
 %GETK_LE1 Stiffness matrix for iterative elastic case
 %   [K, R, Fint] = GETK_LE1(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 
@@ -38,12 +38,15 @@ function [K, R, Fint] = getK_LE1(~, ~, ~, ~, Fext, ~, Klin, ~, d, ~, ~, ~, ~,~,~
 %   Fext:       External force vector at timestep n
 %   Klin:       Linear elastic stiffness matrix
 %   M:          Mass matrix
-%   d:          unconverged degree of freedom vector at current timestep n and iteration
-%   dnm1:       converged degree of freedom vector at timestep n-1
-%   dnm2:       converged degree of freedom vector at timestep n-2
+%   d_m:        Structure array with the following fields
+%               d:          unconverged degree of freedom vector at current timestep n and iteration
+%               dnm1:       converged degree of freedom vector at timestep n-1
+%               dnm2:       converged degree of freedom vector at timestep n-2
+%               dnm3:       converged degree of freedom vector at timestep n-3
 %   dt:         timestep size between timesteps n-1 and n
 %   dtnm1:      timestep size between timesteps n-2 and n-1
 
+d = d_m.d;
 
 K = Klin;
 Fint = K*d;

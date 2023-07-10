@@ -248,7 +248,7 @@ function [Mesh, Material, BC, Control] = NLElastic_1DBar(config_dir, progress_on
         BC.b = @(x,t)[];    
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 

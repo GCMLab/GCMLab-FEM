@@ -171,9 +171,12 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         
     % Specify Material Model
         % LE1 - Linear elasticity
+        % LE1 - Linear elasticity and dynamic
+        % LET1 - Lienar elastic and transient
         % ST1 - Stiffening model with 1st invariant of strain
         % ST2 - Softening model with 1st invariant of strain
         % TR2 - Transient model with stiffening model via 1st invariant of strain
+        % VE1 - Linear Viscoelastic Kelvin-Voigt Model
     Material.Model = 'LE1';
     
     % number of material properties
@@ -262,7 +265,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.b = @(x,t)[];    
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 
@@ -313,8 +316,15 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         Control.plotAt = 0; % [add DOF number]
         
         % transient toggle
-        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        Control.TimeCase = 'static';    
+                        % Static → Control.TimeCase = 'static;
+                        % Transient → Control.TimeCase = 'transient';
+                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
+        Control.alpha = 0.5; 
+        %   If Control.Timecase = 'transient'
+        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        %   If Control.Timecase = 'dynamic'
+        %           α [-1/3, 0]
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
