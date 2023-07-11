@@ -128,7 +128,7 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.25; % Poisson's ratio
     Material.Prop(1).C = 1e3; % Damping Coefficent
 

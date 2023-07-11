@@ -67,7 +67,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
 %   structure array with the following fields: 
 %       .nmp:           number of material properties
 %       .Prop:          Material properties
-%       .Prop.E:        Modulus of elasticity
+%       .Prop.E0:       Modulus of elasticity
 %       .Prop.nu:       Poisson's ratio
 %       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
 %       .Prop.t:        Material thickness
@@ -134,7 +134,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 

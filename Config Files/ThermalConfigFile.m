@@ -127,7 +127,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
         % ST1 - Stiffening model with 1st invariant of strain
         % TH1 - Thermal diffusion (Steady-State)
         % TH2 - Thermal diffusion (Transient)
-    Material.Model = 'TH2';
+    Material.Model = 'TH1';
     
     % number of material properties
     Material.nmp = 1;

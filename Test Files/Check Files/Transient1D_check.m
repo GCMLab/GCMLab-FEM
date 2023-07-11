@@ -25,7 +25,7 @@ function [disp_er] = Transient1D_check(d, Material, Mesh, Control,BC);
 
 % Import Material Parameters
 C = Material.Prop.C;
-K = Material.Prop.E;
+K = Material.Prop.E0;
 
 % Time-step Parameters
 t = Control.StartTime:Control.TimeStep:Control.EndTime;
