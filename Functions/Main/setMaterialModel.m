@@ -34,6 +34,7 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
                 Material.StiffnessMatrixFile    = 'getK_LET1';
                 Material.DampingFile            = 'getC'; 
                 Material.StressStrainFile       = 'getStrain';
+                Material.PostProcessor          = 'write2vtk_eqbm';
                 Material.ProblemType            = 1;
                 Material.TimeType               = 1;
                 
@@ -43,8 +44,19 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
                 Material.StiffnessMatrixFile    = 'getK_LED1';
                 Material.DampingFile            = 'getC'; % Mass-based damping assumed
                 Material.StressStrainFile       = 'getStrain';
+                Material.PostProcessor          = 'write2vtk_eqbm';                
                 Material.ProblemType            = 1;
                 Material.TimeType               = 2;
+                
+            % Linear Viscoelastic Kelvin-Voigt Model    
+            case 'VE1' 
+                Material.ConstitutiveLawFile    = 'getD';
+                Material.StiffnessMatrixFile    = 'getK_LET1';
+                Material.DampingFile            = 'getC_VE1'; 
+                Material.StressStrainFile       = 'getStrain';
+                Material.PostProcessor          = 'write2vtk_eqbm';
+                Material.ProblemType            = 1;
+                Material.TimeType               = 1;
                 
                 
      %%%%%%%%%% Non-linear Models 
@@ -77,15 +89,7 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
                 Material.PostProcessor          = 'write2vtk_eqbm';
                 Material.ProblemType            = 1;
                 Material.TimeType               = 1;
-                
-            % Linear Viscoelastic Kelvin-Voigt Model    
-            case 'VE1' 
-                Material.ConstitutiveLawFile    = 'getD';
-                Material.StiffnessMatrixFile    = 'getK_VE1';
-                Material.DampingFile            = 'getC_VE1'; 
-                Material.StressStrainFile       = 'getStrain';
-                Material.ProblemType            = 1;
-                Material.TimeType               = 1;
+               
                 
      %%%%%%%%%% Diffusion Models
             % Thermal Diffusion (Steady-state)
