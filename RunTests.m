@@ -12,6 +12,7 @@
       VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
 %     VTKFolder = 'C:\Users\nilsb\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
 %    VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
+
     
     % suppress progress messages
     progress_on = 0;

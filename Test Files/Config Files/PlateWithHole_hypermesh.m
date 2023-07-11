@@ -184,6 +184,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
     end    
     
 
+
 %% Assign Materials to Mesh
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');

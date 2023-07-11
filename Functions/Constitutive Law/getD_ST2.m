@@ -1,8 +1,8 @@
-function [D, Material] = getD_ST1(nMat, Material, Mesh, strain_e)
+function [D, Material] = getD_ST2(nMat, Material, Mesh, strain_e)
 %GETD Elasticity tensor
-%   D = GETD_ST1(E, nu, nsd) is the elasticity tensor for a problem 
+%   D = GETD_NLelasticSoft(E, nu, nsd) is the elasticity tensor for a problem 
 %   in which the constitutive law is a non linear elastic relation given by
-%   E = E0 + E1*I1^2
+%   E = E0 - E1*I1^2
 % 
 %   --------------------------------------------------------------------
 %   Input
@@ -29,14 +29,14 @@ switch Mesh.nsd
         % strain invariant
         I1 = strain_e(1,1)^2;
         % elasticity modulus
-        E = E0 + E1*I1^2;
+        E = E0 - E1*I1^2;
         % constitutive matrix
         D = E;
     case 2    
         % strain invariant
         I1 = (strain_e(1,1)+strain_e(2,1))^2;
         % elasticity modulus
-        E = E0 + E1*I1^2;
+        E = E0 - E1*I1^2;
         % constitutive matrix
         switch Material.Dtype
             case 'PlaneStrain'
@@ -54,7 +54,7 @@ switch Mesh.nsd
         % strain invariant
         I1 = (strain_e(1,1)+strain_e(2,1)+ strain_e(3,1))^2;
         % elasticity modulus
-        E = E0 + E1*I1^2;
+        E = E0 - E1*I1^2;
         % constitutive matrix
         D = E/(1+nu)/(1-2*nu)*[1-nu nu nu 0 0 0;
                                 nu 1-nu nu 0 0 0;

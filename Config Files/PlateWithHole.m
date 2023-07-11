@@ -191,7 +191,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
     
 
 %% Assign Materials to mesh
-        % type of material per element
+
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements

@@ -47,8 +47,13 @@ function [K, R, Fint] = getK_TR1(~, ~, ~, Fext, Fextnm1, Klin, ~, d, dnm1, ~, dt
 %   alpha:       intagration parameter
 
 
-K = alpha*Klin+C./dt;
-Fint = C*(d-dnm1)./dt+Klin*(1-alpha)*dnm1+alpha*Klin*d;
-R = alpha*Fext+(1-alpha)*Fextnm1 - Fint;
+% stiffness matrix in transient case
+K = alpha*Klin + C./dt;
+
+% internal forces
+Fint = C*(d-dnm1)./dt + Klin*(1-alpha)*dnm1 + alpha*Klin*d;
+
+% residual
+R = alpha*Fext + (1-alpha)*Fextnm1 - Fint;
 
 end

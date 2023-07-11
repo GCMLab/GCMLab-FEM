@@ -190,7 +190,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'CircularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
@@ -198,7 +198,6 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     end    
     
 %% Assign Materials to Mesh
-
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     

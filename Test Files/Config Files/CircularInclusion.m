@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = CircularInclusion(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -65,10 +65,12 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
 %
 %   [Mesh, Material] = MASTERCONFIGFILE() also returns a
 %   structure array with the following fields: 
-%       .E:     Modulus of elasticity
-%       .nu:    Poisson's ratio
-%       .Dtype: 2D approximation ('PlaneStrain' or 'PlainStress')
-%       .t:     Material thickness
+%       .nmp:           number of material properties
+%       .Prop:          Material properties
+%       .Prop.E:        Modulus of elasticity
+%       .Prop.nu:       Poisson's ratio
+%       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
+%       .Prop.t:        Material thickness
 % 
 %   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
 %   array with the following fields: 
@@ -105,6 +107,48 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
 %   config_dir:     (OPTIONAL) File path for the directory where 
 %                   unstructured mesh is stored
 
+%% Material Properties (Solid)
+
+    % NOTES-------------------------------------------------------------
+                                
+        % NOTE: anonymous functions are defined with respect to the variable x,
+        % which is a vector [x(1) x(2) x(3)] = [x y z]
+
+        % NOTE: Material properties must be continuous along an element, 
+        % otherwise, quadrature order must be increased significantly
+        
+        % NOTE: Number of material properties can be more than one. Properties
+        % for different materials are saved in Material.Prop.
+        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
+        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
+
+    % Specify Material Model
+        % LE1 - Linear elasticity
+        % ST1 - Stiffening model with 1st invariant of strain
+    Material.Model = 'LE1';
+        
+    % number of material properties
+    Material.nmp = 2;
+
+    % Properties material 1
+    Material.Prop(1).E0 = 1; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    
+    % Properties material 2
+    Material.Prop(2).E0 = 10; % Young's modulus [Pa]
+    Material.Prop(2).nu = 0.3; % Poisson's ratio
+
+    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
+    Material.Dtype = 'PlaneStrain'; 
+
+    % Thickness (set as default to 1)
+    Material.t = @(x) 1;
+
+    % Alternatively, import a material file
+    % Material = Material_shale();
+	
+    [Material, ~, ~] = setMaterialModel(Material);
+
 %% Mesh Properties
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
@@ -113,7 +157,7 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
     % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    MeshType = 'GMSH';        
+    MeshType = 'EXCEL';        
     
     switch MeshType
         case 'MANUAL'
@@ -128,44 +172,35 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
             % element type ('Q4')
             type = 'Q4';
             
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
         case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'FineMesh.msh';
+            meshFileName = 'Mesh Files\PlateWithHole.msh';
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);            
+        case 'EXCEL'
+            meshFileName = 'Mesh Files\CricularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end    
     
-%% Material Properties (Solid)
 
-    % NOTES-------------------------------------------------------------
-                                
-        % NOTE: anonymous functions are defined with respect to the variable x,
-        % which is a vector [x(1) x(2) x(3)] = [x y z]
 
-        % NOTE: Material properties must be continuous along an element, 
-        % otherwise, quadrature order must be increased significantly
+%% Assign Materials to Mesh
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
-    % Young's modulus [Pa]
-    Material.E0 = @(x) 2e11;  
-
-    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
-
-    % Thickness (set as default to 1)
-    Material.t = @(x) 1;
-
-    % Poisson's ratio (set as default to 0.3)
-    Material.nu = @(x) 0.3;
-
-    % Alternatively, import a material file
-    % Material = Material_shale();
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
@@ -180,35 +215,38 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [Mesh.bottom_dofx; Mesh.bottom_dofy];
+        BC.fix_disp_dof1 = [Mesh.left_dofx; Mesh.bottom_dofy];
 
+        curvenode = find(abs(sqrt(Mesh.x(:,1).^2 + Mesh.x(:,2).^2) - max(Mesh.x(:,2)))<1e-6);
+        BC.fix_disp_dof2 = [curvenode*2-1; curvenode*2];
+
+        BC.fix_disp_dof = [BC.fix_disp_dof1; BC.fix_disp_dof2];
+        
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value1 = zeros(length(BC.fix_disp_dof1),1);
+        
+        UD = max(Mesh.x(:,2));
+        BC.fix_disp_value2 = zeros(length(BC.fix_disp_dof2),1);
+        for e = 1 : size(curvenode,1)
+            theta = atan2(Mesh.x(curvenode(e),2),Mesh.x(curvenode(e),1));
+            BC.fix_disp_value2(e) = UD*cos(theta);
+            BC.fix_disp_value2(e+size(curvenode,1)) = UD*sin(theta);
+        end
+
+        BC.fix_disp_value = [BC.fix_disp_value1; BC.fix_disp_value2];
+        BC.fix_disp_value = @(t) BC.fix_disp_value;
 
     %% Neumann BC
     % -----------------------------------------------------------------
+        % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
-        BC.traction_force_dof_value = [];
-        BC.traction_force_node = Mesh.right_nodes;
-        
-        % uniform tensile stress applied to right edge
-        t = -10e7;                               
-        % length of right edge
-        H = max(Mesh.x(:,2));                   
-        % number of tributary lengths along the edge
-        num_h = length(Mesh.right_nodes) - 1;   
-        % load applied to each node 
-        Fnode = t*H/num_h;
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(Mesh.right_nodes,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(Mesh.right_nodes,2) == min(Mesh.x(:,2)));
-        cornernodes = [toprightnode, botrightnode];
 
-        BC.traction_force_node = Mesh.right_nodes;
-        BC.traction_force_value = [Fnode*ones(size(Mesh.right_nodes)),zeros(size(Mesh.right_nodes))];
-        BC.traction_force_value(cornernodes,1) = Fnode/2;
-                
+        % magnitude of prescribed tractions [N]
+        BC.traction_force_dof_value = [];
+
+        BC.traction_force_node = [];
+%         BC.traction_force_value = [0 0];
+    
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
@@ -217,7 +255,7 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[];    
+        BC.b = @(x,t)[];    
 
 %% Computation controls
 
@@ -234,19 +272,20 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        Control.stress_calc = 'L2projection';
+        global calc_type
+        Control.stress_calc = calc_type;
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
         Control.beta = 10^10;
 
-        %% method used for solving linear problem:
+        % method used for solving linear problem:
         % 'LinearSolver1': Partitioning
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';     
-        
+        Control.LinearSolver = 'LinearSolver1';    
+ 
         % transient controls
         Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
         Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
@@ -254,5 +293,6 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
- 
+        
+        
 end

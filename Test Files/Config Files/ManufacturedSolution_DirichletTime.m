@@ -132,7 +132,7 @@ global Omega1 Omega2 E nu
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E = E; % Young's modulus [Pa]
+    Material.Prop(1).E0 = E; % Young's modulus [Pa]
     Material.Prop(1).nu = nu; % Poisson's ratio
 	
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
