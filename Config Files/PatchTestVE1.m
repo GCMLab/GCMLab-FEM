@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -107,6 +107,52 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
 %   config_dir:     (OPTIONAL) File path for the directory where 
 %                   unstructured mesh is stored
 
+%% Mesh Properties
+    if progress_on
+        disp([num2str(toc),': Building Mesh...']);
+    end
+
+    
+    % Mesh formats: 
+    %   'MANUAL'- In-house structured meshing
+    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
+    MeshType = 'GMSH';        
+    
+    switch MeshType
+        case 'MANUAL'
+            % location of initial node [m] [x0;y0;z0] 
+            x1 = [0;0;0];
+            % number of space dimensions 
+            nsd = 2;
+            % size of domain [m] [Lx;Ly;Lz] 
+            L = [1;0.1];
+            % number of elements in each direction [nex; ney; nez]
+            n = 10;
+            nex = [2;2]*n;
+            % element type ('Q4')
+            type = 'Q4';
+            
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
+        case 'GMSH'
+            % Allows input of files from GMSH
+            % Note: the only currently supported .msh file formatting is
+            % Version 2 ASCII
+            % Ctrl + e to export the mesh, specify extension .msh, specify
+            % format Version 2 ASCII
+            meshFileName = 'Mesh Files\PlateWithHole.msh';
+            % number of space dimensions 
+            nsd = 2;
+            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on); 
+        case 'EXCEL'
+            meshFileName = 'CricularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
+    end    
+    
 %% Material Properties (Solid)
 
     % NOTES-------------------------------------------------------------
@@ -123,74 +169,31 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
 
     % Specify Material Model
-        % LE1 - Linear elasticity
-        % ST1 - Stiffening model with 1st invariant of strain
-    Material.Model = 'LE1';
-
+    Material.Model = 'VE1';
+        
     % number of material properties
     Material.nmp = 1;
-        
+
     % Properties material 1
-    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
-
-    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
-
-    % Thickness (set as default to 1)
-    Material.t = @(x) 1;
-
-    % Alternatively, import a material file
-    % Material = Material_shale();
-	
-    [Material, ~, ~] = setMaterialModel(Material);
-
-%% Mesh Properties
-    if progress_on
-        disp([num2str(toc),': Building Mesh...']);
-    end
+    Material.Prop(1).E0 = 1e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    Material.Prop(1).C = 1e10; % Damping Coefficient
     
-    % Mesh formats: 
-    %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    MeshType = 'GMSH';        
-    
-    switch MeshType
-        case 'MANUAL'
-            % location of initial node [m] [x0;y0;z0] 
-            x1 = [0;0;0];
-            % number of space dimensions 
-            nsd = 2;
-            % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
-            % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*10;
-            % element type ('Q4')
-            type = 'Q4';
-            
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
-        case 'GMSH'
-            % Allows input of files from GMSH
-            % Note: the only currently supported .msh file formatting is
-            % Version 2 ASCII
-            % Ctrl + e to export the mesh, specify extension .msh, specify
-            % format Version 2 ASCII
-            meshFileName = 'Mesh Files\PlateWithHole.msh';
-            % number of space dimensions 
-            nsd = 2;
-            
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,0, Material.ProblemType);            
-    end    
-    
-
-
-%% Assign Materials to Mesh
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements
     Mesh.MatList(:) = 1;
 
+    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
+    Material.Dtype = 'PlaneStress'; 
+    
+    % Thickness (set as default to 1)
+    % 1D: [m2], 2D: [m]
+    Material.t = @(x) 1;
+
+    % Alternatively, import a material file
+    % Material = Material_shale();
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
@@ -201,17 +204,25 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         % right_nodes = find(Mesh.x(:,1)==4);
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
+        
+    % Manufactured solution
+    % ux = y*sin(omega1*t)
+    % uy = x*sin(omega2*t)
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
-        % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [Mesh.left_dofx; Mesh.bottom_dofy];
-
-        % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+        % column vector of prescribed displacement dof 
+        BC.fix_disp_dof = [Mesh.left_dofx; Mesh.left_dofy(1)];
+        BC.fix_disp_value = @(t) [zeros(length([Mesh.left_dofx; Mesh.left_dofy(1)]),1)];
 
     %% Neumann BC
     % -----------------------------------------------------------------
+
+        % Magnitude of amplitude of Fext applied to nodes at free-end of
+        % beam
+        BC.Fn_total = 5e7;
+        BC.Fn = BC.Fn_total/(2*n+1);
+
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
 
@@ -220,19 +231,11 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
+        BC.traction_force_node = [Mesh.right_nodes];  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        t = 10e3; % uniform tensile stress applied to right edge
-        Fnode = t*max(Mesh.x(:,2))/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
+        tload = 0.5;
+        BC.traction_force_value = @(t) [(t<=tload)*BC.Fn*ones(size(Mesh.right_nodes)), zeros(size(Mesh.right_nodes))];
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -242,8 +245,11 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x)[];    
+        BC.b = @(x,t)[];  
 
+%% Initial Conditions
+        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        
 %% Computation controls
 
         % quadrature order
@@ -259,35 +265,38 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        global calc_type
-        Control.stress_calc = calc_type;
+        Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
         Control.beta = 10^10;
+        
+        % parallel inversion
+        % Use parallel processing to invert the matrix.
+        % Usually more efficient at 2e5 dofs
+        Control.parallel = 1;
 
         % method used for solving linear problem:
         % 'LinearSolver1': Partitioning
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1'; 
-
-        % parallel inversion
-        % Use parallel processing to invert the matrix.
-        % Usually more efficient at 2e5 dofs
-        Control.parallel = 2;
+        Control.LinearSolver = 'LinearSolver1';    
+ 
+        % time controls
+        Control.StartTime = 0;
+        Control.EndTime   = 1; 
+        NumberOfSteps     = 1e2;
+        Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
+        Control.dSave     = 1;
         
         % transient controls
-        Control.TimeCase = 'static';    
-                        % Static → Control.TimeCase = 'static;
-                        % Transient → Control.TimeCase = 'transient';
-                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
+        Control.transient = 1; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
         Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        
-        % Newton Raphson controls
-        Control.r_tol = 1e-5; % Tolerance on residual forces
-        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
 
+        % Newton Raphson controls
+        Control.r_tol = 1e-7; % Tolerance on residual forces
+        Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
         
 end

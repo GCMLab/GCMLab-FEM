@@ -189,13 +189,13 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
     end    
     
 
-
-%% Assign Materials to Mesh
+% Assign Materials to Mesh
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements
     Mesh.MatList(:) = 1;
+
 
 
 %% Boundary Conditions
@@ -254,7 +254,7 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
         BC.b = @(x,t)[];  
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 
@@ -292,12 +292,15 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
         % time controls
         Control.StartTime = 0;
         Control.EndTime   = 10; 
-        NumberOfSteps     = 1e1;
+        NumberOfSteps     = 1e2;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
         
         % transient controls
-        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.TimeCase = 'static';    
+                        % Static → Control.TimeCase = 'static;
+                        % Transient → Control.TimeCase = 'transient';
+                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
         Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
 
         % Newton Raphson controls

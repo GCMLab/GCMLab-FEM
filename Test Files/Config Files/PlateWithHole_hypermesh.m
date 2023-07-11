@@ -287,7 +287,10 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
         Control.parallel = 2;
         
         % transient controls
-        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.TimeCase = 'static';    
+                        % Static → Control.TimeCase = 'static;
+                        % Transient → Control.TimeCase = 'transient';
+                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
         Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         
         % Newton Raphson controls

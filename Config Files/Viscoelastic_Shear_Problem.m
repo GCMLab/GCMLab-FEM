@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = Viscoelastic_Shear_Problem(config_dir, progress_on)
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -94,7 +94,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
-%                       ('none', 'nodal', 'center')
+%                       ('none', 'nodal', 'center', 'L2projection')
 %       .beta:          Penalty parameter  
 %       .LinearSolver   Method used for solving linear problem:
 %                       'LinearSolver1': Partitioning
@@ -107,44 +107,6 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
 %   config_dir:     (OPTIONAL) File path for the directory where 
 %                   unstructured mesh is stored
 
-%% Material Properties (Solid)
-
-    % NOTES-------------------------------------------------------------
-                                
-        % NOTE: anonymous functions are defined with respect to the variable x,
-        % which is a vector [x(1) x(2) x(3)] = [x y z]
-
-        % NOTE: Material properties must be continuous along an element, 
-        % otherwise, quadrature order must be increased significantly
-        
-        % NOTE: Number of material properties can be more than one. Properties
-        % for different materials are saved in Material.Prop.
-        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
-        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
-
-    % Specify Material Model
-        % LE1 - Linear elasticity
-        % ST1 - Stiffening model with 1st invariant of strain
-    Material.Model = 'LE1';
-
-    % number of material properties
-    Material.nmp = 1;
-        
-    % Properties material 1
-    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
-
-    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
-
-    % Thickness (set as default to 1)
-    Material.t = @(x) 1;
-
-    % Alternatively, import a material file
-    % Material = Material_shale();
-	
-    [Material, ~, ~] = setMaterialModel(Material);
-
 %% Mesh Properties
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
@@ -152,8 +114,8 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    MeshType = 'GMSH';        
+    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
+    MeshType = 'IMPORTED';      
     
     switch MeshType
         case 'MANUAL'
@@ -168,29 +130,64 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
             % element type ('Q4')
             type = 'Q4';
             
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
-        case 'GMSH'
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
+        case 'IMPORTED'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Mesh Files\PlateWithHole.msh';
+            meshFileName = 'Shear_Mesh.fem';
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,0, Material.ProblemType);            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on);            
     end    
     
+%% Material Properties (Solid)
 
+    % NOTES-------------------------------------------------------------
+                                
+        % NOTE: anonymous functions are defined with respect to the variable x,
+        % which is a vector [x(1) x(2) x(3)] = [x y z]
 
-%% Assign Materials to Mesh
+        % NOTE: Material properties must be continuous along an element, 
+        % otherwise, quadrature order must be increased significantly
+        
+        % NOTE: Number of material properties can be more than one. Properties
+        % for different materials are saved in Material.Prop.
+        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
+        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
+        
+    % Specify Material Model
+        % LE1 - Linear elasticity
+        % ST1 - Stiffening model with 1st invariant of strain
+        % VE1 - Kelvin-Voigt Linear Viscoelastic Model
+    Material.Model = 'VE1'; 
+    
+    % number of material properties
+    Material.nmp = 1;
+
+    % Properties material 1
+    Material.Prop(1).E0 = 1e9; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    Material.Prop(1).C = 1e8; % Damping Coefficient
+    
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements
     Mesh.MatList(:) = 1;
 
+    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
+    Material.Dtype = 'PlaneStress'; 
+
+    % Thickness (set as default to 1)
+    % 1D: [m2], 2D: [m]
+    Material.t = @(x) 1;
+
+    % Alternatively, import a material file
+    % Material = Material_shale();
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
@@ -205,7 +202,9 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [Mesh.left_dofx; Mesh.bottom_dofy];
+%         BC.fix_disp_dof = [Mesh.left_dofx; Mesh.bottom_dofy];
+        temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
+        BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
         BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
@@ -220,20 +219,20 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
+%         BC.traction_force_node = Mesh.right_nodes;  
+%         temp = Mesh.DOF(Mesh.BC_nN_n,:).*Mesh.BC_N_n;
+%         BC.traction_force_node = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
+
+        temp = Mesh.BC_nN_n;
+        BC.traction_force_node = temp;
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        t = 10e3; % uniform tensile stress applied to right edge
-        Fnode = t*max(Mesh.x(:,2))/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        traction = 1e7; % uniform tensile stress applied to right edge
+        tload = 0.5; % Time until Creep Load is removed
+        BC.N_traction_force_nodes = size(BC.traction_force_node);
+        BC.traction_force_value = @(t) -1*(t<=tload)*traction*(max(Mesh.x(:,2))/(length(BC.traction_force_node) - 1))*[zeros(size(BC.traction_force_node)),[0.5;ones(BC.N_traction_force_nodes(1)-2,BC.N_traction_force_nodes(2));0.5]];
         
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-    
+   
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
@@ -244,6 +243,10 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
         BC.b = @(x)[];    
 
+
+%% Initial Conditions
+        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        
 %% Computation controls
 
         % quadrature order
@@ -259,35 +262,46 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        global calc_type
-        Control.stress_calc = calc_type;
+        Control.stress_calc = 'L2projection';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3
         Control.beta = 10^10;
+        
+        % parallel inversion
+        % Use parallel processing to invert the matrix.
+        % Usually more efficient at 2e5 dofs
+        Control.parallel = 1;
 
         % method used for solving linear problem:
         % 'LinearSolver1': Partitioning
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1'; 
-
-        % parallel inversion
-        % Use parallel processing to invert the matrix.
-        % Usually more efficient at 2e5 dofs
-        Control.parallel = 2;
+        Control.LinearSolver = 'LinearSolver1';
+ 
+        % time controls
+        Control.StartTime = 0;
+        Control.EndTime   = 1;
+        NumberOfSteps     = 250;
+        Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
+        % save displacements and stresses at each timestep in matlab 
+        % debugging and testing purposes only, vtk files are otherwise
+        % recommended
+        Control.dSave     = 0; 
+        % Plot load vs displacement curve (if not included, default is set
+        % to 0)
+        Control.plotLoadDispl = 0;
+        % DOF to plot (only necessary if Control.plotLoadDispl = 1)
+        Control.plotAt = 0; % [add DOF number]
         
-        % transient controls
-        Control.TimeCase = 'static';    
-                        % Static → Control.TimeCase = 'static;
-                        % Transient → Control.TimeCase = 'transient';
-                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        % transient toggle
+        Control.transient = 1; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
+        Control.alpha = 1.0; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
-
+        
         
 end

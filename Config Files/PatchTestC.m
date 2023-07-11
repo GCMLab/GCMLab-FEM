@@ -1,5 +1,4 @@
 function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
-
 %% Material Properties (Solid)
     E = 2340;
     nu = 0.3;
@@ -41,6 +40,7 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
     
     [Material, ~, ~] = setMaterialModel(Material);
 
+
 %% Mesh Properties
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
@@ -64,8 +64,9 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
             nex = [2;2]*20;
             % element type ('Q4')
             type = 'Q4';
-            
+			
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
+
         case 'GMSH'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
@@ -193,9 +194,13 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         Control.LinearSolver = 'LinearSolver1'; 
         
         % transient controls
-        Control.transient = 0; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
         Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        
+
+                        % Static → Control.TimeCase = 'static;
+                        % Transient → Control.TimeCase = 'transient';
+                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
