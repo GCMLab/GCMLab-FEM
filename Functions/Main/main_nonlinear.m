@@ -289,12 +289,9 @@ end
 
  end
     
-%     switch Material.TimeType
-%         case 2
-%             % 
-%         otherwise
-%             d = d_m.d;
-%     end
+    if Material.TimeType < 2
+            d = d_m.d;
+    end
  
     if Control.dSave
         d = dSave;
