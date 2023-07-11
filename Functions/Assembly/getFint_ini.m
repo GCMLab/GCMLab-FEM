@@ -30,7 +30,7 @@ function [Fint,d_m] = getFint_ini(BC, d_m, K, C, M, dt, alpha, TimeType)
             case 0 % Static
                 Fint = K*d_m.d;
             case 1 % Transient (1st order time derivative)
-                Fint = (alpha*Klin+(1/dt)*C)*d_m.d + ((1-alpha)*Klin - (1/dt)*C )*d_m.dnm1;
+                Fint = (alpha*K + (1/dt)*C)*d_m.d + ((1-alpha)*K - (1/dt)*C )*d_m.dnm1;
             case 2 % Dynamic
                 d_m.d = d0;  % d at timestep n-1
                 d_m.d(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
