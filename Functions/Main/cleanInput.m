@@ -50,6 +50,12 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         end
     end
     
+    if ~isfield(Material, 'ProblemType')
+        Material.ProblemType = 1;
+        war_count = war_count+1;
+        war_mat = sprintf('%s\t\t\tWarning #%d\t:\t Outdated config file format, problem type not defined. Deformation problem is assumed. \n',war_mat,war_count);
+    end
+    
     % Diffusion problems
     if isfield(Material.Prop, 'k1')
         for ii = 1 : Material.nmp
