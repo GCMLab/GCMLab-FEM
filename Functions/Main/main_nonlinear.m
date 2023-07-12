@@ -254,7 +254,7 @@ end
         Fext(BC.fixed) = Fint(BC.fixed);   % Set external forces as equal to reaction forces at fixed dof for output
         
         if plot2vtk
-            feval(Material.PostProcessor,config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain, stress, ...
+            feval(Material.PostProcessor,config_name, vtk_dir, Mesh, Control, BC.fixed, d_m.d, strain, stress, ...
                             Fint, Fext, step_count);
         end
         
