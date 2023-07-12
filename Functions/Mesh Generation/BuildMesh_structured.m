@@ -80,6 +80,11 @@ function Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, problem
 
 %   Acknowledgments: Chris Ladubec, Matin Parchei Esfahani
 
+%% ProblemType
+if nargin < 7 
+   problemtype =  1; % Assume solid mechanics equilibrium problem by default
+end
+
 %% Mesh properties  
     Mesh.type = type;
     % total number of elements

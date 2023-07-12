@@ -75,6 +75,11 @@ function Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, prob
 
 % Acknowledgments: Matin Parchei Esfahani
 
+%% ProblemType
+if nargin < 7 
+   problemtype =  1; % Assume solid mechanics equilibrium problem by default
+end
+
 %% Load EXCEL file
     % nodal matrix and member connectivity
     filename = fullfile(config_dir, meshFileName);

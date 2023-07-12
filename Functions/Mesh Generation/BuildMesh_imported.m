@@ -78,6 +78,11 @@ function Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q
 
 % Acknowledgments: Matin Parchei Esfahani
 
+%% ProblemType
+if nargin < 7 
+   problemtype =  1; % Assume solid mechanics equilibrium problem by default
+end
+
 %% Load GMSH file
     % nodal matrix and member connectivity
     [Mesh] = LoadMesh(meshFileName, nsd, config_dir);
