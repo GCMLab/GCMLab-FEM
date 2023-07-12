@@ -122,7 +122,7 @@ function [Mesh, Material, BC, Control] = TransientTest(config_dir, progress_on)
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
 
-    Material.Model = 'TR1';
+    Material.Model = 'LET1';
         
     % number of material properties
     Material.nmp = 1;

@@ -1,50 +1,6 @@
 function [Mesh, Material, BC, Control] = ManufacturedSolution_Dynamic(config_dir, progress_on)
 global nex quadorder E nu rho alpha tf n_steps
 
-%% Mesh Properties
-    if progress_on
-        disp([num2str(toc),': Building Mesh...']);
-    end
-    
-    % Mesh formats: 
-    %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    %   'EXCEL' - Import .xlsx file, structured or unstructured
-    MeshType = 'MANUAL';        
-    
-    switch MeshType
-        case 'MANUAL'
-            % location of initial node [m] [x0;y0;z0] 
-            x1 = [0;0;0];
-            % number of space dimensions 
-            nsd = 2;
-            % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;1];
-            % number of elements in each direction [nex; ney; nez] 
-%             nex = [2;2]*10;
-            % element type ('Q4')
-            type = 'Q4';
-            
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'GMSH'
-            % Allows input of files from GMSH
-            % Note: the only currently supported .msh file formatting is
-            % Version 2 ASCII
-            % Ctrl + e to export the mesh, specify extension .msh, specify
-            % format Version 2 ASCII
-            meshFileName = '2DBarMesh.msh';
-            % number of space dimensions 
-            nsd = 2;
-            
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on); 
-        case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
-            % number of space dimensions
-            nsd = 2;
-            
-            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
-    end    
-
 %% Material Properties (Solid)
 
     % NOTES-------------------------------------------------------------
@@ -75,12 +31,6 @@ global nex quadorder E nu rho alpha tf n_steps
     Material.Prop(1).C = 0; % Damping Coefficient
     Material.Prop(1).rho = rho; % Poisson's ratio
     
-    % type of material per element
-    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
-    
-    % assign material type to elements
-    Mesh.MatList(:) = 1;
-
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
     
@@ -91,6 +41,44 @@ global nex quadorder E nu rho alpha tf n_steps
 
     % Alternatively, import a material file
     % Material = Material_shale();
+
+   [Material, ~, ~] = setMaterialModel(Material);
+
+    
+%% Mesh Properties
+    if progress_on
+        disp([num2str(toc),': Building Mesh...']);
+    end
+    
+    % Mesh formats: 
+    %   'MANUAL'- In-house structured meshing
+    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
+    MeshType = 'MANUAL';        
+    
+    switch MeshType
+        case 'MANUAL'
+            % location of initial node [m] [x0;y0;z0] 
+            x1 = [0;0;0];
+            % number of space dimensions 
+            nsd = 2;
+            % size of domain [m] [Lx;Ly;Lz] 
+            L = [1;1];
+            % number of elements in each direction [nex; ney; nez] 
+%             nex = [2;2]*10;
+            % element type ('Q4')
+            type = 'Q4';
+            
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
+    end    
+
+
+%% Assign materials to mesh
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
@@ -163,16 +151,17 @@ global nex quadorder E nu rho alpha tf n_steps
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t) [ -E*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) -...
-            E*nu*pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/(4*(-nu^2 + 1)) - ...
-            E*(1/2 - nu/2)*(sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t)/8 + ...
-            pi^2*sin(pi*x(1)/2)*sin(pi*x(2)/2)*cos(2*pi*t)/8)/(-nu^2 + 1) + ...
-            4*rho*sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2*sin(2*pi*t); ...
-            -E*(1/2 - nu/2)*(-pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/8 - ...
-            cos(pi*x(1)/2)*cos(pi*x(2)/2)*pi^2*cos(2*pi*t)/8)/(-nu^2 + 1) +...
-            E*nu*pi^2*cos(pi*x(1)/2)*cos(pi*x(2)/2)*sin(2*pi*t)/(4*(-nu^2 + 1)) + ...
-            E*cos(pi*x(1)/2)*pi^2*cos(pi*x(2)/2)*cos(2*pi*t)/(4*(-nu^2 + 1)) -...
-            4*rho*cos(pi*x(1)/2)*cos(pi*x(2)/2)*pi^2*cos(2*pi*t)]./1000;
+        BC.b = @(x,t) [ - E*pi^2/(4*(-nu^2 + 1))             *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t)...
+                        - E*nu*pi^2/(4*(-nu^2 + 1))          *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * cos(2*pi*t)...
+                        - E*(1/2 - nu/2)*pi^2/(-nu^2 + 1)/8  *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t)...
+                        - E*(1/2 - nu/2)*pi^2/(-nu^2 + 1)/8  *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * cos(2*pi*t)...
+                        + 4*rho*pi^2                         *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t);...
+                        %
+                          E*(1/2 - nu/2)*pi^2/(-nu^2 + 1)/8  *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * sin(2*pi*t)...
+                        + E*(1/2 - nu/2)*pi^2/(-nu^2 + 1)/8  *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)...
+                        + E*nu*pi^2/(4*(-nu^2 + 1))          *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * sin(2*pi*t)...
+                        + E*pi^2/(4*(-nu^2 + 1))             *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)...
+                        - 4*pi^2*rho                         *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)]./1000;
 
 %% Initial Conditions
         BC.IC_temp = zeros(Mesh.nDOF,1);

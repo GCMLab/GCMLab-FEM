@@ -134,7 +134,7 @@ function [Mesh, Material, BC, Control] = DiffusionTest(config_dir, progress_on)
         BC.b = @(x,t)-(-2*pi^2*sin(pi*x(1)).*sin(pi*x(2)));    
 
 %% Initial Conditions
-        BC.IC = 0*ones(Mesh.nn,1);
+        BC.IC = @(t) 0*ones(Mesh.nn,1);
         
 %% Computation controls
 
