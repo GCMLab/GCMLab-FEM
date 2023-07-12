@@ -32,16 +32,18 @@ function [Fint,d_m] = getFint_ini(BC, d_m, K, C, M, dt, alpha, TimeType)
             case 1 % Transient (1st order time derivative)
                 Fint = (alpha*K + (1/dt)*C)*d_m.d + ((1-alpha)*K - (1/dt)*C )*d_m.dnm1;
             case 2 % Dynamic
-                d_m.d = d0;  % d at timestep n-1
-                d_m.d(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
-                d_m.dnm1 = d0;  % d at timestep n-2
-                d_m.dnm1(BC.fix_disp_dof) = BC.fix_disp_value(t-2*dt);
-                d_m.dnm2 = d0;  % d at timestep n-3
-                d_m.dnm2(BC.fix_disp_dof) = BC.fix_disp_value(t-3*dt);
-                d_m.dnm3 = d0;  % d at timestep n-4
-                d_m.dnm3(BC.fix_disp_dof) = BC.fix_disp_value(t-4*dt);
-                d_m.dnm4 = d0;  % d at timestep n-5
-                d_m.dnm4(BC.fix_disp_dof) = BC.fix_disp_value(t-5*dt);
+                % ** Temporary initial, only allows from rest currently
+                
+                % d_m.d = d0;  % d at timestep n-1
+                % d_m.d(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
+                % d_m.dnm1 = d0;  % d at timestep n-2
+                % d_m.dnm1(BC.fix_disp_dof) = BC.fix_disp_value(t-2*dt);
+                % d_m.dnm2 = d0;  % d at timestep n-3
+                % d_m.dnm2(BC.fix_disp_dof) = BC.fix_disp_value(t-3*dt);
+                % d_m.dnm3 = d0;  % d at timestep n-4
+                % d_m.dnm3(BC.fix_disp_dof) = BC.fix_disp_value(t-4*dt);
+                % d_m.dnm4 = d0;  % d at timestep n-5
+                % d_m.dnm4(BC.fix_disp_dof) = BC.fix_disp_value(t-5*dt);
                                                 
                 % Compute constants
                 gam = 1/2-alpha;
@@ -63,7 +65,7 @@ function [Fint,d_m] = getFint_ini(BC, d_m, K, C, M, dt, alpha, TimeType)
                 % Internal forces
                 a = (d - d_temp)./dt.^2./bet; %Acceleration at n-1
                 Fint = M*a +(1+alpha)*C*(v_temp-gam*d_temp/(dt*bet)+gam*d/(dt*bet))...
-                    +(1+alpha)*Klin*d - alpha*(C*vnm1 + Klin*dnm1);
+                    +(1+alpha)*K*d - alpha*(C*vnm1 + K*dnm1);
                 
                 % Update vectors or structures from previous timesteps
                 d_m.dnm4 = d_m.dnm3;                       % d vector from timestep n-4
