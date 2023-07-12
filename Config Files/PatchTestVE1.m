@@ -107,52 +107,7 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
 %   config_dir:     (OPTIONAL) File path for the directory where 
 %                   unstructured mesh is stored
 
-%% Mesh Properties
-    if progress_on
-        disp([num2str(toc),': Building Mesh...']);
-    end
 
-    
-    % Mesh formats: 
-    %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
-    %   'EXCEL' - Import .xlsx file, structured or unstructured
-    MeshType = 'GMSH';        
-    
-    switch MeshType
-        case 'MANUAL'
-            % location of initial node [m] [x0;y0;z0] 
-            x1 = [0;0;0];
-            % number of space dimensions 
-            nsd = 2;
-            % size of domain [m] [Lx;Ly;Lz] 
-            L = [1;0.1];
-            % number of elements in each direction [nex; ney; nez]
-            n = 10;
-            nex = [2;2]*n;
-            % element type ('Q4')
-            type = 'Q4';
-            
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'GMSH'
-            % Allows input of files from GMSH
-            % Note: the only currently supported .msh file formatting is
-            % Version 2 ASCII
-            % Ctrl + e to export the mesh, specify extension .msh, specify
-            % format Version 2 ASCII
-            meshFileName = 'Mesh Files\PlateWithHole.msh';
-            % number of space dimensions 
-            nsd = 2;
-            
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on); 
-        case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
-            % number of space dimensions
-            nsd = 2;
-            
-            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
-    end    
-    
 %% Material Properties (Solid)
 
     % NOTES-------------------------------------------------------------
@@ -178,12 +133,6 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
     Material.Prop(1).E0 = 1e11; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.25; % Poisson's ratio
     Material.Prop(1).C = 1e10; % Damping Coefficient
-    
-    % type of material per element
-    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
-    
-    % assign material type to elements
-    Mesh.MatList(:) = 1;
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -195,6 +144,61 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
     % Alternatively, import a material file
     % Material = Material_shale();
 
+    [Material, ~, ~] = setMaterialModel(Material);
+
+
+%% Mesh Properties
+    if progress_on
+        disp([num2str(toc),': Building Mesh...']);
+    end
+
+    
+    % Mesh formats: 
+    %   'MANUAL'- In-house structured meshing
+    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
+    MeshType = 'MANUAL';        
+    
+    switch MeshType
+        case 'MANUAL'
+            % location of initial node [m] [x0;y0;z0] 
+            x1 = [0;0;0];
+            % number of space dimensions 
+            nsd = 2;
+            % size of domain [m] [Lx;Ly;Lz] 
+            L = [1;0.1];
+            % number of elements in each direction [nex; ney; nez]
+            n = 10;
+            nex = [2;2]*n;
+            % element type ('Q4')
+            type = 'Q4';
+            
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
+        case 'GMSH'
+            % Allows input of files from GMSH
+            % Note: the only currently supported .msh file formatting is
+            % Version 2 ASCII
+            % Ctrl + e to export the mesh, specify extension .msh, specify
+            % format Version 2 ASCII
+            meshFileName = 'PlateWithHoleQ4.msh';
+            % number of space dimensions 
+            nsd = 2;
+            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on); 
+        case 'EXCEL'
+            meshFileName = 'CricularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
+    end    
+    
+%% Assign materials to mesh
+    % type of material per element
+    Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
+    
+    % assign material type to elements
+    Mesh.MatList(:) = 1;    
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
         % TIP selecting edges:
@@ -248,7 +252,7 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
         BC.b = @(x,t)[];  
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 

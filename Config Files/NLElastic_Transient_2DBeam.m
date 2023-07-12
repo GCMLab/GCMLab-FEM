@@ -261,7 +261,7 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, 
         BC.b = @(x,t)[];    
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 

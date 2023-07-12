@@ -253,7 +253,7 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_1DBar(config_dir, p
         BC.b = @(x,t)[];    
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 

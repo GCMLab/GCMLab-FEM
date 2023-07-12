@@ -267,7 +267,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
         BC.b = @(x,t)[];    
 
 %% Initial Conditions
-        BC.IC = 50*ones(Mesh.nn,1);
+        BC.IC = @(t) 50*ones(Mesh.nn,1);
         
 %% Computation controls
 

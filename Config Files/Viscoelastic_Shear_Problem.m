@@ -245,7 +245,7 @@ function [Mesh, Material, BC, Control] = Viscoelastic_Shear_Problem(config_dir, 
 
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 
