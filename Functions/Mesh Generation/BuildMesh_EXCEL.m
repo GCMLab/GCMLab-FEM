@@ -76,7 +76,7 @@ function Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, prob
 % Acknowledgments: Matin Parchei Esfahani
 
 %% ProblemType
-if nargin < 7 
+if nargin < 5 
    problemtype =  1; % Assume solid mechanics equilibrium problem by default
 end
 

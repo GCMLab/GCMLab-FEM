@@ -79,7 +79,7 @@ function Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q
 % Acknowledgments: Matin Parchei Esfahani
 
 %% ProblemType
-if nargin < 7 
+if nargin < 6 
    problemtype =  1; % Assume solid mechanics equilibrium problem by default
 end
 
