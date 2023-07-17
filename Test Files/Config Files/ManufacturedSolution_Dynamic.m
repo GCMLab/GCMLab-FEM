@@ -18,8 +18,14 @@ global nex quadorder E nu rho alpha tf n_steps
 
     % Specify Material Model
         % LE1 - Linear elasticity
+        % LET1 - Linear elastic with mass based damping
+        % LED1 - Dynamic linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
-        % LED1 - Linear elasticity dynamic
+        % ST2 - Softening model with 1st invariant of strain
+        % TR2 - Stiffening model with mass based damping with 1st invariant of strain
+        % VE1 - Viscoelaticity with stiffness based damping
+        % TH1 - Thermal Diffusion (Steady-State)
+        % TH2 - Thermal Diffusion (Transient)
     Material.Model = 'LED1';
         
     % number of material properties
@@ -52,24 +58,44 @@ global nex quadorder E nu rho alpha tf n_steps
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
     %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'MANUAL';        
     
     switch MeshType
         case 'MANUAL'
-            % location of initial node [m] [x0;y0;z0] 
+            % location of initial node [m] [x0;y0;z0]
             x1 = [0;0;0];
-            % number of space dimensions 
+            % number of space dimensions
             nsd = 2;
-            % size of domain [m] [Lx;Ly;Lz] 
+            % size of domain [m] [Lx;Ly;Lz]
             L = [1;1];
-            % number of elements in each direction [nex; ney; nez] 
-%             nex = [2;2]*10;
+            % number of elements in each direction [nex; ney; nez]
+            %             nex = [2;2]*10;
             % element type ('Q4')
             type = 'Q4';
             
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
+        case 'IMPORTED'
+            % Allows input of files from GMSH
+            % Note: the only currently supported .msh file formatting is
+            % Version 2 ASCII
+            % Ctrl + e to export the mesh, specify extension .msh, specify
+            % format Version 2 ASCII
+            meshFileName = 'Unstructured_sample.msh';
+            % number of space dimensions
+            nsd = 2;
+            
+            % Optional 5th input in case Q8 with reduced integration is desired
+            Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
+            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);
+        case 'EXCEL'
+            meshFileName = 'CircularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end    
 
 
@@ -208,16 +234,12 @@ global nex quadorder E nu rho alpha tf n_steps
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
         
-        % transient controls
-        Control.TimeCase = 'dynamic';    
-                        % Static → Control.TimeCase = 'static;
-                        % Transient → Control.TimeCase = 'transient';
-                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = alpha; %
-        %   If Control.Timecase = 'transient'
-        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        %   If Control.Timecase = 'dynamic'
-        %           α [-1/3, 0]
+        % time integration parameter
+        % for 1st order problem (transient diffusion, viscoelastic)
+        % 1 = Backward Euler, 0.5 = Crank-Nicolson
+        % for 2nd order problem (dynamic)
+        % range = [-1/3, 0], use 0 by default
+        Control.alpha = alpha; 
 
         % Newton Raphson controls
         Control.r_tol = 1e-7; % Tolerance on residual forces

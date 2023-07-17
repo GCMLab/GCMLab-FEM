@@ -57,7 +57,7 @@ function [Mesh, Material, BC, Control] = Dynamicload_beam(config_dir, progress_o
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
     %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'MANUAL';        
     
@@ -74,8 +74,8 @@ function [Mesh, Material, BC, Control] = Dynamicload_beam(config_dir, progress_o
             % element type ('Q4')
             type = 'Q4';
             
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'GMSH'
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
+        case 'IMPORTED'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
@@ -85,13 +85,13 @@ function [Mesh, Material, BC, Control] = Dynamicload_beam(config_dir, progress_o
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on); 
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType); 
         case 'EXCEL'
             meshFileName = 'CricularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
-            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end    
 
 
@@ -203,17 +203,14 @@ function [Mesh, Material, BC, Control] = Dynamicload_beam(config_dir, progress_o
         NumberOfSteps     = 100;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
+
         
-        % transient controls
-        Control.TimeCase = 'dynamic';    
-                        % Static → Control.TimeCase = 'static;
-                        % Transient → Control.TimeCase = 'transient';
-                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0; %
-        %   If Control.Timecase = 'transient'
-        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        %   If Control.Timecase = 'dynamic'
-        %           α [-1/3, 0]
+        % time integration parameter
+        % for 1st order problem (transient diffusion, viscoelastic)
+        % 1 = Backward Euler, 0.5 = Crank-Nicolson
+        % for 2nd order problem (dynamic)
+        % range = [-1/3, 0], use 0 by default
+        Control.alpha = 0; 
 
         % Newton Raphson controls
         Control.r_tol = 1e-7; % Tolerance on residual forces

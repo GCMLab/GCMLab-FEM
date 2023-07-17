@@ -188,6 +188,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             meshFileName = 'Unstructured_sample.msh';
             % number of space dimensions 
             nsd = 2;
+            
             % Optional 5th input in case Q8 with reduced integration is desired
             Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
