@@ -1,4 +1,4 @@
-function [K_hat, R_hat, Fint] = getK_TR2(Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, ~, ~, d, dnm1, ~, dt, ~, C, alpha)
+function [K_hat, R_hat, Fint] = getK_TR2(Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, ~, ~, d, dt, ~, C, alpha)
 %GETK_NLELASTIC_TRANSIENT Stiffness matrix for iterative non linear elastic transient case
 %   [K, R, Fint] = GETK_NLELASTIC_TRANSIENT(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 
@@ -59,6 +59,10 @@ count = 1;                                  % DOF counter
 
 % initialize internal force vector
 Fint = zeros(Mesh.nDOF, 1);  
+
+% initialize d vector
+dnm1 = d.dnm1;
+d = d.d;
 
 % for each element, compute element stiffness matrix and add to global
 for e = 1:Mesh.ne

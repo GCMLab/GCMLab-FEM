@@ -1,43 +1,22 @@
-function [K, R, Fint] = getK_LE1_dynamic(~, ~, ~, ~, Fext, ~, Klin, M, d_m, dt, ~ ,C,alpha)
-%GETK_HHT Relevant matrices for HHT dynamic solver
-%   [K, R, Fint] = GETK_HHT(Mesh, Quad, Material) returns the coefficient matrix
+function [K, R, Fint] = getK_LED1(~, ~, ~, ~, Fext, ~, Klin, M, d_m, dt, ~ ,C,alpha)
+%GETK_LED1 Relevant matrices for HHT dynamic solver
+%   [K, R, Fint] = GETK_LED1(...) returns the coefficient matrix
 %   , the residual vector R, and the internal force vector for the 
 %   iterative solver where the problem uses a linear elastic material
 %   
-%   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
 %   Accepted Inputs (in order)
 %   --------------------------------------------------------------------
-%   getK_elastic(Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1)
-%   Mesh:       Structure array with the following fields, may be updated
-%               with new fields
-%               .ne:    Total number of elements in the mesh
-%               .nne:   Vector of number of nodes per element (size nsd x 1)
-%               .nsd:   Number of spatial dimensions
-%               .conn:  Array of element connectivity (size ne x nne)
-%               .x:     Array of nodal spatial locations for
-%                       undeformed mesh (size nn x nsd)
-%               .DOF:   Array of DOF indices (size nn x nsd)
-%               .nDOFe: Number of DOFs per element
-%               .nDOF:  Total number of DOFs
+%   getK_LED1(~, ~, ~, ~, Fext, ~, Klin, M, d_m, dt, ~ ,C,alpha)
+%   Mesh:       ~
 %  
-%   Quad:       Structure array with the following fields, may be updated
-%               with new fields
-%               .W:      Vector of quadrature weights (size nq x 1)      
-%               .nq:     Number of quadrature points 
-%               .Nq:     Cell array (size nq x 1) with shape functions  
-%                        evaluated at each quadrature point
-%               .dNdxiq: Cell array (size nq x 1) with derivative of shape 
-%                        functions w.r.t. parent coordinates evaluated at 
-%                        each quadrature point
+%   Quad:       ~
 % 
-%   Material:   Structure array with the following fields, may be updated
-%               with new fields
-%               .t:         Material thickness
+%   Material:   ~
 %   
-%   Fintnm1:    Internal force vector at timestep n-1
+%   Fintnm1:    ~
 %   Fext:       External force vector at timestep n
-%   Fextnm1:    External force vector at timestep n-1
+%   Fextnm1:    ~
 %   Klin:       Linear elastic stiffness matrix
 %   M:          Mass matrix
 %   d_m:        Structure array with the following fields
@@ -46,9 +25,10 @@ function [K, R, Fint] = getK_LE1_dynamic(~, ~, ~, ~, Fext, ~, Klin, M, d_m, dt, 
 %               dnm2:       converged degree of freedom vector at timestep n-2
 %               dnm3:       converged degree of freedom vector at timestep n-3
 %   dt:         timestep size between timesteps n-1 and n
-%   dtnm1:      timestep size between timesteps n-2 and n-1
-%   alpha:       intagration parameter
+%   dtnm1:      ~
 %   C:          Linear damping coefficient matrix
+%   alpha:      intagration parameter
+
 
 % Compute constants
 gam = 1/2-alpha;

@@ -124,8 +124,12 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         
     % Specify Material Model
         % LE1 - Linear elasticity
+        % LET1 - Linear elastic with mass based damping
+        % LED1 - Dynamic linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
-        % TR1 - Transient Linear Elasticity
+        % ST2 - Softening model with 1st invariant of strain
+        % TR2 - Stiffening model with mass based damping with 1st invariant of strain
+        % VE1 - Viscoelaticity with stiffness based damping
         % TH1 - Thermal Diffusion (Steady-State)
         % TH2 - Thermal Diffusion (Transient)
     Material.Model = 'LE1';
@@ -184,11 +188,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
             meshFileName = 'Unstructured_sample.msh';
             % number of space dimensions 
             nsd = 2;
+            
             % Optional 5th input in case Q8 with reduced integration is desired
             Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);            
-%             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);            
         case 'EXCEL'
             meshFileName = 'CircularInclusion.xlsx';
             % number of space dimensions
@@ -290,8 +294,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         Control.beta = 10^10;
         
         % parallel inversion
-        % Use parallel processing to invert the matrix.
-        % Usually more efficient at 2e5 dofs
+        % Use parallel processing to invert the matrix. Specify number of
+        % cores to use. Usually more efficient at >2e5 dofs
         Control.parallel = 1;
 
         % method used for solving linear problem:
@@ -316,16 +320,14 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % DOF to plot (only necessary if Control.plotLoadDispl = 1)
         Control.plotAt = 0; % [add DOF number]
         
-        % transient toggle
-        Control.TimeCase = 'static';    
-                        % Static → Control.TimeCase = 'static;
-                        % Transient → Control.TimeCase = 'transient';
-                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
+
+        % time integration parameter
+        % for 1st order problem (transient diffusion, viscoelastic)
+        % 1 = Backward Euler, 0.5 = Crank-Nicolson
+        % for 2nd order problem (dynamic)
+        % range = [-1/3, 0], use 0 by default
         Control.alpha = 0.5; 
-        %   If Control.Timecase = 'transient'
-        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        %   If Control.Timecase = 'dynamic'
-        %           α [-1/3, 0]
+
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces

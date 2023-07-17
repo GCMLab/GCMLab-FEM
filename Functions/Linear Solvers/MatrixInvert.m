@@ -1,6 +1,6 @@
 function [d] = MatrixInvert(K,f,parallel_number)
 %MATRIXINVERT Solves the linear system d = inv(K)*f
-%   d = MatrixInvert(K,f,Control) is an ndof x 1 column vector of nodal 
+%   d = MATRIXINVERT(K,f,Control) is an ndof x 1 column vector of nodal 
 %   displacements found by solving the system of linear equations 
 %   d = inv(K)*f = K\f whether on a single core or in parallel
 

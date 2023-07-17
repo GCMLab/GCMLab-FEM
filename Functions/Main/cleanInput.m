@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
-%cleanInput checks the user inputs and returns errors for invalid inputs
+%CLEANINPUT checks the user inputs and returns errors for invalid inputs
 %   [Mesh, Material, BC, Control] = CLEANINPUT(Mesh, Material, BC, Control)
 %   returns the clean input structure arrays BC 
 %   
@@ -48,6 +48,12 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
             err_count = err_count+1;
             err_mat = sprintf('%s\t\t\tError #%d\t:\t The thickness is non-positive inside the domain\n',err_mat,err_count);
         end
+    end
+    
+    if ~isfield(Material, 'ProblemType')
+        Material.ProblemType = 1;
+        war_count = war_count+1;
+        war_mat = sprintf('%s\t\t\tWarning #%d\t:\t Outdated config file format, problem type not defined. Deformation problem is assumed. \n',war_mat,war_count);
     end
     
     % Diffusion problems

@@ -29,7 +29,7 @@
     [Mesh, Material, BC, ~] = cleanInput(Mesh, Material, BC, Control);
     
 %% Set material model
-    [Material, stiffnessmatrixfile_name, stressstrainfile_name, Control] = setMaterialModel(Material, Control);
+    [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material);
 
 %% Initialize time variables
     t = Control.StartTime;
@@ -52,7 +52,6 @@
     % Compute linear elastic stiffness matrix
 
     switch Material.ProblemType
-
         case 1 % Equilibrium problem
             if progress_on
                 disp([num2str(toc),': Assembling Linear Elastic Stiffness Matrix...']);
@@ -63,12 +62,12 @@
                 disp([num2str(toc),': Assembling Linear Conductivity Matrix...']);
             end
             Klin = getK_dfsn(Mesh, Quad, Material); % Linear conductivity stiffness matrix
-        %case 3 % Mixed problem
+        %case 3 % Mixed problem - to be implemented
     end
     
-
-    % Compute linear damping stiffness matrix
-    if Material.Transient == 1                  % Transient Case
+    % Compute damping/capacity  matrix
+    
+    if Material.TimeType >= 1  % Transient/Dynamic cases       
         if progress_on
             switch Material.ProblemType
                 case 1
@@ -78,19 +77,23 @@
             end
         end
         C = feval(Material.DampingFile, Mesh, Quad, Material); 
-    else                                       % Static Case
+    else                        % Static cases;         
         C = sparse(Mesh.nDOF, Mesh.nDOF); 
         Control.alpha = 1;
     end    
     
-    switch Control.TimeCase 
-        case 'dynamic'
-            if progress_on
-                disp([num2str(toc),': Assembling Mass Matrix...']);
-            end
-            M = getM(Mesh, Quad, Material); % Dynamic Case
-        otherwise
-            M = sparse(Mesh.nDOF, Mesh.nDOF); % Static and Transient Case
+    
+    % Compute Mass Matrix
+    
+    if Material.TimeType == 2 % Dynamic
+        if progress_on
+            disp([num2str(toc),': Assembling Mass Matrix...']);
+        end
+        M = getM(Mesh, Quad, Material); 
+        Dyn_ON = 1;                     % Dynamic case flag
+    else  % Static and Transient Case
+        M = sparse(Mesh.nDOF, Mesh.nDOF); 
+        Dyn_ON = 0;                     % Dynamic case flag set to off
     end 
 
 
@@ -99,15 +102,9 @@
 
     d0 = BC.IC(t-dt); % Initial condition for displacement
     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
-    switch Control.TimeCase
-        case 'dynamic'
-            Fext = getFext(Mesh, BC, Quad, t - dt + Control.alpha * dt);
-        otherwise
-            Fext = getFext(Mesh, BC, Quad, t - dt);
-    end
+    Fext = getFext(Mesh, BC, Quad, t - dt + Dyn_ON*Control.alpha*dt); % External forces
     Fextnm1 = Fext; % Fext at timestep n-1
     d_m.d = d0;     % d at timestep n (trial)
-    K = Klin;
     d_m.dnm1 = d0;  % d at timestep n-1
     d_m.dnm2 = d0;  % d at timestep n-2
     d_m.dnm3 = d0;  % d at timestep n-3
@@ -124,54 +121,8 @@
         end
 
     % Internal force vectors
-        switch Control.TimeCase
-            case 'static'
-                Fint = K*d0;
-            case 'transient'
-                Fint = (Control.alpha*Klin+(1/dt)*C)*d_m.d+((1-Control.alpha)*Klin-C./dt)*d_m.dnm1;
-            case 'dynamic'
-                d_m.d = d0;  % d at timestep n-1
-                d_m.d(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
-                d_m.dnm1 = d0;  % d at timestep n-2
-                d_m.dnm1(BC.fix_disp_dof) = BC.fix_disp_value(t-2*dt);
-                d_m.dnm2 = d0;  % d at timestep n-3
-                d_m.dnm2(BC.fix_disp_dof) = BC.fix_disp_value(t-3*dt);
-                d_m.dnm3 = d0;  % d at timestep n-4
-                d_m.dnm3(BC.fix_disp_dof) = BC.fix_disp_value(t-4*dt);
-                d_m.dnm4 = d0;  % d at timestep n-5
-                d_m.dnm4(BC.fix_disp_dof) = BC.fix_disp_value(t-5*dt);
-                                
-                alpha = Control.alpha;
-                
-                % Compute constants
-                gam = 1/2-alpha;
-                bet = (1-alpha)^2/4;
-
-                d = d_m.d;
-                dnm1 = d_m.dnm1;
-                dnm2 = d_m.dnm2;
-                dnm3 = d_m.dnm3;
-                dnm4 = d_m.dnm4;
-
-                % 2nd order accurate backwards difference approximation
-                vnm1 = 1/2/dt* (3*dnm1 - 4*dnm2 + dnm3);
-                anm1 = 1/dt^2 * (2*dnm1  - 5*dnm2 + 4*dnm3 - dnm4);
-
-                d_temp = dnm1+ dt*vnm1 + dt^2/2*(1-2*bet)*anm1;
-                v_temp = vnm1 + dt*(1-gam)*anm1;
-
-                % Internal forces
-                a = (d - d_temp)./dt.^2./bet; %Acceleration at n-1
-                Fint = M*a +(1+alpha)*C*(v_temp-gam*d_temp/(dt*bet)+gam*d/(dt*bet))...
-                    +(1+alpha)*Klin*d - alpha*(C*vnm1 + Klin*dnm1);
-                
-                % Update vectors or structures from previous timesteps
-                d_m.dnm4 = d_m.dnm3;                       % d vector from timestep n-4
-                d_m.dnm3 = d_m.dnm2;                       % d vector from timestep n-3
-                d_m.dnm2 = d_m.dnm1;                       % d vector from timestep n-2
-                d_m.dnm1 = d_m.d;                          % d vector from timestep n-1
-        end
-        Fintnm1 = Fint; % Fint at timestep n-1
+        [Fint, d_m] = getFint_ini(BC, d_m, Klin, C, M, dt, Control.alpha, Material.TimeType); %
+        Fintnm1 = Fint; % Set Fint at timestep n-1
 
     % Write initial conditions to vtk
         if plot2vtk
@@ -213,21 +164,17 @@ end
     
     % Initialize incremental variables in each step
         Dd = zeros(Mesh.nsd*Mesh.nn,1);                                         % Increment of displacement vector
-        d_m.d(BC.fix_disp_dof) = BC.fix_disp_value(t);                              % Apply fixed DoF Boundary conditions
+        d_m.d(BC.fix_disp_dof) = BC.fix_disp_value(t);                          % Apply fixed DoF Boundary conditions
         iter = 1;                                                               % Iteration counter in each step
         converged = 0;                                                          % convergence status
-        FintPrev = 0;                                                            % Internal force vector from previous iteration
+        FintPrev = 0;                                                           % Internal force vector from previous iteration
 
     % Compute external force and residual vectors
         if progress_on
             disp([num2str(toc),': Compute Force Vector...']);
         end
-        switch Control.TimeCase
-            case 'dynamic'
-                Fext = getFext(Mesh, BC, Quad, t + Control.alpha * dt);
-            otherwise
-                Fext = getFext(Mesh, BC, Quad, t);
-        end
+        
+        Fext = getFext(Mesh, BC, Quad, t + Dyn_ON*Control.alpha*dt);
     
     % Output progress to command window
         if progress_on
@@ -307,7 +254,7 @@ end
         Fext(BC.fixed) = Fint(BC.fixed);   % Set external forces as equal to reaction forces at fixed dof for output
         
         if plot2vtk
-            feval(Material.PostProcessor,config_name, vtk_dir, Mesh, Control, BC.fixed, d, strain, stress, ...
+            feval(Material.PostProcessor,config_name, vtk_dir, Mesh, Control, BC.fixed, d_m.d, strain, stress, ...
                             Fint, Fext, step_count);
         end
         
@@ -337,15 +284,12 @@ end
         d_m.dnm3 = d_m.dnm2;                       % d vector from timestep n-3
         d_m.dnm2 = d_m.dnm1;                       % d vector from timestep n-2
         d_m.dnm1 = d_m.d;                          % d vector from timestep n-1
-        Fextnm1 = Fext;                    % Fext from timestep n-1
-        Fintnm1 = Fint;                    % Fint from timestep n-1
+        Fextnm1 = Fext;                            % Fext from timestep n-1
+        Fintnm1 = Fint;                            % Fint from timestep n-1
 
  end
     
-    switch Control.TimeCase
-        case 'dynamic'
-            % 
-        otherwise
+    if Material.TimeType < 2
             d = d_m.d;
     end
  

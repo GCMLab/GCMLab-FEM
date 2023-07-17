@@ -1,6 +1,6 @@
 function Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q8_reduced, problemtype)
-%BuildMesh_imported Import GMSH file or HYPERMESH file
-%    Mesh = BuildMesh_imported(meshFileName, nsd, config_dir) is a structure 
+%BUILDMESH_IMPORTED Import GMSH file or HYPERMESH file
+%    Mesh = BUILDMESH_IMPORTED(meshFileName, nsd, config_dir) is a structure 
 %   array with the mesh description. The mesh is imported from the GMSH 
 %   file meshFileName in the directory config_dir. The mesh has spatial 
 %   dimension nsd. The import is capable of handling unstructured meshes. 
@@ -77,6 +77,11 @@ function Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 
 % Acknowledgments: Matin Parchei Esfahani
+
+%% ProblemType
+if nargin < 6 
+   problemtype =  1; % Assume solid mechanics equilibrium problem by default
+end
 
 %% Load GMSH file
     % nodal matrix and member connectivity

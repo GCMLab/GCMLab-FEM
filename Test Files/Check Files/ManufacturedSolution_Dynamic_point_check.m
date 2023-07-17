@@ -63,10 +63,14 @@ for sim = 1:3
 
     if plot_on
         figure(1), hold on 
-        plot(time, d(1,:), 'r', DisplayName = sprintf('Numerical solution, Mesh %d', sim))
+        plot(time, d(1,:), 'r')
+        DisplayName = sprintf('Numerical solution, Mesh %d', sim);
+        title(DisplayName)
 
         figure(2), hold on 
-        plot(time, d(2,:), 'r', DisplayName = sprintf('Numerical solution, Mesh %d', sim))
+        plot(time, d(2,:), 'r' )
+        DisplayName = sprintf('Numerical solution, Mesh %d', sim);
+        title(DisplayName)
     end
     
 end
@@ -90,8 +94,8 @@ end
         
     if plot_on
         figure(1), hold on 
-        plot(time, d_exact(1,:), 'k', DisplayName = 'Exact solution' )
-        title('Displacement of central node in the X direction of point (0.5,0.5)')
+        plot(time, d_exact(1,:), 'k')
+        title('Exact displacement of central node in the X direction of point (0.5,0.5)')
         axis on 
         grid on 
         legend('Location', 'northwest')
@@ -99,8 +103,8 @@ end
         ylabel('x-displacement [m]')
 
         figure(2), hold on 
-        plot(time, d_exact(2,:), 'k', DisplayName = 'Exact solution')
-        title('Displacement of central node in the Y direction of point (0.5,0.5)')
+        plot(time, d_exact(2,:), 'k')
+        title('Exact displacement of central node in the Y direction of point (0.5,0.5)')
         axis on 
         grid on 
         legend('Location', 'northwest')

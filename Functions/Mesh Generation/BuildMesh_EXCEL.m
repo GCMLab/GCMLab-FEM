@@ -1,6 +1,6 @@
 function Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, problemtype)
-%BuildMesh_EXCEL Import Excel file
-%   Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir) is a structure 
+%BUILDMESH_EXCEL Import Excel file
+%   Mesh = BUILDMESH_EXCEL(meshFileName, nsd, config_dir) is a structure 
 %   array with the mesh description. The mesh is imported from the EXCEL 
 %   file meshFileName in the directory config_dir. The mesh has spatial 
 %   dimension nsd. The import is capable of handling unstructured meshes. 
@@ -74,6 +74,11 @@ function Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, prob
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 
 % Acknowledgments: Matin Parchei Esfahani
+
+%% ProblemType
+if nargin < 5 
+   problemtype =  1; % Assume solid mechanics equilibrium problem by default
+end
 
 %% Load EXCEL file
     % nodal matrix and member connectivity

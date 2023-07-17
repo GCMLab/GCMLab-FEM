@@ -124,7 +124,14 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
 
     % Specify Material Model
         % LE1 - Linear elasticity
+        % LET1 - Linear elastic with mass based damping
+        % LED1 - Dynamic linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
+        % ST2 - Softening model with 1st invariant of strain
+        % TR2 - Stiffening model with mass based damping with 1st invariant of strain
+        % VE1 - Viscoelaticity with stiffness based damping
+        % TH1 - Thermal Diffusion (Steady-State)
+        % TH2 - Thermal Diffusion (Transient)
     Material.Model = 'LE1';
     
     % number of material properties
@@ -154,6 +161,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
     % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
+    %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'IMPORTED';      
     
     switch MeshType
@@ -180,8 +188,14 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);            
-    end    
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);
+        case 'EXCEL'
+            meshFileName = 'CircularInclusion.xlsx';
+            % number of space dimensions
+            nsd = 2;
+            
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
+    end
     
 
 
@@ -286,12 +300,12 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
         % Usually more efficient at 2e5 dofs
         Control.parallel = 2;
         
-        % transient controls
-        Control.TimeCase = 'static';    
-                        % Static → Control.TimeCase = 'static;
-                        % Transient → Control.TimeCase = 'transient';
-                        % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        % time integration parameter
+        % for 1st order problem (transient diffusion, viscoelastic)
+        % 1 = Backward Euler, 0.5 = Crank-Nicolson
+        % for 2nd order problem (dynamic)
+        % range = [-1/3, 0], use 0 by default
+        Control.alpha = 0.5; 
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces

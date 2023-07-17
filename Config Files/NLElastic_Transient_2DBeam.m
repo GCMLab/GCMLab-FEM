@@ -1,7 +1,7 @@
 function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, progress_on)
-%PLATENLELASTIC Mesh, material parameters, boundary conditions, 
+%NLELASTIC_TRANSIENT_2DBEAM Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = PLATENLELASTIC() is a structure array with the
+%   Mesh = NLELASTIC_TRANSIENT_2DBEAM() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 
@@ -124,9 +124,14 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, 
         
     % Specify Material Model
         % LE1 - Linear elasticity
+        % LET1 - Linear elastic with mass based damping
+        % LED1 - Dynamic linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
         % ST2 - Softening model with 1st invariant of strain
-        % TR2 - Transient model with stiffening model via 1st invariant of strain
+        % TR2 - Stiffening model with mass based damping with 1st invariant of strain
+        % VE1 - Viscoelaticity with stiffness based damping
+        % TH1 - Thermal Diffusion (Steady-State)
+        % TH2 - Thermal Diffusion (Transient)
     Material.Model = 'TR2';
     
     % number of material properties
@@ -158,7 +163,7 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, 
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
     %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'MANUAL';        
     
@@ -176,7 +181,7 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, 
             type = 'Q4';
             
             Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
-        case 'GMSH'
+        case 'IMPORTED'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
@@ -188,7 +193,7 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, 
             % Optional 5th input in case Q8 with reduced integration is desired
             Q8_reduced = 'Q8'; %Do not consider this input if a case different than Q8 with reduced integration is desired
             
-            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);            
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
             meshFileName = 'CircularInclusion.xlsx';
@@ -261,7 +266,7 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, 
         BC.b = @(x,t)[];    
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 
@@ -310,9 +315,12 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, 
         % DOF to plot
         Control.plotAt = Mesh.nDOF; % dof in y at bottom right node
 
-        % transient controls
-        Control.transient = 1; % Transient -> Control.transient = 1, Static -> Control.transient = 0 
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
+        % time integration parameter
+        % for 1st order problem (transient diffusion, viscoelastic)
+        % 1 = Backward Euler, 0.5 = Crank-Nicolson
+        % for 2nd order problem (dynamic)
+        % range = [-1/3, 0], use 0 by default
+        Control.alpha = 0.5; 
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces

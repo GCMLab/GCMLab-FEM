@@ -1,6 +1,6 @@
 function [D, Material] = getD_ST2(nMat, Material, Mesh, strain_e)
-%GETD Elasticity tensor
-%   D = GETD_NLelasticSoft(E, nu, nsd) is the elasticity tensor for a problem 
+%GETD_ST2 Elasticity tensor
+%   D = GETD_ST2(E, nu, nsd) is the elasticity tensor for a problem 
 %   in which the constitutive law is a non linear elastic relation given by
 %   E = E0 - E1*I1^2
 % 

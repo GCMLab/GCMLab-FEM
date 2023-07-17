@@ -106,6 +106,52 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
 %   --------------------------------------------------------------------
 %   config_dir:     (OPTIONAL) File path for the directory where 
 %                   unstructured mesh is stored
+%% Material Properties (Solid)
+
+    % NOTES-------------------------------------------------------------
+                                
+        % NOTE: anonymous functions are defined with respect to the variable x,
+        % which is a vector [x(1) x(2) x(3)] = [x y z]
+
+        % NOTE: Material properties must be continuous along an element, 
+        % otherwise, quadrature order must be increased significantly
+        
+        % NOTE: Number of material properties can be more than one. Properties
+        % for different materials are saved in Material.Prop.
+        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
+        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
+
+    % Specify Material Model
+        % LE1 - Linear elasticity
+        % LET1 - Linear elastic with mass based damping
+        % LED1 - Dynamic linear elasticity
+        % ST1 - Stiffening model with 1st invariant of strain
+        % ST2 - Softening model with 1st invariant of strain
+        % TR2 - Stiffening model with mass based damping with 1st invariant of strain
+        % VE1 - Viscoelaticity with stiffness based damping
+        % TH1 - Thermal Diffusion (Steady-State)
+        % TH2 - Thermal Diffusion (Transient)
+    Material.Model = 'VE1';
+        
+    % number of material properties
+    Material.nmp = 1;
+
+    % Properties material 1
+    Material.Prop(1).E0 = 1e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
+    Material.Prop(1).C = 1e10; % Damping Coefficient
+    
+    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
+    Material.Dtype = 'PlaneStress'; 
+    
+    % Thickness (set as default to 1)
+    % 1D: [m2], 2D: [m]
+    Material.t = @(x) 1;
+
+    % Alternatively, import a material file
+    % Material = Material_shale();
+    
+    [Material, ~, ~] = setMaterialModel(Material);
 
 %% Mesh Properties
     if progress_on
@@ -115,7 +161,7 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
     
     % Mesh formats: 
     %   'MANUAL'- In-house structured meshing
-    % 	'GMSH'  - Import .msh file from GMSH, structured or unstructured
+    % 	'IMPORTED'  - Import .msh file from GMSH, or .fem from HYPERMESH structured or unstructured
     %   'EXCEL' - Import .xlsx file, structured or unstructured
     MeshType = 'MANUAL';        
     
@@ -133,8 +179,8 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
             % element type ('Q4')
             type = 'Q4';
             
-            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on);
-        case 'GMSH'
+            Mesh = BuildMesh_structured(nsd, x1, L, nex, type, progress_on, Material.ProblemType);
+        case 'IMPORTED'
             % Allows input of files from GMSH
             % Note: the only currently supported .msh file formatting is
             % Version 2 ASCII
@@ -144,56 +190,23 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
             % number of space dimensions 
             nsd = 2;
             
-            Mesh = BuildMesh_GMSH(meshFileName, nsd, config_dir, progress_on); 
+            Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType); 
         case 'EXCEL'
             meshFileName = 'Mesh Files\CricularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
-            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on);
+            Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end    
     
-%% Material Properties (Solid)
 
-    % NOTES-------------------------------------------------------------
-                                
-        % NOTE: anonymous functions are defined with respect to the variable x,
-        % which is a vector [x(1) x(2) x(3)] = [x y z]
-
-        % NOTE: Material properties must be continuous along an element, 
-        % otherwise, quadrature order must be increased significantly
-        
-        % NOTE: Number of material properties can be more than one. Properties
-        % for different materials are saved in Material.Prop.
-        % For example, Young's modulus and Poisson's ratio of ith material will be saved in
-        % Material.Prop(i).E and Material.Prop(i).nu, respectively.
-
-    % Specify Material Model
-    Material.Model = 'VE1';
-        
-    % number of material properties
-    Material.nmp = 1;
-
-    % Properties material 1
-    Material.Prop(1).E0 = 1e11; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.25; % Poisson's ratio
-    Material.Prop(1).C = 1e10; % Damping Coefficient
-    
-    % type of material per element
+%% Assign Materials to Mesh
+        % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
     % assign material type to elements
     Mesh.MatList(:) = 1;
 
-    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
-    
-    % Thickness (set as default to 1)
-    % 1D: [m2], 2D: [m]
-    Material.t = @(x) 1;
-
-    % Alternatively, import a material file
-    % Material = Material_shale();
 
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
@@ -290,16 +303,12 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
         
-        % transient controls
-        Control.TimeCase = 'transient';    
-                % Static → Control.TimeCase = 'static;
-                % Transient → Control.TimeCase = 'transient';
-                % Dynamic (HHT method)→ Control.TimeCase = 'dynamic';
-        Control.alpha = 0.5; % α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        %   If Control.Timecase = 'transient'
-        %           α = 1 Backward Euler, α = 1/2 Crank-Nicolson
-        %   If Control.Timecase = 'dynamic'
-        %           α [-1/3, 0]
+        % time integration parameter
+        % for 1st order problem (transient diffusion, viscoelastic)
+        % 1 = Backward Euler, 0.5 = Crank-Nicolson
+        % for 2nd order problem (dynamic)
+        % range = [-1/3, 0], use 0 by default
+        Control.alpha = 0.5; 
 
         % Newton Raphson controls
         Control.r_tol = 1e-7; % Tolerance on residual forces

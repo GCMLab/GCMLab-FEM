@@ -1,7 +1,7 @@
 function [Mesh, Material, BC, Control] = Viscoelastic_Shear_Problem(config_dir, progress_on)
-%MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
+%VISCOELASTIC_SHEAR_PROBLEM Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = MASTERCONFIGFILE() is a structure array with the
+%   Mesh = VISCOELASTIC_SHEAR_PROBLEM() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 
@@ -245,7 +245,7 @@ function [Mesh, Material, BC, Control] = Viscoelastic_Shear_Problem(config_dir, 
 
 
 %% Initial Conditions
-        BC.IC = zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
         
 %% Computation controls
 

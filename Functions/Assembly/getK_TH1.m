@@ -1,4 +1,4 @@
-function [K, R, Fint] = getK_TH1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d, dnm1, ~, dt, ~, C, alpha)
+function [K, R, Fint] = getK_TH1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d, dt, ~, C, alpha)
 %GETK_TH1 Conductivity matrix for diffusion case
 %   [K, R, Fint] = GETK_TH1(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 
@@ -23,7 +23,7 @@ function [K, R, Fint] = getK_TH1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d, dnm1, ~,
 
 
 K = 1/dt*C + alpha*Klin ;
-Fint = 1/dt*C*(d - dnm1) + (1-alpha)*Klin*dnm1 + alpha*Klin*d;
+Fint = 1/dt*C*(d.d - d.dnm1) + (1-alpha)*Klin*d.dnm1 + alpha*Klin*d.d;
 R = alpha*Fext + (1-alpha)*Fextnm1 - Fint;
 
 end
