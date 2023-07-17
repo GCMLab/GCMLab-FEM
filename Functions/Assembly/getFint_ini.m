@@ -1,6 +1,6 @@
 function [Fint,d_m] = getFint_ini(BC, d_m, K, C, M, dt, alpha, TimeType)
-%GETFint_ini Internal forces at initial conditions
-%   Fint = GETFint_ini(BC, d_m, K, C, M, dt, alpha, TimeType) is a column vector of internal forces 
+%GETFINT_INI Internal forces at initial conditions
+%   Fint = GETFINT_INI(BC, d_m, K, C, M, dt, alpha, TimeType) is a column vector of internal forces 
 %   acting on each degree of freedom at the initial conditions
 %   
 %   --------------------------------------------------------------------

@@ -1,6 +1,6 @@
 function K = getK_dfsn(Mesh, Quad, Material)
-%GETK_dfsn Conductivity matrix 
-%   K = GETK_dfsn(Mesh, Quad, Material) is the global conductivity matrix for 
+%GETK_DFSN Conductivity matrix 
+%   K = GETK_DFSN(Mesh, Quad, Material) is the global conductivity matrix for 
 %   a diffusion problem with parameters defined in the structure arrays Mesh, 
 %   Quad, and Material. The sparse matrix has size Mesh.nDOF x Mesh.nDOF
 %   

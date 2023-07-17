@@ -17,8 +17,14 @@ function [Mesh, Material, BC, Control] = Dynamicload_beam(config_dir, progress_o
 
     % Specify Material Model
         % LE1 - Linear elasticity
+        % LET1 - Linear elastic with mass based damping
+        % LED1 - Dynamic linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
-        % LED1 - Linear elasticity dynamic
+        % ST2 - Softening model with 1st invariant of strain
+        % TR2 - Stiffening model with mass based damping with 1st invariant of strain
+        % VE1 - Viscoelaticity with stiffness based damping
+        % TH1 - Thermal Diffusion (Steady-State)
+        % TH2 - Thermal Diffusion (Transient)
     Material.Model = 'LED1';
         
     % number of material properties

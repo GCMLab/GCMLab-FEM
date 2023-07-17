@@ -1,7 +1,7 @@
 function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, progress_on)
-%PLATENLELASTIC Mesh, material parameters, boundary conditions, 
+%NLELASTIC_TRANSIENT_2DBEAM Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = PLATENLELASTIC() is a structure array with the
+%   Mesh = NLELASTIC_TRANSIENT_2DBEAM() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 

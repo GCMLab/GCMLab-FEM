@@ -1,7 +1,7 @@
 function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_on)
-%PLATENLELASTIC Mesh, material parameters, boundary conditions, 
+%NLELASTIC_2DPLATE Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = PLATENLELASTIC() is a structure array with the
+%   Mesh = NLELASTIC_2DPLATE() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 

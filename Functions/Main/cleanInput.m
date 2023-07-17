@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
-%cleanInput checks the user inputs and returns errors for invalid inputs
+%CLEANINPUT checks the user inputs and returns errors for invalid inputs
 %   [Mesh, Material, BC, Control] = CLEANINPUT(Mesh, Material, BC, Control)
 %   returns the clean input structure arrays BC 
 %   
