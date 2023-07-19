@@ -333,5 +333,19 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
         
+        % Aitken Relaxation
+        % Turn on Aitken Relxation (off by default if not specified)
+        Control.aitkenON    = 1;          
+        % Min and max relaxation parameters
+        Control.aitkenRange = [0.01,10];    
+        % Allow negative aitken relaxation (turn off by default, but may be
+        % useful in very stiff problems).
+        Control.aitkenNeg   = 0;            
+        % Optional - specify the degrees of freedom to calculate the
+        % relaxation coefficient. These DOFs should not include any fixed
+        % DOFs as they interfere with the calculation of the relaxation
+        % paramter.
+        Control.relaxDOFs   = setdiff(1:Mesh.nDOF,BC.fix_disp_dof);  
+        
         
 end
