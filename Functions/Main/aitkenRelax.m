@@ -1,11 +1,5 @@
 function [sol_mp1_relaxed, res_m_nextIter, delta_m_nextIter, sol_m_NextIter] = ...
     aitkenRelax(sol_mp1, sol_m, idxSol, res_m, delta_m, negON, range)
-% Apply Aitken delta^2 relaxation method with limited range of relaxation parameter.
-% CONTROL OPTIONS:
-% maxInitRelaxPara > 0    : Aitken's delta^2 method. delta is in [minRelax maxRelax].
-% maxInitRelaxPara < 0    : fixed relaxation parameter delta = abs(maxInitRelaxPara) is used.
-
-
 %AITKENRELAX Apply Aitken delta^2 relaxation method with limited range of relaxation parameter
 %   [sol_mp1_damped, res_m_nextCall, delta_m_nextCall, sol_m_NextCall] =
 %       aitkenRelax(sol_mp1, sol_m, idxSol, res_m, delta_m, negON, range)
