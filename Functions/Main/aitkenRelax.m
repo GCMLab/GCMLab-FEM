@@ -35,7 +35,7 @@ function [sol_mp1_relaxed, res_m_nextIter, delta_m_nextIter, sol_m_NextIter] = .
 
 
 % Handle input.
-if nargin < 8
+if nargin < 7
     minRelax = 0.005;       maxRelax = 1;
 else
     minRelax = range(1); maxRelax = range(2);
