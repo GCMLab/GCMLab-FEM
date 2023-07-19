@@ -177,7 +177,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [1;1];
+            nex = [2;2];
             % element type ('Q4')
             type = 'Q4';
             
@@ -295,8 +295,8 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 3;
-        NumberOfSteps     = 50;
+        Control.EndTime   = 150;
+        NumberOfSteps     = 0.2*Control.EndTime;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise
@@ -317,5 +317,11 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
+        % Aitken Relaxation
+        Control.aitkenON    = 1;            % Turn on Aitken Relxation
+        Control.aitkenRange = [0.1,2];    % Min and max relaxation parameters
+        Control.aitkenNeg   = 0;            % Allow negative aitken relaxation
+        Control.relaxDOFs   = setdiff(1:Mesh.nDOF,BC.fix_disp_dof);  % Optional - specify the degrees of freedom to calculate the relaxation coefficient
         
 end

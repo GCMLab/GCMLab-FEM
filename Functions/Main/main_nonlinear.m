@@ -196,6 +196,8 @@ end
                 fprintf('%d',iter');
                 msg_len = numel(num2str(iter));
             end
+        
+
       
         % Compute nonlinear stiffness matrix and internal forces
             [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha); 
@@ -232,6 +234,19 @@ end
 
                 % Update displacement vector
                     d_m.d = d_m.d + Dd;
+                    
+                % Apply Aitken Relaxation
+                   if iter > 1 && Control.aitkenON
+                      [d_m.d, Dd_prevIter, aitkenCoeff, d_prevIter] = aitkenRelax(d_m.d, d_prevIter, ...
+                            Control.relaxDOFs, Dd_prevIter, aitkenCoeff, Control.aitkenNeg, Control.aitkenRange);
+                   else
+                      % Set initial relaxation parameter to 1
+                      aitkenCoeff = 1; 
+                      % Initialize d from previous iteration
+                      d_prevIter  = d_m.d;
+                      % Initialize delta d from previous iteration
+                      Dd_prevIter = Dd;
+                   end
 
                 % Update iteration number
                     iter = iter + 1;
