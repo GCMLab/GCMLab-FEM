@@ -130,8 +130,12 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     end
 
     if ~isfield(Material, 'Dtype')
-        err_count = err_count+1;
-        err_mat = sprintf('%s\t\t\tError #%d\t:\t Two-dimensional approximation is not defined - Define Material.Dtype\n',err_mat,err_count);
+        % exception: coupled problem where Dtype_mech and Dtype_therm need
+        % to be prescribed
+        if ~isfield(Material, 'Dtype_mech') && ~isfield(Material, 'Dtype_therm')
+            err_count = err_count+1;
+            err_mat = sprintf('%s\t\t\tError #%d\t:\t Two-dimensional approximation is not defined - Define Material.Dtype\n',err_mat,err_count);
+        end
     end
 
     if ~isfield(Material, 't')
