@@ -149,6 +149,10 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         war_mat = sprintf('%s\t\t\tError #%d\t:\t Material model not defined, set to linear elastic\n',err_mat,err_count);
     end
     
+    if ~isfield(Material, 'ExternalForceFile')
+        % Assume uncoupled problme unless otherwise specified.
+        Material.ExternalForceFile = 'getFext';
+    end    
    
 %% Boundary conditions
     err_BC = sprintf('\t\tBoundary conditions \n');
