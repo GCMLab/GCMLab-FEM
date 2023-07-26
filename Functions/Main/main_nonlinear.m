@@ -123,7 +123,8 @@
                 [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
             case 2 % Diffusion problem
                 [strain, stress] = getFlux_TH1(d0, Mesh, Material, Control.stress_calc, Quad);
-            %case 3 % Mixed problem
+            case 3 % Thermoelasticity problem
+                [strain, stress, gradT, flux] = getStrainFlux_THLE1(d0, Mesh, Material, Control.stress_calc, Quad);
         end
 
     % Internal force vectors
