@@ -62,7 +62,11 @@
                 disp([num2str(toc),': Assembling Linear Conductivity Matrix...']);
             end
             Klin = getK_dfsn(Mesh, Quad, Material); % Linear conductivity stiffness matrix
-        %case 3 % Mixed problem - to be implemented
+        case 3 % Thermoelastic problem
+            if progress_on
+                disp([num2str(toc),': Assembling Coupled Thermoelasticity Matrix...']);
+            end
+            Klin = getK_coupled(Mesh, Quad, Material); % Linear thermoelastic stiffness matrix
     end
     
     % Compute damping/capacity  matrix
