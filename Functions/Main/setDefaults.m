@@ -218,6 +218,27 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         Control.beta = 10^10;
     end
     
+    % Aitken Relaxation Parameters (optional)
+    if ~isfield(Control, 'aitkenON')
+        Control.aitkenON = 0; % Off by default
+    end
+    
+    if ~isfield(Control, 'aitkenRange')
+        Control.aitkenRange = [0.01,2];
+    end
+    
+    if ~isfield(Control, 'aitkenNeg')
+        Control.aitkenNeg = 0; % Off by default
+    end
+    
+    if ~isfield(Control, 'relaxDOFs')
+        Control.relaxDOFs   = setdiff(1:Mesh.nDOF,BC.fix_disp_dof);
+    else
+        % Ensure that the relaxDOFs do not contain any fixed BCs, as this
+        % interferes with the calculation of the relaxation parameter
+        Control.relaxDOFs   = setdiff(Control.relaxDOFs,BC.fix_disp_dof);
+    end
+    
     % If these variables are not defined, assume a static analysis
     if ~isfield(Control, 'StartTime')
         Control.StartTime = 0;

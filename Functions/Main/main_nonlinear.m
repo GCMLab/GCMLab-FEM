@@ -151,6 +151,9 @@ if Control.dSave
     sSave = zeros(dim,Mesh.nn, n_timesteps+1);        % Save stresses
     sSave(:,:,1) = stress;
     loadSave = zeros(length(d0),n_timesteps+1);     % Save applied load
+    
+    % Save number of iterations
+    iSave = zeros(n_timesteps,1);
 end
  
  %% Solve the time-dependent nonlinear problem
@@ -181,6 +184,9 @@ end
             msg_len = 1;
             fprintf('Newton-Raphson - Iteration:  ')
         end
+        
+    % Save residuals in a timestep
+    rSave = zeros(Control.iter_max,1);
     
     % Begin Newton-Raphson Loop
     while ~converged
@@ -190,6 +196,8 @@ end
                 fprintf('%d',iter');
                 msg_len = numel(num2str(iter));
             end
+        
+
       
         % Compute nonlinear stiffness matrix and internal forces
             [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha); 
@@ -205,6 +213,7 @@ end
         
         % Calculate residual
             res = norm(ResForce)/resScale;
+            rSave(iter) = res;
         
         % Check convergence
             if res < Control.r_tol
@@ -225,6 +234,19 @@ end
 
                 % Update displacement vector
                     d_m.d = d_m.d + Dd;
+                    
+                % Apply Aitken Relaxation
+                   if iter > 1 && Control.aitkenON
+                      [d_m.d, Dd_prevIter, aitkenCoeff, d_prevIter] = aitkenRelax(d_m.d, d_prevIter, ...
+                            Control.relaxDOFs, Dd_prevIter, aitkenCoeff, Control.aitkenNeg, Control.aitkenRange);
+                   else
+                      % Set initial relaxation parameter to 1
+                      aitkenCoeff = 1; 
+                      % Initialize d from previous iteration
+                      d_prevIter  = d_m.d;
+                      % Initialize delta d from previous iteration
+                      Dd_prevIter = Dd;
+                   end
 
                 % Update iteration number
                     iter = iter + 1;
@@ -262,6 +284,7 @@ end
             dSave(:,step_count+1) = d_m.d;      %store displacement
             sSave(:,:,step_count + 1) = stress;
             loadSave(:,step_count+1) = Fext;
+            iSave(step_count) = iter;
         end
 
      % Break out of loop at end time
