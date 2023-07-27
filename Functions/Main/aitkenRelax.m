@@ -44,9 +44,6 @@ aitkenPara = delta_m * (- res_m(idxSol)' * (res_mp1(idxSol) - res_m(idxSol)) / n
 
 
 % Constrain relaxation parameter.
-%delta = max(min(maxRelax, aitkenPara),minRelax);%*sign(aitkenPara);
-
-
 if negON
     % If negatives aitken parameters are allowed, contrain the parameter
     % such that it is limited to the ranges [-maxRelax to -minRelax] and
