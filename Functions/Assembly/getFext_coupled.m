@@ -69,10 +69,26 @@ else
     traction_force_node = [];
 end
 
-%% return zeros if there is no applied force
+if ~isempty(BC.flux_node)
+    % counter to assess whether point flux has been yet accounted for
+    t_count = zeros(size(BC.flux_node));
+    flux_node = BC.flux_node;
+    if isa(BC.flux_value,'function_handle')
+        flux_value = BC.flux_value(t);
+    else
+        flux_value = BC.flux_value;
+    end
+else
+    flux_node = [];
+end
+
+%% return zeros if there is no applied force or flux
 if isempty(BC.traction_force_node) ...
         && strcmp(func2str(BC.b),'@(x)[]') ...
-        && isempty(BC.traction_force_dof)
+        && isempty(BC.traction_force_dof) ...
+        && isempty(BC.flux_node) ...
+        && strcmp(func2str(BC.s),'@(x)[]') ...
+        && isempty(BC.flux_dof)
     return
 end
 
@@ -175,6 +191,9 @@ for e = 1:Mesh.ne
     %% Calculate element traction force vector
     % initialize element traction force vector
     Fte = zeros(ndofE_mech, 1);
+    
+    % initialize element traction force vector
+    Ffe = zeros(ndofE_sca, 1);
     %
     %----  Saving code for possible future adaption to edge element
     %integration-----
@@ -201,12 +220,14 @@ for e = 1:Mesh.ne
     %     	end
     
     %% Assemble element forces
-    F(dofE) = F(dofE) + Fbe + Fte;
+    F(dofE_mech) = F(dofE_mech) + Fbe + Fte;
+    F(dofE_sca) = F(dofE_sca) + Fse + Ffe; 
+
 end
 
 %% Apply pre-integrated boundary node point forces
 if ~isempty(BC.traction_force_node)
-    switch Mesh.nDOFn
+    switch Mesh.nDOFn_mech
         case 1
             F(BC.traction_force_node) = F(BC.traction_force_node) + traction_value(:,1);
         case 2
@@ -225,8 +246,20 @@ if ~isempty(BC.traction_force_node)
             F(traction_zdofs) = F(traction_zdofs) + traction_value(:,3);
     end
 end
+
+%% Apply pre-integrated boundary node point fluxes
+if ~isempty(BC.flux_node)
+    flux_dofs = 3*BC.flux_node;
+    
+    F(flux_dofs) = F(flux_dofs) + flux_value(:,1);
+end
+
 %% Add forces prescribed at dofs
 F(BC.traction_force_dof) = F(BC.traction_force_dof) ...
     + BC.traction_force_dof_value;
+
+%% Add fluxes prescribed at dofs
+F(BC.flux_dof) = F(BC.flux_dof) ...
+    + BC.flux_dof_value;
 
 end
