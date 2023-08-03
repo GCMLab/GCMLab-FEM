@@ -245,10 +245,6 @@ switch Mesh.nsd
         Mesh.xdofs = 1:Mesh.nDOF;
         Mesh.ydofs = [];
         Mesh.zdofs = [];
-
-
-
 end
-
-
+    
 end
