@@ -197,6 +197,6 @@ Ktt = sparse(rowt, colt, Kttvec, Mesh.nDOF, Mesh.nDOF);
 Kut = sparse(rowut, colut, Kutvec, Mesh.nDOF, Mesh.nDOF);
 
 % assemble global coupled matrix
-K = Kuu + Ktt + Kut;
+K = Kuu + Ktt - Kut;
 
 end
