@@ -197,7 +197,7 @@ switch Mesh.ext
         % Initialization of relevant matrices/vectors
         x = zeros(nnode, nsd);
         BC_N_t = zeros(nt,2);
-        BC_E = zeros(nebc,2);
+        BC_E = zeros(nebc,4);
         BC_nE = zeros(nebc,1);
         BC_N_n = zeros(nnbc,2);
         BC_nN_n = zeros(nnbc,1);
@@ -250,6 +250,7 @@ switch Mesh.ext
             temp = s{1}(ebc_str+i-1);
             temp = char(split(temp,','));
             supp = sscanf(temp(end-2,:), '%f');
+            % Case for DOF aligned with cartesian system
             if supp == 1        % constrain on X
                 BC_E(i,1) = 1;         
             elseif supp == 2    % constrain on Y
@@ -257,6 +258,14 @@ switch Mesh.ext
             elseif supp == 12   % constrain on X and Y
                 BC_E(i,1) = 1;  
                 BC_E(i,2) = 1;  
+            % Case for rotated DOF
+            elseif supp == 4        % constrain on X'
+                BC_E(i,3) = 1;         
+            elseif supp == 5    % constrain on Y'
+                BC_E(i,4) = 1;  
+            elseif supp == 45   % constrain on X' and Y'
+                BC_E(i,3) = 1;  
+                BC_E(i,4) = 1;    
             else
                 error('Essential boundary conditions should be applied only on X and Y directions in .fem file')
             end
