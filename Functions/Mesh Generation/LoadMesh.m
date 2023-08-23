@@ -243,7 +243,7 @@ switch Mesh.ext
             BC_N_t(i,1) =  sscanf(temp(end-2,:), '%f');
             BC_N_t(i,2) =  sscanf(temp(end-1,:), '%f');
         end
-        BC_N_t(:,:) = BC_N_t(i,1) - min_conn + 1;
+        BC_N_t(:,:) = BC_N_t(:,:) - min_conn + 1;
 
         % Get essential boundary conditions for BC_E
         for i = 1:nebc

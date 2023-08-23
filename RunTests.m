@@ -10,7 +10,8 @@
     % Test VTK output
     plot2vtk = 1;
 %      VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
-    VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\Fall 2022\Github\Documents\Matlab Results\';
+%     VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\Fall 2022\Github\Documents\Matlab Results\';
+      VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results\';
 %     VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
 %     VTKFolder ='C:\Users\GZingaro\Desktop\Results';
 
