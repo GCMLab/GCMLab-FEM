@@ -1,4 +1,4 @@
-function [time_er] = DirichletTime_check(stress)
+function [time_er] = DirichletTime_check(stress, Material)
 %DIRICHLETTIME_CHECK Calculates the error between FEA and the manufactured
 %solution
 %   [disp_er] = DirichletTime_check(stress)
@@ -22,11 +22,11 @@ function [time_er] = DirichletTime_check(stress)
 % sigma_xy = E/2/(1+nu)* (sin(Omega1*t) + sin(Omega2*t))
 
 
-global E nu Omega1 Omega2
+global Omega1 Omega2
 
 % Calculate analytical stress
 t = linspace(0,2*pi,51);
-sigma_xy_exact = E/2/(1+nu)*(sin(Omega1*t) + sin(Omega2*t));
+sigma_xy_exact = Material.Prop(1).E0/2/(1+Material.Prop(1).nu)*(sin(Omega1*t) + sin(Omega2*t));
 
 % FEA stresses
 stress = permute(stress,[1 3 2]);

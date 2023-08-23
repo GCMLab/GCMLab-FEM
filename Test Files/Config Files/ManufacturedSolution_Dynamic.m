@@ -32,10 +32,10 @@ global nex quadorder E nu rho alpha tf n_steps
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E0 = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
     Material.Prop(1).C = 0; % Damping Coefficient
-    Material.Prop(1).rho = rho; % Poisson's ratio
+    Material.Prop(1).rho = 2400; % Poisson's ratio
     
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -177,17 +177,17 @@ global nex quadorder E nu rho alpha tf n_steps
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t) [ - E*pi^2/(4*(-nu^2 + 1))             *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t)...
-                        - E*nu*pi^2/(4*(-nu^2 + 1))          *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * cos(2*pi*t)...
-                        - E*(1/2 - nu/2)*pi^2/(-nu^2 + 1)/8  *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t)...
-                        - E*(1/2 - nu/2)*pi^2/(-nu^2 + 1)/8  *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * cos(2*pi*t)...
-                        + 4*rho*pi^2                         *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t);...
+        BC.b = @(x,t) [ - Material.Prop(1).E0*pi^2/(4*(-Material.Prop(1).nu^2 + 1))             *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t)...
+                        - Material.Prop(1).E0*Material.Prop(1).nu*pi^2/(4*(-Material.Prop(1).nu^2 + 1))          *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * cos(2*pi*t)...
+                        - Material.Prop(1).E0*(1/2 - Material.Prop(1).nu/2)*pi^2/(-Material.Prop(1).nu^2 + 1)/8  *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t)...
+                        - Material.Prop(1).E0*(1/2 - Material.Prop(1).nu/2)*pi^2/(-Material.Prop(1).nu^2 + 1)/8  *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * cos(2*pi*t)...
+                        + 4*Material.Prop(1).rho*pi^2                         *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t);...
                         %
-                          E*(1/2 - nu/2)*pi^2/(-nu^2 + 1)/8  *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * sin(2*pi*t)...
-                        + E*(1/2 - nu/2)*pi^2/(-nu^2 + 1)/8  *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)...
-                        + E*nu*pi^2/(4*(-nu^2 + 1))          *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * sin(2*pi*t)...
-                        + E*pi^2/(4*(-nu^2 + 1))             *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)...
-                        - 4*pi^2*rho                         *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)]./1000;
+                          Material.Prop(1).E0*(1/2 - Material.Prop(1).nu/2)*pi^2/(-Material.Prop(1).nu^2 + 1)/8  *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * sin(2*pi*t)...
+                        + Material.Prop(1).E0*(1/2 - Material.Prop(1).nu/2)*pi^2/(-Material.Prop(1).nu^2 + 1)/8  *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)...
+                        + Material.Prop(1).E0*Material.Prop(1).nu*pi^2/(4*(-Material.Prop(1).nu^2 + 1))          *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * sin(2*pi*t)...
+                        + Material.Prop(1).E0*pi^2/(4*(-Material.Prop(1).nu^2 + 1))             *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)...
+                        - 4*pi^2*Material.Prop(1).rho                         *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)]./1000;
 
 %% Initial Conditions
         BC.IC_temp = zeros(Mesh.nDOF,1);
@@ -197,7 +197,7 @@ global nex quadorder E nu rho alpha tf n_steps
 %% Computation controls
 
         % quadrature order
-        Control.qo = quadorder;
+        Control.qo = 2;
 
         % Calculation of values for discontinuous variables 
         % (i.e. stress/strain)
@@ -229,7 +229,7 @@ global nex quadorder E nu rho alpha tf n_steps
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = tf; 
+        Control.EndTime   = 3.123; 
         NumberOfSteps     = n_steps;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         Control.dSave     = 1;
@@ -239,7 +239,7 @@ global nex quadorder E nu rho alpha tf n_steps
         % 1 = Backward Euler, 0.5 = Crank-Nicolson
         % for 2nd order problem (dynamic)
         % range = [-1/3, 0], use 0 by default
-        Control.alpha = alpha; 
+        Control.alpha = -1/3; 
 
         % Newton Raphson controls
         Control.r_tol = 1e-7; % Tolerance on residual forces

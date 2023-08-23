@@ -110,8 +110,6 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
 %                   unstructured mesh is stored
 
 %% Material Properties (Solid)
-    global E nu traction b
-
     % NOTES-------------------------------------------------------------
                                 
         % NOTE: anonymous functions are defined with respect to the variable x,
@@ -141,8 +139,8 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
     Material.nmp = 1;
         
     % Properties material 1
-    Material.Prop(1).E0 = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0; % Poisson's ratio
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = ''; 
@@ -242,7 +240,8 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         % tensile force applied to right edge
-        BC.traction_force_value = @(t) traction;
+        BC.traction = 6e9; % applied traction [N]
+        BC.traction_force_value = @(t) BC.traction;
             
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -252,7 +251,8 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t) b;    
+        BC.b_force = 2e9; % applied body force [N/m]
+        BC.b = @(x,t) BC.b_force;    
 
 %% Computation controls
 

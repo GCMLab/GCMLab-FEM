@@ -1,5 +1,4 @@
 function [Mesh, Material, BC, Control] = DiffusionTest(config_dir, progress_on)
-
 %% Material Properties (Solid)
         % LE1 - Linear elasticity
         % LET1 - Linear elastic with mass based damping

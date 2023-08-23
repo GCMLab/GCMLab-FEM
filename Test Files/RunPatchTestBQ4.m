@@ -21,11 +21,7 @@
 
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global  E nu traction meshfilename quadorder
-        traction = 3.495; % applied traction (both directions)
-        E = 2540;  % elastic modulus
-        nu = 0.3;  % poisson's ratio
-        
+        global meshfilename quadorder
         meshfilename = 'Mesh Files\PatchTestQ4.msh';
         quadorder = 2;
         
@@ -34,7 +30,7 @@
         main_nonlinear % Runs calculation
         
         % Step 2 - Check results
-        [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Mesh);
+        [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Mesh, Material, BC);
         
         fprintf('\nQ4-patch test B: Displacement error is %.2f',disp_er)
         fprintf('\nQ4-patch test B: Stress error is %.2f',stress_er)

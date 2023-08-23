@@ -24,15 +24,13 @@ function [disp_er, time_er] = CantileverBeam_check(d, Material, BC, Mesh)
 % F = t*Ly*Material.t
 % I = (1/12)*Material.t*Ly^3
 
-global E traction
-
 % Calculate analytical displacement
-sigma = traction;
+sigma = BC.traction;
 Lx = max(Mesh.x(:,1));
 Ly = max(Mesh.x(:,2));
 toprightnode = BC.traction_force_node(find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2))));
 I = (1/12)*Material.t([Mesh.x(toprightnode,1),Mesh.x(toprightnode,2)])*Ly^3;
-d_exact = sigma*Material.t([Mesh.x(toprightnode,1),Mesh.x(toprightnode,2)])*Ly*(Lx)^3/3/E/I;
+d_exact = sigma*Material.t([Mesh.x(toprightnode,1),Mesh.x(toprightnode,2)])*Ly*(Lx)^3/3/Material.Prop(1).E0/I;
 
 % Calculate the error
 disp_er = abs(d(toprightnode*2,3) - d_exact)/abs(d_exact);

@@ -25,12 +25,6 @@
 
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global  E nu traction b
-        traction = 6e9; % applied traction [N]
-        b = 2e9; % applied body force [N/m]
-        E = 2e11;  % elastic modulus [Pa]
-        nu = 0;  % poisson's ratio
-        
         config_name = 'Test1D';
 %       main  % Runs calculation
         main_nonlinear % Runs calculation

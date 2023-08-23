@@ -237,8 +237,8 @@ function [Mesh, Material, BC, Control] = CantileverBeam(config_dir, progress_on)
         BC.traction_force_node = Mesh.right_nodes;  
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        t = -4e5; % uniform tensile stress applied to right edge
-        Fnode = t*max(Mesh.x(:,2))/(length(BC.traction_force_node) - 1);
+        BC.traction = -4e5; % uniform tensile stress applied to right edge
+        Fnode = BC.traction*max(Mesh.x(:,2))/(length(BC.traction_force_node) - 1);
         BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), ones(size(BC.traction_force_node))];
         
         % find the nodes in the top right and bottom right corners
@@ -276,8 +276,7 @@ function [Mesh, Material, BC, Control] = CantileverBeam(config_dir, progress_on)
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        global calc_type
-        Control.stress_calc = calc_type;
+        Control.stress_calc = 'L2projection';
 
         % penalty parameter for solution of static problem with 
         % LinearSolver3

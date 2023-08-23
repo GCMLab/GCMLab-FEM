@@ -18,21 +18,12 @@
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         
         % Step 1 - Run Simulation
-        global nex quadorder E nu rho alpha tf n_steps plot_on
-            alpha = -1/3 ; %           α [-1/3, 0]
-            E = 2e11;
-            nu = 0.3;
-            quadorder = 2; 
-            rho = 2400;
-            tf = 3.123;
+        global nex n_steps plot_on
             n_steps = 100;
             plot_on = 0;
-
             config_name = 'ManufacturedSolution_Dynamic';
             
-            
-            % Run coarse mesh
-                        
+            % Run coarse mesh      
                 % Create test VTK folder
                 if plot2vtk
                     folname = ['\Test',num2str(testnum),'_mesh_1'];
@@ -50,8 +41,8 @@
                 strain_coarse = strain;
                 Mesh_coarse = Mesh;
 
+                
             % Run fine mesh
-            
                  % Create test VTK folder
                 if plot2vtk
                     folname = ['\Test',num2str(testnum),'_mesh_2'];
@@ -69,8 +60,8 @@
                 strain_fine = strain;
                 Mesh_fine = Mesh;
 
+                
             % Run finer mesh
-            
                 % Create test VTK folder
                 if plot2vtk
                     folname = ['\Test',num2str(testnum),'_mesh_3'];

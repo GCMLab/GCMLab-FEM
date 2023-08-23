@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = ManufacturedSolution_DirichletTime(config_dir, progress_on)
-global Omega1 Omega2 E nu
+    global Omega1 Omega2
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -139,8 +139,8 @@ global Omega1 Omega2 E nu
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E0 = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).E0 = 2.5e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
 	
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 

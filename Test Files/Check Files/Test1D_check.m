@@ -22,16 +22,14 @@ function [disp_er] = Test1D_check(d, Material, BC, Mesh)
 % F, b and A variables are the applied force along the free edge, distributed body force and
 % sectional area of the bar, respectively.
 
-global E traction b
-
 % Calculate analytical displacement
 % prescribed traction [N]
-Force = traction;
+Force = BC.traction;
 % distributed body force [N/m]
-Body_force = b;
+Body_force = BC.b_force;
 L = max(Mesh.x(:,1));
 rightnode = BC.traction_force_node;
-d_exact = Force*L/E/Material.t(Mesh.x(rightnode,1)) + Body_force*L^2/(2*E*Material.t(Mesh.x(rightnode,1)));
+d_exact = Force*L/Material.Prop(1).E0/Material.t(Mesh.x(rightnode,1)) + Body_force*L^2/(2*Material.Prop(1).E0*Material.t(Mesh.x(rightnode,1)));
 
 % Calculate the error
 disp_er = abs(d(rightnode) - d_exact)/abs(d_exact);

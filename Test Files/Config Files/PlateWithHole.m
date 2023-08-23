@@ -1,4 +1,5 @@
 function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
+    global calc_type
 %MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
@@ -273,7 +274,6 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        global calc_type
         Control.stress_calc = calc_type;
 
         % penalty parameter for solution of static problem with 

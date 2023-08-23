@@ -1,6 +1,5 @@
 function [Mesh, Material, BC, Control] = ManufacturedSolution_PlaneStrain(config_dir, progress_on)
-global meshfilename quadorder E nu
-
+    global meshfilename quadorder
 %% Material Properties (Solid)
 
     % NOTES-------------------------------------------------------------
@@ -32,8 +31,8 @@ global meshfilename quadorder E nu
     Material.nmp = 1;
         
     % Properties material 1
-    Material.Prop(1).E0 = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).E0 = 2230; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStrain'; 
@@ -159,8 +158,8 @@ global meshfilename quadorder E nu
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t)[-E /(1+nu)/(1-2*nu) * ( (1-nu)*20*x(1).^3                    + nu*3*x(2).^2        + (1-2*nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2 ));
-                    -E /(1+nu)/(1-2*nu) * ( (1-2*nu)/2*(3*x(2).^2 + 20*x(1).^3)  + nu*3*x(2).^2        + (1-nu)*(6*x(1).*x(2) - 30*x(2).^4) )];
+        BC.b = @(x,t)[-Material.Prop(1).E0 /(1+Material.Prop(1).nu)/(1-2*Material.Prop(1).nu) * ( (1-Material.Prop(1).nu)*20*x(1).^3                    + Material.Prop(1).nu*3*x(2).^2        + (1-2*Material.Prop(1).nu)/2*( 6*x(1).*x(2) - 30*x(2).^4 + 3*x(2).^2 ));
+                    -Material.Prop(1).E0 /(1+Material.Prop(1).nu)/(1-2*Material.Prop(1).nu) * ( (1-2*Material.Prop(1).nu)/2*(3*x(2).^2 + 20*x(1).^3)  + Material.Prop(1).nu*3*x(2).^2        + (1-Material.Prop(1).nu)*(6*x(1).*x(2) - 30*x(2).^4) )];
 
 %% Computation controls
 

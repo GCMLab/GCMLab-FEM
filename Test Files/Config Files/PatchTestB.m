@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
-    global E nu traction quadorder meshfilename
+    global  meshfilename quadorder
 %% Material Properties (Solid)
 
     % NOTES-------------------------------------------------------------
@@ -31,8 +31,8 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
     Material.nmp = 1;
         
     % Properties material 1
-    Material.Prop(1).E0 = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).E0 = 2540; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -114,9 +114,11 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
     % ux = (1-nu)*traction/E*x
     % uy = (1-nu)*traction/E*y
     % -----------------------------------------------------------------
+    
+        BC.traction = 3.495; % applied traction (both directions)
         
-        BC.UU = @(x) (1-nu)*traction/E*x(:,1);
-        BC.VV = @(x) (1-nu)*traction/E*x(:,2);
+        BC.UU = @(x) (1-Material.Prop(1).nu)*BC.traction/Material.Prop(1).E0*x(:,1);
+        BC.VV = @(x) (1-Material.Prop(1).nu)*BC.traction/Material.Prop(1).E0*x(:,2);
         
         % column vector of prescribed displacement dof  
         BC.fix_disp_dof1 = Mesh.left_dof;
@@ -169,8 +171,16 @@ function [Mesh, Material, BC, Control] = PatchTestB(config_dir, progress_on)
         % quadrature order
         Control.qo = quadorder;
 
-        % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal', 'center'
+        % Calculation of values for discontinuous variables 
+        % (i.e. stress/strain)
+        % 'none': calculated at each node for each element separately; 
+        %           no output in vtk
+        % 'nodal': averaged at each node for all elements attached to 
+        %           the node; output as nodal values in vtk
+        % 'center': calculated at the center of each element; output as 
+        %           single value for each element in vtk
+        % 'L2projection': Least squares projection of stress and strain,
+        %           output as nodal values
         Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 

@@ -1,4 +1,4 @@
-function [m_L2, m_e] = ManufacturedSolution_PlaneStress_check(d1, d2, d3, s1, s2, s3, e1, e2, e3, Mesh1, Mesh2, Mesh3)
+function [m_L2, m_e] = ManufacturedSolution_PlaneStress_check(d1, d2, d3, s1, s2, s3, e1, e2, e3, Mesh1, Mesh2, Mesh3, Material, Control)
 %MANUFACTUREDSOLUTION_CHECK Calculates the convergence rates
 %   [m_L2, m_e] = ManufacturedSolution_check(d1, d2, d3, s1, s2, s3, Mesh1,
 %   Mesh2, Mesh3) calculates the rates of convergence of the L2 error norm
@@ -28,8 +28,6 @@ function [m_L2, m_e] = ManufacturedSolution_PlaneStress_check(d1, d2, d3, s1, s2
 %   sxy = E/(1-v^2) * (1-v)/2 * exy
 
 % Acknowledgements: Bruce Gee
-
-global quadorder E nu
 
 plot_on = 0; % turn plots on/off - debugging tool
 
@@ -75,12 +73,12 @@ for sim = 1:3
     e_exact(2,:) = 3*x'.*y'.^2 - 6*y'.^5;
     e_exact(3,:) = ( 5*x'.^4 + y'.^3 + 3*x'.*y'.^2 - 6*y'.^5 );
     
-    s_exact(1,:) = E/(1-nu^2)* (e_exact(1,:) + nu*e_exact(2,:));
-    s_exact(2,:) = E/(1-nu^2)* (nu*e_exact(1,:) + e_exact(2,:));
-    s_exact(3,:) = E/(1-nu^2)* (1-nu)/2 * e_exact(3,:);
+    s_exact(1,:) = Material.Prop(1).E0/(1-Material.Prop(1).nu^2)* (e_exact(1,:) + Material.Prop(1).nu*e_exact(2,:));
+    s_exact(2,:) = Material.Prop(1).E0/(1-Material.Prop(1).nu^2)* (Material.Prop(1).nu*e_exact(1,:) + e_exact(2,:));
+    s_exact(3,:) = Material.Prop(1).E0/(1-Material.Prop(1).nu^2)* (1-Material.Prop(1).nu)/2 * e_exact(3,:);
     
     % Calculate error norms
-    Quad = GlobalQuad(Mesh.nsd, Mesh.type, quadorder);
+    Quad = GlobalQuad(Mesh.nsd, Mesh.type, Control.qo);
     nq = Quad.nq;
     
     eL2_num = 0;
