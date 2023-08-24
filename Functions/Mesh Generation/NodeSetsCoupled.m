@@ -77,6 +77,10 @@ switch Mesh.nsd
       
     case 2
       
+      Mesh.xdofs_u = 1:3:Mesh.nDOF;
+      Mesh.ydofs_u = 2:3:Mesh.nDOF;
+      Mesh.dofs_t = 3:3:Mesh.nDOF;
+
       Mesh.top_dof_ux = Mesh.top_dof(1:3:end);
       Mesh.top_dof_uy = Mesh.top_dof(2:3:end);
       Mesh.top_dof_u = sort([Mesh.top_dof_ux; Mesh.top_dof_uy]);
