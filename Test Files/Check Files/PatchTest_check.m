@@ -1,8 +1,13 @@
 function [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Mesh, Material, BC)
 %PATCHTEST_CHECK Calculates the error
-%   [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext)
-%   calculates the error related to displacements, reaction forces, and
-%   stress for using a patch test
+%   disp_er = PATCHTEST_CHECK(d, stress, Fext)
+%   calculates the error related to displacements for using a patch test
+%
+%   [disp_er, stress_er] = PATCHTEST_CHECK(d, stress, Fext)
+%   also calculates the error related to the stress for using a patch test
+%
+%   [disp_er, stress_er, reaction_er] = PATCHTEST_CHECK(d, stress, Fext)
+%   also calculates the error related to the reaction force for using a patch test
 %
 %   ----------------------------------------------------------
 %   Input

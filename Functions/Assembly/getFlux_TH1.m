@@ -1,8 +1,11 @@
 function [flux, stress] = getFlux_TH1(d, Mesh, Material, calc_type, Quad, ~)
 %GETFLUX_TH1 Evaluate fluxes from a diffusion problem
-%   [flux] = GETFLUX_TH1(d, Mesh, Material) returns one matrix of 
+%   flux = GETFLUX_TH1(d, Mesh, Material) returns one matrix of 
 %   fluxes. The matrices are of size dim x ne, in which dim = 1 for 1D elements, 3 for 
 %   2D elements, and 6 for 3D elements.
+%
+%   [flux, stress] = GETFLUX_TH1(d, Mesh, Material) also returns the stress matrix.
+%   For a diffusion problem, this matrix is null.
 %   
 %   Supported input for calc_type:
 %   'none' -  does not compute the fluxes

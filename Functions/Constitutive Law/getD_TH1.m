@@ -1,5 +1,5 @@
 function D = getD_TH1(nMat, Material, ~)
-%GETD_TH1 - Themal conductivity tensor
+%GETD_TH1 Themal conductivity tensor
 %   D = GETD_TH1(nMat, Material, Mesh) is the conductivity tensor.
 %       Supports model options ISO - Isotropic or ORTHO - Orthotropic
 % 

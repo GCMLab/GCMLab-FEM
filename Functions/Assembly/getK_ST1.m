@@ -1,15 +1,22 @@
 function [K, R, Fint] = getK_ST1(Mesh, Quad, Material, ~, Fext, ~, ~, ~, d_m, ~, ~, ~, ~)
-%GETK_NLELASTIC Stiffness matrix for iterative non linear elastic case
-%   [K, R, Fint] = GETK_ST1(Mesh, Quad, Material) returns the 
-%   stiffness matrix K, the residual vector R, and the internal force 
+%GETK_ST1 Stiffness matrix for iterative non linear elastic case
+%   K = GETK_ST1(Mesh, Quad, Material) returns the stiffness matrix for the
+%   iterative solver where the problem uses a non linear elastic material
+%   
+%   [K, R] = GETK_ST1(Mesh, Quad, Material) also returns the residual vector R
+%   for the iterative solver where the problem uses a non linear 
+%   elastic material
+%
+%   [K, R, Fint] = GETK_ST1(Mesh, Quad, Material) also returns the internal force 
 %   vector for the iterative solver where the problem uses a non linear 
 %   elastic material
-%   
+%
 %   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
 %   Accepted Inputs (in order)
 %   --------------------------------------------------------------------
-%   getK_NLelastic(Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1)
+%   getK_ST1(Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1)
+%
 %   Mesh:       Structure array with the following fields, may be updated
 %               with new fields
 %               .ne:    Total number of elements in the mesh
@@ -47,7 +54,7 @@ function [K, R, Fint] = getK_ST1(Mesh, Quad, Material, ~, Fext, ~, ~, ~, d_m, ~,
 %   dt:         timestep size between timesteps n-1 and n
 %   dtnm1:      timestep size between timesteps n-2 and n-1
 
-d = d_m.d; %Get data from d_m structure
+d = d_m.d; % Get data from d_m structure
 
 % initialize D matrix file pointer
 [~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);

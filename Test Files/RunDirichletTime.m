@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 26 - Dirichlet Time
+% Runs unit Test - Dirichlet Time
 % ------------------------------------------------------------------------
 % This test applies time dependent Dirichlet boundary conditions on a
 % square domain and computes the stress as a function of time.

@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 29 - Diffusion Test as part of RunTests
+% Runs unit Test - Diffusion Test as part of RunTests
 % ------------------------------------------------------------------------
 % Runs a 2D steady-state isotropic heat transfer problem with fixed
 % temperature on the edges and body loading

@@ -16,7 +16,7 @@
 
 
     % suppress progress messages
-    progress_on = 1;
+    progress_on = 0;
     
     % Current directory
     curDir = pwd;

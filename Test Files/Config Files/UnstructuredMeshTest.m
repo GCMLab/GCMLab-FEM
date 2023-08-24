@@ -1,4 +1,111 @@
 function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progress_on)
+%UNSTRUCTUREDMESHTEST Mesh, material parameters, boundary conditions, 
+%and control parameters
+%   Mesh = UNSTRUCTUREDMESHTEST() is a structure array with the
+%   following fields: 
+%       .type:          the topological class of finite element; it is in 
+%                       the general form 'topology-#of nodes' ie a three 
+%                       node triangle is T3 a four node quadralateral is 
+%                       Q4 a 4 node tetrahedra is H4 a 27 node brick is 
+%                       B27 etc. Presently defined are L2, Q4, and Q9. 
+%       .nsd:           Number of spatial dimensions
+%       .ne:            Total number of elements in the mesh
+%       .nne:           Vector of number of nodes per element (size nsd x 1)
+%       .nn:            Total number of nodes 
+%       .nDOFe:         Number of DOFs per element
+%       .nDOF:          Total number of DOFs
+%       .x:             Array of nodal spatial locations for
+%                       undeformed mesh (size nn x nsd)
+%       .conn:          Array of element connectivity (size ne x nne)
+%       .eneighbours:   Array of neighbouring elements (size ne x nneighbours
+%                       in which nneighbours is 1 for 1D elements and 4
+%                       for 2D elements)
+%       .DOF:           Array of DOF indices (size nn x nsd)
+%       .nodeconn:      Array of nodal connectivity (size nn x 8)
+%                       containing the indices of elements connected to 
+%                       each node
+%       .left_nodes     Nodes on the left edge of the domain
+%       .left_dof       DOFs on the left edge of the domain
+%       .right_nodes    Nodes on the right edge of the domain
+%       .right_dof      DOFs on the right edge of the domain
+%       .xdofs          DOFs in the x-direction
+%       .ydofs          DOFs in the y-direction
+%       .zdofs          DOFs in the z-direction
+%   Two-dimensional meshes also contain the fields,
+%       .top_nodes      Nodes on the top edge of the domain
+%       .top_dof        DOFs on the top edge of the domain
+%       .top_dofx       DOFs on the top boundary in the x-direction
+%       .top_dofy       DOFs on the top boundary in the y-direction
+%       .bottom_nodes   Nodes on the bottom edge of the domain
+%       .bottom_dof     DOFs on the bottom edge of the domain
+%       .bottom_dofx    DOFs on the bottom boundary in the x-direction
+%       .bottom_dofy    DOFs on the bottom boundary in the y-direction
+%       .left_dofx      DOFs on the left boundary in the x-direction
+%       .left_dofy      DOFs on the left boundary in the y-direction
+%       .right_dofx     DOFs on the right boundary in the x-direction
+%       .right_dofy     DOFs on the right boundary in the y-direction
+%   Three-dimensional meshes also contain the fields, 
+%       .near_nodes     nodes on the nearest face of the domain
+%       .near_dof       DOFs on the nearest face of the domain
+%       .near_dofx      DOFs on the near face in the x-direction
+%       .near_dofy      DOFs on the near face in the y-direction
+%       .near_dofz      DOFs on the near face in the z-direction
+%       .far_nodes      Nodes on the farthest face of the domain
+%       .far_dof        DOFs on the farthest face of the domain
+%       .far_dofx       DOFs on the far face in the x-direction
+%       .far_dofy       DOFs on the far face in the y-direction
+%       .far_dofz       DOFs on the far face in the z-direction
+%       .left_dofz      DOFs on the left face in the z-direction
+%       .right_dofz     DOFs on the right face in the z-direction
+%       .top_dofz       DOFs on the top face in the z-direction
+%       .bottom_dofz    DOFs on the bottom face in the z-direction
+%       
+%   Mesh = UNSTRUCTUREDMESHTEST(config_dir) defines the mesh using GMSH file 
+%   import located in the directory config_dir
+%
+%   [Mesh, Material] = UNSTRUCTUREDMESHTEST() also returns a
+%   structure array with the following fields: 
+%       .nmp:           number of material properties
+%       .Prop:          Material properties
+%       .Prop.E0:       Modulus of elasticity
+%       .Prop.nu:       Poisson's ratio
+%       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
+%       .Prop.t:        Material thickness
+% 
+%   [Mesh, Material, BC] = UNSTRUCTUREDMESHTEST() also returns a structure
+%   array with the following fields: 
+%       .fix_disp_dof:              Column vector of degrees of freedom 
+%                                   with prescribed displacements
+%                                   (size nfixed x 1)
+%       .fix_disp_value             Column vector of prescribed 
+%                                   displacements (size nfixed x 1)
+%       .traction_force_dof         Column vector of degrees of freedom
+%                                   with prescribed tractions
+%       .traction_force_dof_value   Column vector of prescribed tractions
+%                                   on DOF
+%       .traction_force_node        Column vector of nodes with 
+%                                   prescribed tractions
+%       .traction_force_value       Column vector of prescribed tractions
+%                                   on nodes
+%       .b                          Anonymous function of distributed
+%                                   body force (size 1 x nsd)
+% 
+%   [Mesh, Material, BC, Control] = UNSTRUCTUREDMESHTEST() also returns a 
+%   structure array with the following fields: 
+%       .qo:            Quadrature order
+%       .stress_calc    Calculation of values for discontinous variables
+%                       ('none', 'nodal', 'center', 'L2projection')
+%       .beta:          Penalty parameter  
+%       .LinearSolver   Method used for solving linear problem:
+%                       'LinearSolver1': Partitioning
+%                       'LinearSolver2': Zeroing DOFs in stiffness matrix 
+%                                        corresponding to essential boundaries
+%                       'LinearSolver3': Penalty method
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   config_dir:     (OPTIONAL) File path for the directory where 
+%                   unstructured mesh is stored
 
 %% Material Properties (Solid)
 
@@ -89,9 +196,6 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
             Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end
     
-
-%% Assign Materials to Mesh
-
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     

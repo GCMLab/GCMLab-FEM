@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 7 - Cantilever Beam as part of RunTests
+% Runs unit Test - Cantilever Beam as part of RunTests
 % ------------------------------------------------------------------------
 % Runs cantilever beam under bending. The nodes located at the left edge is
 % fully restrained, and nodal forces are applied to the nodes located at

@@ -1,8 +1,12 @@
 function [disp_er, time_er] = CantileverBeam_check(d, Material, BC, Mesh)
 %CANTILEVERBEAM_CHECK Calculates the error between FEA and analytical solutions
-%   [disp_er] = CantileverBeam_check(d, Material, BC, Mesh)
+%   disp_er = CANTILEVERBEAM_CHECK(d, Material, BC, Mesh)
 %   calculates the error between FEA and analytical displacements along the
 %   free edge of a cantilever beam
+%
+%   [disp_er, time_er] = CANTILEVERBEAM_CHECK(d, Material, BC, Mesh)
+%   also calculates the error between FEA and analytical displacements along the
+%   free edge of a cantilever beam during load time
 %
 %   ----------------------------------------------------------
 %   Input

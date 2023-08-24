@@ -10,7 +10,6 @@ function Mesh = NodeSets(Mesh)
 %       .nsd        number of spatial dimensions
 %       .x          array of nodal spatial locations for undeformed mesh 
 %                   (size nn x nsd in which nn is the number of nodes)
-% 
 %   --------------------------------------------------------------------
 %   Output
 %   --------------------------------------------------------------------

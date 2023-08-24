@@ -1,14 +1,14 @@
 function [time_er] = DirichletTime_check(stress, Material)
 %DIRICHLETTIME_CHECK Calculates the error between FEA and the manufactured
 %solution
-%   [disp_er] = DirichletTime_check(stress)
+%   time_er = DIRICHLETTIME_CHECK(stress) calculates the error between FEA 
+%   and the manufactured solution
 %
 %   ----------------------------------------------------------
 %   Input
 %   ----------------------------------------------------------
 %   stress:                  3 x nn x nt data structure of stress at each
 %                            timestep
-%
 %   ----------------------------------------------------------
 %   Output
 %   ----------------------------------------------------------

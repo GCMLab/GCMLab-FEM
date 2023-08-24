@@ -1,8 +1,9 @@
 function [L2d] = Transient1D_check(d, Material, ~, Control, BC)
-%TEST1D_CHECK Calculates the error between FEA and analytical solutions
-%   [disp_er] = Test1D_check(d, Material, BC, Mesh)
+%TRANSIENT1D_CHECK Calculates the error between FEA and analytical
+%solutions
+%   L2d = TRANSIENT1D_CHECK(d, Material, BC, Mesh)
 %   calculates the error between FEA and analytical displacements along the
-%   free edge of a one dimensional problem
+%   free edge of a one dimensional transient problem
 %
 %   ----------------------------------------------------------
 %   Input

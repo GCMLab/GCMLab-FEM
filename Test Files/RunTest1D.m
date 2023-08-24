@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 8 - One Dimensional problem as part of RunTests
+% Runs unit Test - One Dimensional problem as part of RunTests
 % ------------------------------------------------------------------------
 % Runs One Dimensional problem under tension. The node located at the left 
 % edge is fully restrained, and nodal force is applied to the node located 

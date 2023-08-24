@@ -1,8 +1,12 @@
 function [m_L2, m_e] = ManufacturedSolution_PlaneStress_check(d1, d2, d3, s1, s2, s3, e1, e2, e3, Mesh1, Mesh2, Mesh3, Material, Control)
-%MANUFACTUREDSOLUTION_CHECK Calculates the convergence rates
-%   [m_L2, m_e] = ManufacturedSolution_check(d1, d2, d3, s1, s2, s3, Mesh1,
-%   Mesh2, Mesh3) calculates the rates of convergence of the L2 error norm
-%   and the energy norm for using a manufactured solution
+%MANUFACTUREDSOLUTION_PLANESTRESS_CHECK Calculates the convergence rates
+%   m_L2 = MANUFACTUREDSOLUTION_PLANESTRESS_CHECK(d1, d2, d3, s1, s2, s3, Mesh1,
+%   Mesh2, Mesh3) calculates the rate of convergence of the L2 error norm
+%   for using a manufactured solution
+%
+%   [m_L2, m_e] = MANUFACTUREDSOLUTION_PLANESTRESS_CHECK(d1, d2, d3, s1, s2, s3, Mesh1,
+%   Mesh2, Mesh3) also calculates the rate of convergence of the energy norm
+%   for using a manufactured solution
 %
 %   ----------------------------------------------------------
 %   Input

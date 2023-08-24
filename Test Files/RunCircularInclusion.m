@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 21 - Circular Inclusion as part of RunTests
+% Runs unit Test - Circular Inclusion as part of RunTests
 % ------------------------------------------------------------------------
 % Runs plate case of circular plate composed of two different materials.
 % Adapted from the reference Sukumar, Natarajan, David L. Chopp, 
