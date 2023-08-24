@@ -177,6 +177,10 @@
 %                 stored solution from previous run
       run('Test Files\RunDynamicManufacture')
 
+%% Test 32: Thermoelastic Test - Manufactured solution
+%  Pass Condtion: FEA solution displacements, stresses, and strains are exact
+     run('Test Files\RunThermoelasticTest')
+
 %% Test X: [Test Name] - Short Test Description
 %  Pass Condtion:
 %      run('Test Files/RunTestX')
