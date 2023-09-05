@@ -134,8 +134,10 @@ for e = 1:Mesh.ne
             switch Mesh.nsd 
                 case 1
                     L = Material.t(Xi);
+                    m = 1;
                 case 2
                     L = Material.t(Xi);
+                    m = [1;1;0]; % mapping vector
                 case 3
                     L = 1;                
             end
@@ -147,7 +149,7 @@ for e = 1:Mesh.ne
             Ktte = Ktte + W(q)*B'*D_sca*B*L*dJe;
             
             % Calculate local coupled matrix
-            Kute = Kute + W(q)*Nv*beta*B*L*dJe;
+            Kute = Kute + W(q)*Bv*m*beta*N'*L*dJe;
             
             % quadrature debug tool
             A = A + W(q)*dJe; 
