@@ -116,7 +116,7 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
         % Thermoelasticity (Steady-state)
             case 'THLE1'
                 Material.ConstitutiveLawFile    = 'getD_THLE1';
-                Material.StiffnessMatrixFile    = 'getK_THLE1';
+                Material.StiffnessMatrixFile    = 'getK_LE1';
                 Material.ExternalForceFile      = 'getFext_coupled';
                 Material.StressStrainFile       = 'getStrainFlux_THLE1';
                 Material.PostProcessor          = 'write2vtk_THLE1';
