@@ -181,7 +181,7 @@ for e = 1:Mesh.ne
             dJe = det(Je);
             
             % Applied body force
-            Fse = Fse + W(q)*Nv*BC.s(Xi,t)*dJe;
+            Fse = Fse + W(q)*N*BC.s(Xi,t)*dJe;
             
             % quadrature debug tool
             A = A + W(q)*dJe;
