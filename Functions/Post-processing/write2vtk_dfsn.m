@@ -1,5 +1,5 @@
 function write2vtk_dfsn(config_name, vtk_dir, Mesh, Control, ...
-                        fixedDOF, d, flux, ~, Fint, Fext, timestep)
+                        fixedDOF, d, ~, ~, ~, flux, Fint, Fext, timestep,~)
 %WRITE2VTK_DFSN Exports results to VTK file 
 %   WRITE2VTK_DFSN(Mesh, Control, fixedDOF, d, flux, ~, Fint, Fext) 
 %   produces vtk files that can be opened in Paraview to visualize

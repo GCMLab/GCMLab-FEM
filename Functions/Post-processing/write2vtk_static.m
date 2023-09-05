@@ -1,5 +1,5 @@
 function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
-                        fixedDOF, d, strain, stress, Fint, Fext)
+                        fixedDOF, d, strain, stress, ~, ~, Fint, Fext,~)
 %WRITE2VTK_STATIC Exports results to VTK file 
 %   WRITE2VTK_STATIC(Mesh, Control, fixedDOF, d, strain, stress, Fint, Fext) 
 %   produces vtk files that can be opened in Paraview to visualize

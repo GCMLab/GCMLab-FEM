@@ -1,5 +1,5 @@
 function write2vtk_eqbm(config_name, vtk_dir, Mesh, Control, ...
-                        fixedDOF, d, strain, stress, Fint, Fext, timestep)
+                        fixedDOF, d, strain, stress, ~, ~, Fint, Fext, timestep,~)
 %WRITE2VTK_EQBM Exports results to VTK file 
 %   WRITE2VTK_EQBM(Mesh, Control, fixedDOF, d, strain, stress, Fint, Fext) 
 %   produces vtk files that can be opened in Paraview to visualize
