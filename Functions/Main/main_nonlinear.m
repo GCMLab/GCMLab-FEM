@@ -121,8 +121,12 @@
             case 1 % Equilibrium problem
                 % Stress/Strain
                 [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
+                gradT = [];
+                flux = [];
             case 2 % Diffusion problem
-                [strain, stress] = getFlux_TH1(d0, Mesh, Material, Control.stress_calc, Quad);
+                [gradT, flux] = getFlux_TH1(d0, Mesh, Material, Control.stress_calc, Quad);
+                strain = [];
+                stress = [];
             case 3 % Thermoelasticity problem
                 [strain, stress, gradT, flux] = getStrainFlux_THLE1(d0, Mesh, Material, Control.stress_calc, Quad);
         end
@@ -133,8 +137,8 @@
 
     % Write initial conditions to vtk
         if plot2vtk
-            feval(Material.PostProcessor,config_name, vtk_dir, Mesh, Control, BC.fixed, d0, strain, stress, ...
-                            Fint, Fext, step_count);
+            feval(Material.PostProcessor,config_name, vtk_dir, Mesh, Control, BC.fix_dof, d0, strain, stress, gradT, flux,...
+                            Fint, Fext, step_count, BC);
         end
         step_count = step_count + 1;
        
