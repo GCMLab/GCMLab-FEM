@@ -1,10 +1,5 @@
 function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, progress_on)
 
-global nex quadorder 
-
-% nex:              number of elements in each direction [nex; ney; nez] 
-% quadorder:        order of quadrature used in numerical integration
-
 %% Material Properties (Solid)
 
     % NOTES-------------------------------------------------------------
@@ -71,6 +66,8 @@ global nex quadorder
     nsd = 2;
     % size of domain [m] [Lx;Ly;Lz] 
     L = [1;1];
+    % number of elements in each direction [nex; ney; nez] 
+    nex = [1;1]*10;
     % element type ('Q4')
     type = 'Q4';
 
@@ -107,27 +104,24 @@ global nex quadorder
     % u:= (x1,x2) → -sin(pi*x1/2)*sin(pi*x2/2)
     % v:= (x1,x2) → cos(pi*x1/2)*cos(pi*x2/2)
         
-        BC.UUx = @(x) - sin(pi.*x(:,1)./2).*sin(pi.*x(:,2)./2)./1000;
-        BC.VVx = @(x)   cos(pi.*x(:,1)./2).*cos(pi.*x(:,2)./2)./1000;
+        BC.UU = @(x) - sin(pi.*x(:,1)./2).*sin(pi.*x(:,2)./2)./1000;
+        BC.VV = @(x)   cos(pi.*x(:,1)./2).*cos(pi.*x(:,2)./2)./1000;
     
         % Column vector of dofs where displacements are applied
-        BC.fix_disp_dof1 = Mesh.left_dof_u;
-        BC.fix_disp_dof2 = Mesh.right_dof_u;
-        BC.fix_disp_dof3 = Mesh.bottom_dof_u;
-        BC.fix_disp_dof4 = Mesh.top_dof_u;
-        BC.fix_disp_dof = unique([BC.fix_disp_dof1;BC.fix_disp_dof2;BC.fix_disp_dof3;BC.fix_disp_dof4]);
+        BC.fix_disp_dof = unique([Mesh.left_dof_u; Mesh.right_dof_u; Mesh.bottom_dof_u; Mesh.top_dof_u]);
         
         % Prescribed dispalcement
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
-        BC.fix_disp_value(1:2:end) = BC.UUx([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
-        BC.fix_disp_value(2:2:end) = BC.VVx([Mesh.x(BC.fix_disp_dof(2:2:end)/2,1),Mesh.x(BC.fix_disp_dof(2:2:end)/2,2)]);
+        aux = (unique([Mesh.left_nodes; Mesh.bottom_nodes; Mesh.right_nodes; Mesh.top_nodes]))';
+        BC.fix_disp_value(1:2:end) = BC.UU([Mesh.x(aux,1),Mesh.x(aux,2)]);
+        BC.fix_disp_value(2:2:end) = BC.VV([Mesh.x(aux,1),Mesh.x(aux,2)]);
         
-        BC.UU_temp = zeros(length(BC.fix_disp_dof),1); 
-        BC.UU_temp(1:2:end) = ones(length( BC.UU_temp(1:2:end)),1);
-        BC.VV_temp = zeros(length(BC.fix_disp_dof),1); 
-        BC.VV_temp(2:2:end) = ones(length( BC.VV_temp(1:2:end)),1);
+        BC.UU_aux = zeros(length(BC.fix_disp_dof),1); 
+        BC.UU_aux(1:2:end) = ones(length( BC.UU_aux(1:2:end)),1);
+        BC.VV_aux = zeros(length(BC.fix_disp_dof),1); 
+        BC.VV_aux(2:2:end) = ones(length( BC.VV_aux(1:2:end)),1);
         
-        BC.fix_disp_value = @(t) BC.fix_disp_value.*BC.UU_temp + BC.fix_disp_value.*BC.VV_temp ;
+        BC.fix_disp_value = @(t) BC.fix_disp_value.*BC.UU_aux + BC.fix_disp_value.*BC.VV_aux;
 
     % Dirichlet boundary conditions (essential) - thermal
     % -----------------------------------------------------------------
@@ -135,17 +129,13 @@ global nex quadorder
     % Manufacture solution
     % T:= (x1,x2) → sin(pi*x1)*sin(pi*x2)
         
-        BC.Tx = @(x) sin(pi.*x(:,1)).*sin(pi.*x(:,2))./1000;
+        BC.T = @(x) sin(pi.*x(:,1)).*sin(pi.*x(:,2))./1000;
         
         % Column vector of prescribed dofs where temperature is applied
-        BC.fix_temp_dof1 = Mesh.left_dof_t;
-        BC.fix_temp_dof2 = Mesh.right_dof_t;
-        BC.fix_temp_dof3 = Mesh.bottom_dof_t;
-        BC.fix_temp_dof4 = Mesh.top_dof_t;
-        BC.fix_temp_dof = unique([BC.fix_temp_dof1;BC.fix_temp_dof2;BC.fix_temp_dof3;BC.fix_temp_dof4]);
+        BC.fix_temp_dof = unique([Mesh.left_dof_t; Mesh.right_dof_t; Mesh.bottom_dof_t; Mesh.top_dof_t]);
         
         % Prescribed temperature
-        BC.fix_temp_value = BC.Tx([Mesh.x(BC.fix_temp_dof,1),Mesh.x(BC.fix_temp_dof,2)]);
+        BC.fix_temp_value = BC.T([Mesh.x(aux,1),Mesh.x(aux,2)]);
 
         % prescribed temperature for each dof [t1; t2; ...] 
         BC.fix_temp_value = @(t) BC.fix_temp_value;  
@@ -161,37 +151,25 @@ global nex quadorder
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
-
-        % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e7/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-        
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        
-        % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
+        BC.traction_force_node = [];  
 
     % Neumann boundary conditions (natural) - temperature
     % -----------------------------------------------------------------
         % column vector of prescribed traction dofs
-        BC.flux_force_dof = [];
+        BC.flux_dof = [];
 
         % magnitude of prescribed tractions [N]
-        BC.flux_force_dof_value = [];
+        BC.flux_dof_value = [];
+        
+        BC.flux_node = [];
         
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.x(1
     
     % Distributed sources
     % -----------------------------------------------------------------
-        E0 = Material.prop.E0;
-        nu = Material.prop.nu;
+        E0 = Material.Prop(1).E0;
+        nu = Material.Prop(1).nu;
         k1 = Material.Prop(1).k1;
         k2 = Material.Prop(1).k2;
         alpha = Material.Prop(1).alpha;
@@ -218,7 +196,7 @@ global nex quadorder
 %% Computation controls
 
         % quadrature order
-        Control.qo = quadorder;
+        Control.qo = 2;
 
         % Calculation of values for discontinuous variables 
         % (i.e. stress/strain)
