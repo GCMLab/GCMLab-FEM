@@ -39,8 +39,7 @@
     step_count = 0;
 
 %% Identify free and fixed dofs
-    BC.fixed = BC.fix_disp_dof;
-    BC.free = setdiff(Mesh.DOF, BC.fixed)';
+    BC.free = setdiff(Mesh.DOF, BC.fix_dof)';
 
 %% Quadrature calculation
     % (Done at beginning of code - this assumes all elements are the 
@@ -107,7 +106,8 @@
 %% Define initial conditions
 
     d0 = BC.IC(t-dt); % Initial condition for displacement
-    d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
+    d0(BC.fix_dof) = BC.fix_value(t-dt);
+
     Fext = feval(Material.ExternalForceFile, Mesh, BC, Quad, t - dt + Dyn_ON*Control.alpha*dt); % External forces
     Fextnm1 = Fext; % Fext at timestep n-1
     d_m.d = d0;     % d at timestep n (trial)
@@ -170,8 +170,9 @@ end
         end
     
     % Initialize incremental variables in each step
-        Dd = zeros(Mesh.nsd*Mesh.nn,1);                                         % Increment of displacement vector
-        d_m.d(BC.fix_disp_dof) = BC.fix_disp_value(t);                          % Apply fixed DoF Boundary conditions
+        Dd = zeros(Mesh.nDOFn*Mesh.nn,1);   
+        % Increment of displacement vector
+        d_m.d(BC.fix_dof) = BC.fix_value(t);                                    % Apply fixed DoF Boundary conditions
         iter = 1;                                                               % Iteration counter in each step
         converged = 0;                                                          % convergence status
         FintPrev = 0;                                                           % Internal force vector from previous iteration
@@ -201,7 +202,7 @@ end
         % Compute nonlinear stiffness matrix and internal forces
             [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha); 
 
-            ResForce(BC.fixed) = 0;
+            ResForce(BC.fix_dof) = 0;
         
         % Calculate the norm of residual vector
             if norm(Fint) < 1e-2
@@ -220,14 +221,14 @@ end
                 % Solve incremental form of system of equations
                     switch Control.LinearSolver
                         case 'LinearSolver1'
-                            [Dd, ~] = LinearSolver1(K, ResForce, Dd(BC.fix_disp_dof), ...
-                                                            BC.free, BC.fixed, Control.parallel);
+                            [Dd, ~] = LinearSolver1(K, ResForce, Dd(BC.fix_dof), ...
+                                                            BC.free, BC.fix_dof, Control.parallel);
                         case 'LinearSolver2'
                             [Dd, ~] = LinearSolver2(K,ResForce,Dd, ...
-                                                            BC.free, BC.fixed, Control.parallel);
+                                                            BC.free, BC.fix_dof, Control.parallel);
                         case 'LinearSolver3'
                             [Dd, ~] = LinearSolver3(K, ResForce, Dd, ...
-                                                            BC.free, BC.fixed, Control.beta, Control.parallel);
+                                                            BC.free, BC.fix_dof, Control.beta, Control.parallel);
                     end
 
                 % Update displacement vector
@@ -258,11 +259,11 @@ end
         [strain, stress] = feval(stressstrainfile_name, d_m.d, Mesh, Material, Control.stress_calc, Quad, d_m.dnm1);   
 
     % Write to vtk
-        Fext(BC.fixed) = Fint(BC.fixed);   % Set external forces as equal to reaction forces at fixed dof for output
+        Fext(BC.fix_dof) = Fint(BC.fix_dof);   % Set external forces as equal to reaction forces at fixed dof for output
         
         if plot2vtk
-            feval(Material.PostProcessor,config_name, vtk_dir, Mesh, Control, BC.fixed, d_m.d, strain, stress, ...
-                            Fint, Fext, step_count);
+            feval(Material.PostProcessor,config_name, vtk_dir, Mesh, Control, BC.fix_dof, d_m.d, strain, stress, gradT, flux, ...
+                            Fint, Fext, step_count, BC);
         end
         
         if Control.dSave
