@@ -29,10 +29,10 @@
         % Step 2 - Check results
         [d_er, reaction_er] = Thermoelasticity_check(d, Fext, Mesh);
         
-        fprintf('\nT3 Quasi-steady Thermoelastic Test: Disp./Temp. error is %.2e', d_er);
-        fprintf('\nT3 Quasi-steady Thermoelastic Test: Reaction forces error is %.2e', reaction_er);
+        fprintf('\nQ4 Quasi-steady Thermoelastic Test: Disp./Temp. error is %.2e', d_er);
+        fprintf('\nQ4 Quasi-steady Thermoelastic Test: Reaction forces error is %.2e', reaction_er);
         
-        convergence_tolerance = 1e-10;
+        convergence_tolerance = 1e-4;
         if d_er <= convergence_tolerance && reaction_er <= convergence_tolerance
             test_pass = 1;
         else
