@@ -244,7 +244,7 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
         % 1 = Backward Euler, 0.5 = Crank-Nicolson
         % for 2nd order problem (dynamic)
         % range = [-1/3, 0], use 0 by default
-        Control.alpha = 0.5; 
+        Control.alpha = 1; 
 
         
         % Newton Raphson controls
