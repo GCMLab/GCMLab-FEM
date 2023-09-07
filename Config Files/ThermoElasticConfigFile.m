@@ -239,7 +239,7 @@ function [Mesh, Material, BC, Control] = ThermoElasticConfigFile(config_dir, pro
         BC.fix_disp_dof = Mesh.left_dof_u;
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
-        BC.fix_disp_value = @(t) sin(t)/1e5*ones(length(BC.fix_disp_dof),1);  
+        BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
 
     % Dirichlet boundary conditions (essential) - thermal
     % -----------------------------------------------------------------
@@ -260,39 +260,28 @@ function [Mesh, Material, BC, Control] = ThermoElasticConfigFile(config_dir, pro
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
-        BC.traction_force_node = Mesh.right_nodes;  
-
-        % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        Fnode = 1e7/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        BC.traction_force_node = [];  
         
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-        
-        % Make the vector into an anonymous function in time
-        BC.traction_force_value = @(t) BC.traction_force_value*sin(t); 
-
-    % Neumann boundary conditions (natural) - mechanical
-    % -----------------------------------------------------------------
-        % column vector of prescribed traction dofs
-        BC.flux_force_dof = [];
-
-        % magnitude of prescribed tractions [N]
-        BC.flux_force_dof_value = [];
-        
-        % NOTE: point loads at any of the element nodes can also be 
-        % added as a traction.
-
         % magnitude of distributed body force [N/m] [bx;by]
             % 1D: [N/m], 2D: [N/m2]
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
         BC.b = @(x,t)[];  
+
+    % Neumann boundary conditions (natural) - mechanical
+    % -----------------------------------------------------------------
+        % column vector of prescribed traction dofs
+        BC.flux_dof = [];
+
+        % magnitude of prescribed tractions [N]
+        BC.flux_dof_value = [];
+        
+        % NOTE: point loads at any of the element nodes can also be 
+        % added as a traction.
+        BC.flux_node = Mesh.right_nodes;
+        Flux = 20/(length(BC.flux_node)-1);
+        BC.flux_value = Flux*ones(size(BC.flux_node));
         
         % magnitude of distributed flux source [N/m]
             % 1D: [N/m], 2D: [N/m2]
@@ -302,7 +291,7 @@ function [Mesh, Material, BC, Control] = ThermoElasticConfigFile(config_dir, pro
         BC.s = @(x,t)[];  
 
 %% Initial Conditions
-        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nDOFn*Mesh.nn,1);
         
 %% Computation controls
 
