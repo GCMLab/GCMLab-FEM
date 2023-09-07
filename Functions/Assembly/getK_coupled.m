@@ -82,7 +82,7 @@ for e = 1:Mesh.ne
         Material.Dtype = Material.Dtype_therm;
         D_sca = getD_TH1(nMat, Material, Mesh);
         %coupled matrix coefficient
-        beta = Material.Prop(nMat).alpha*Material.Prop(nMat).E0/(1-2*Material.Prop(nMat).nu);
+        beta = Material.Prop(nMat).beta;
         
     %% Shape functions and derivatives in parent coordinates
         W = Quad.W;

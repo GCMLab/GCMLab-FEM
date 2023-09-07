@@ -32,18 +32,19 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).E0 = 2e2; % Young's modulus [Pa]
     Material.Prop(1).nu = 0.3; % Poisson's ratio
     Material.Prop(1).k1 = 50; % Conductivity in the x-direction [W/mK]
     Material.Prop(1).k2 = 25; % Conductivity in the y-direction [W/mK]
     Material.Prop(1).alpha = 140e-6; % Thermal expansion [1/K]
     Material.Prop(1).C = 5000;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
-
+    Material.Prop(1).beta = Material.Prop(1).alpha*Material.Prop(1).E0/(1-2*Material.Prop(1).nu);
+    
     % Constitutive law mechanic problem: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype_mech = 'PlaneStrain'; 
 
     % Constitutive law thermal problem: 'ISO' or 'ORTHO'
-    Material.Dtype_therm = 'ISO'; 
+    Material.Dtype_therm = 'ORTHO'; 
 
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
@@ -172,23 +173,19 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
         nu = Material.Prop(1).nu;
         k1 = Material.Prop(1).k1;
         k2 = Material.Prop(1).k2;
-        alpha = Material.Prop(1).alpha;
-        C = Material.Prop(1).C;
-        lambda = E0*nu/((1+nu)*(1-2*nu));
-        mu = E0/(2*(1+nu));
-        beta = -(3*lambda +2*mu)*alpha;
+        beta = Material.Prop(1).beta;
         
         % magnitude of distributed body force [N/m] [bx;by]
-        BC.b = @(x,t)[-2*(E0*pi*sin(pi*x(2)/2)*(nu - 3/2)*sin(pi*x(1)/2) + ...
-                       8*(-1/2 + nu)*(1 + nu)*sin(pi*x(2))*cos(pi*x(1))*beta)*pi/...
-                       (16*nu^2 + 8*nu - 8) ; 
+        BC.b = @(x,t)[-(E0*sin(pi*x(2)/2)*pi*(-1 + nu)*sin(pi*x(1)/2) + ...
+            4*sin(pi*x(2))*(1 + nu)*cos(pi*x(1))*(-1/2 + nu)*beta)*pi/...
+            (4*nu^2 + 2*nu - 2); 
                        %
-                       2*(E0*pi*cos(pi*x(2)/2)*(nu - 3/2)*cos(pi*x(1)/2) - ...
-                       8*(1 + nu)*sin(pi*x(1))*cos(pi*x(2))*(-1/2 + nu)*beta)*pi/...
-                       (16*nu^2 + 8*nu - 8) ]./1000;  
+                       (E0*cos(pi*x(2)/2)*pi*(-1 + nu)*cos(pi*x(1)/2) - ...
+                       4*sin(pi*x(1))*(1 + nu)*cos(pi*x(2))*(-1/2 + nu)*beta)*pi/...
+                       (4*nu^2 + 2*nu - 2)]./1000;  
         
         % magnitude of distributed flux source 
-        BC.s = @(x,t) sin(pi*x(1))*sin(pi*x(2))*pi^2*(k1 + k2);  
+        BC.s = @(x,t) (sin(pi*x(2))*sin(pi*x(1))*pi^2*(k1 + k2))./1000;  
 
 %% Initial Conditions
         BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
@@ -196,7 +193,7 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
 %% Computation controls
 
         % quadrature order
-        Control.qo = 2;
+        Control.qo = 3;
 
         % Calculation of values for discontinuous variables 
         % (i.e. stress/strain)
