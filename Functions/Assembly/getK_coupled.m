@@ -123,9 +123,6 @@ for e = 1:Mesh.ne
             % (tensor form)
             dNdxi = dNdxi';
             B = Je\dNdxi;
-
-            % convert N matric to a Voigt form
-            Nv = getNv(N, Mesh.nsd);
             
             % convert B matrix to Voigt form
             Bv = getBv(B', Mesh.nsd);
@@ -134,7 +131,7 @@ for e = 1:Mesh.ne
             switch Mesh.nsd 
                 case 1
                     L = Material.t(Xi);
-                    m = 1;
+                    m = 1; % mapping vector
                 case 2
                     L = Material.t(Xi);
                     m = [1;1;0]; % mapping vector
