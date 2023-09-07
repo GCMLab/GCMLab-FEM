@@ -39,6 +39,7 @@ function Mesh = LoadMesh(meshfile, nsd, config_dir)
 %       Mesh.BC_N_n     Direction of neumann boundary conditions (natural) - points
 %       Mesh.BC_nN_n    Nodes of dirichlet boundary conditions (essential)
 %       Mesh.BC_N_t     Nodes of neumann boundary conditions (natural) - tractions
+%       Mesh.BC_N_e_t   List of elements where tractions are applied
 %       Mesh.MatList    Material type of each element (1 x ne)
 
 % Acknowledgements: Matin Parchei Esfahani
@@ -148,6 +149,8 @@ switch Mesh.ext
             error('Hypermesh file reader only supports 2D mesh')
         end
         
+        end_data_location = find(strcmp(s{1}, 'ENDDATA'));
+        
         % start of nodes section
         n_str = find(strcmp(s{1}, '$$  GRID Data'), 1, 'first') + 2;
         % end of node section
@@ -165,7 +168,7 @@ switch Mesh.ext
         nelem = e_str_e - e_str + 1;
         
         % start of CROD section for tractions Mesh.BC_N_t
-        %       Note: supports only one element type per mesh\
+        %       Note: supports only one element type per mesh
         if ~isempty(find(strcmp(s{1}, '$$  CROD Elements'), 1, 'first'))
             t_str = e_str_e + 5;
             % end of section
@@ -181,11 +184,26 @@ switch Mesh.ext
         % end of section
         ebc_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>ebc_str,1, 'first')) - 1;
         % number of supports
-        nebc = ebc_str_e - ebc_str + 1;        
+        nebc = ebc_str_e - ebc_str + 1*(ebc_str_e ~=  end_data_location);        
+        
+        % start of PLOAD4 for Mesh.BC_N_e_t
+        %       Note: Gets elements where tractions are applied
+        if ~isempty(find(strcmp(s{1}, '$$  PLOAD4 Data'), 1, 'first'))
+            t_e_str = ebc_str_e + 4;
+            % end of section
+            t_e_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>t_e_str,1, 'first')) - 1;
+            % number of elements (must be the same as nt)
+            nt_e = t_e_str_e - t_e_str + 1*(t_e_str_e ~=  end_data_location);
+            if nt_e ~= nt
+                error('The number of edge elements is not compatible with the number of elements where tractions are applied\nNumber of PLOAD4 and CROD are different')
+            end
+        else
+            nt_e = 0;
+        end
         
         % start of FORCE for Mesh.BC_N_n
         if ~isempty(find(strcmp(s{1}, '$$  FORCE Data'), 1, 'first'))
-            nbc_str = ebc_str_e + 4;
+            nbc_str = t_e_str_e + 4;
             % end of section
             nbc_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>nbc_str,1, 'first')) - 1;
             % number of forces
@@ -197,6 +215,7 @@ switch Mesh.ext
         % Initialization of relevant matrices/vectors
         x = zeros(nnode, nsd);
         BC_N_t = zeros(nt,2);
+        BC_N_e_t = zeros(nt,1);
         BC_E = zeros(nebc,4);
         BC_nE = zeros(nebc,1);
         BC_N_n = zeros(nnbc,2);
@@ -237,11 +256,16 @@ switch Mesh.ext
 
         % Get natural boundary conditions for Mesh.BC_N_t 
         % Matrix of nodes that define were tractions are applied
+        % and matrix of elements where nodes are appleid
         for i = 1:nt
             temp = s{1}(t_str+i-1);
             temp = char(split(temp,','));
             BC_N_t(i,1) =  sscanf(temp(end-2,:), '%f');
             BC_N_t(i,2) =  sscanf(temp(end-1,:), '%f');
+            
+            temp = s{1}(t_e_str+i-1);
+            temp = char(split(temp,','));
+            BC_N_e_t(i) =  sscanf(temp(3,:), '%f');
         end
         BC_N_t(:,:) = BC_N_t(:,:) - min_conn + 1;
 
@@ -301,8 +325,12 @@ Mesh.conn = conn;
 switch Mesh.ext
     case '.fem'
         Mesh.BC_N_t = BC_N_t;
+        Mesh.BC_N_e_t = BC_N_e_t;
         Mesh.BC_E = BC_E;
         Mesh.BC_nE = BC_nE;
         Mesh.BC_nN_n = BC_nN_n;
         Mesh.BC_N_n = BC_N_n;
+        
+        % Get normals to the tractions
+        Mesh = Normal_traction(Mesh);
 end
