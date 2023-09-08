@@ -111,9 +111,9 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
                 Material.ProblemType            = 2;
                 Material.TimeType               = 1;
             % Thermal Nonlinear Diffusion (Transient)
-            case 'TH3'
-                Material.ConstitutiveLawFile    = 'getD_TH3';
-                Material.StiffnessMatrixFile    = 'getK_TH3';
+            case 'NLTH1'
+                Material.ConstitutiveLawFile    = 'getD_NLTH1';
+                Material.StiffnessMatrixFile    = 'getK_NLTH1';
                 Material.DampingFile            = 'getC';
                 Material.StressStrainFile       = 'getFlux_TH1';
                 Material.PostProcessor          = 'write2vtk_dfsn';
