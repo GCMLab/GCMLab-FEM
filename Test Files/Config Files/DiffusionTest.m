@@ -26,7 +26,6 @@ function [Mesh, Material, BC, Control] = DiffusionTest(config_dir, progress_on)
     % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
 
-    
     [Material, ~, ~] = setMaterialModel(Material);
 
 
@@ -197,7 +196,7 @@ function [Mesh, Material, BC, Control] = DiffusionTest(config_dir, progress_on)
         % 1 = Backward Euler, 0.5 = Crank-Nicolson
         % for 2nd order problem (dynamic)
         % range = [-1/3, 0], use 0 by default
-        Control.alpha = 0.5; 
+        Control.alpha = 1.0; 
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
