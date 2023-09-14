@@ -179,12 +179,19 @@ switch Mesh.ext
             nt = 0;
         end
         
-        % start of SPC (single - point constrains) for BC_E
-        ebc_str = find(strcmp(s{1}, '$$  SPC Data'), 1, 'first') + 2;
-        % end of section
-        ebc_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>ebc_str,1, 'first')) - 1;
-        % number of supports
-        nebc = ebc_str_e - ebc_str + 1*(ebc_str_e ~=  end_data_location);        
+        % fetch collectors 
+        
+        % start of SPC (single - point constrains) for BC_E 
+        spc_text = find(strcmp(s{1}, '$$  SPC Data'), 1, 'first');
+        if ~isempty(spc_text)
+            ebc_str = find(strcmp(s{1}, '$$  SPC Data'), 1, 'first') + 2;
+            % end of section
+            ebc_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>ebc_str,1, 'first')) - 1;
+            % number of supports
+            nebc = ebc_str_e - ebc_str + 1*(ebc_str_e ~=  end_data_location);        
+        else
+            nebc = 0;
+        end
         
         % start of PLOAD4 for Mesh.BC_N_e_t
         %       Note: Gets elements where tractions are applied
@@ -197,8 +204,6 @@ switch Mesh.ext
             if nt_e ~= nt
                 error('The number of edge elements is not compatible with the number of elements where tractions are applied\nNumber of PLOAD4 and CROD are different')
             end
-        else
-            nt_e = 0;
         end
         
         % start of FORCE for Mesh.BC_N_n
