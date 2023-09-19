@@ -1,5 +1,5 @@
 function K = getK_coupled(Mesh, Quad, Material)
-%GETK Stiffness matrix 
+%GETK_COUPLED Stiffness matrix 
 %   K = GETK_COUPLED(Mesh, Quad, Material) is the global thermoelasticity
 %   stiffness matrix for parameters defined in the structure arrays Mesh, 
 %   Quad, and Material. The sparse matrix has size Mesh.nDOF x Mesh.nDOF
@@ -30,7 +30,7 @@ function K = getK_coupled(Mesh, Quad, Material)
 %   Material:   Structure array with the following fields,
 %               .t:         Material thickness
 
-% Acknowledgements: Chris Ladubec
+% Acknowledgements: Chris Ladubec, Bruna Campos
 
 % initialize stiffness matrix
 Kuuvec_size = Mesh.ne*(Mesh.nne * Mesh.nsd)^2;          % vector size
