@@ -34,13 +34,31 @@ function Mesh = LoadMesh(meshfile, nsd, config_dir)
 %   Output for .fem files
 %       Mesh.x          Spatial coordinates of mesh
 %       Mesh.conn       Nodal conectivity of elements (ne x nne)
+%
 %       Mesh.BC_E       Direction of dirichlet boundary conditions (essential - displacements)
 %       Mesh.BC_nE      Nodes of dirichlet boundary conditions (essential)
+%                                   OR in case sets are used
+%       Mesh.c_BC_E       Direction of dirichlet boundary conditions (essential - displacements)
+%       Mesh.c_BC_nE      Nodes of dirichlet boundary conditions (essential)
+%
 %       Mesh.BC_N_n     Direction of neumann boundary conditions (natural) - points
 %       Mesh.BC_nN_n    Nodes of dirichlet boundary conditions (essential)
-%       Mesh.BC_N_t     Nodes of neumann boundary conditions (natural) - tractions
+%                                   OR in case sets are used
+%       Mesh.c_BC_N_n     Direction of neumann boundary conditions (natural) - points
+%       Mesh.c_BC_nN_n    Nodes of dirichlet boundary conditions (essential)
+%
+%       Mesh.BC_N_t     Nodes of neumann boundary conditions (natural) -
+%                       tractions (related to edge elements)
 %       Mesh.BC_N_e_t   List of elements where tractions are applied
+%       Mesh.BC_N_t_n_m        List of normasl to edge elements
+%                                   OR in case sets are used
+%       Mesh.c_BC_N_t     Nodes of neumann boundary conditions (natural) -
+%                       tractions (related to edge elements)
+%       Mesh.c_BC_N_e_t   List of elements where tractions are applied
+%       Mesh.c_BC_N_t_n_m        List of normasl to edge elements
+%
 %       Mesh.MatList    Material type of each element (1 x ne)
+
 
 % Acknowledgements: Matin Parchei Esfahani
 
@@ -179,10 +197,9 @@ switch Mesh.ext
             nt = 0;
         end
         
-        % fetch collectors 
-        
         % start of SPC (single - point constrains) for BC_E 
         spc_text = find(strcmp(s{1}, '$$  SPC Data'), 1, 'first');
+        % Obtained location for Essential boundary conditions
         if ~isempty(spc_text)
             ebc_str = find(strcmp(s{1}, '$$  SPC Data'), 1, 'first') + 2;
             % end of section
@@ -219,12 +236,18 @@ switch Mesh.ext
         
         % Initialization of relevant matrices/vectors
         x = zeros(nnode, nsd);
+        
         BC_N_t = zeros(nt,2);
         BC_N_e_t = zeros(nt,1);
+        BC_N_t_set = zeros(nt,1);
+        
         BC_E = zeros(nebc,4);
         BC_nE = zeros(nebc,1);
+        BC_E_set = zeros(nebc,1);
+        
         BC_N_n = zeros(nnbc,2);
         BC_nN_n = zeros(nnbc,1);
+        BC_N_n_set = zeros(nnbc,1);
         
         % Get grid coordinates
         for i = 1:nnode
@@ -271,8 +294,9 @@ switch Mesh.ext
             temp = s{1}(t_e_str+i-1);
             temp = char(split(temp,','));
             BC_N_e_t(i) =  sscanf(temp(3,:), '%f');
+            BC_N_t_set(i,1) =  sscanf(temp(4,:), '%f'); % Set label of distributed loads
         end
-        BC_N_t(:,:) = BC_N_t(:,:) - min_conn + 1;
+        BC_N_t(:,:) = BC_N_t(:,:) - min_conn + 1;            
 
         % Get essential boundary conditions for BC_E
         for i = 1:nebc
@@ -299,9 +323,22 @@ switch Mesh.ext
                 error('Essential boundary conditions should be applied only on X and Y directions in .fem file')
             end
             BC_nE(i,1) = sscanf(temp(end-3,:), '%f'); % Node label of constrain
+            BC_E_set(i,1) = sscanf(temp(end-1,:), '%f'); % Set label of constrain
         end   
         % Correction for node labeling;
         BC_nE(:,:) = BC_nE(:,:) - min_conn + 1;
+        % Collect sets from data
+        u_E = unique(BC_E_set);
+        if length(u_E) ~= 1  && ~isempty(u_E) %Sets are used
+            % Create cell collector
+            c_BC_E = cell(1,length(u_E));
+            c_BC_nE = cell(1,length(u_E));      
+            for i = 1:length(u_E) % loop over all sets
+                temp = find(BC_E_set == i);
+                c_BC_E{i} = BC_E(temp,:);
+                c_BC_nE{i} = BC_nE(temp,:);
+            end
+        end
         
         % Get natural boundary conditions for Mesh.BC_N_n
         for i = 1:nnbc
@@ -312,14 +349,28 @@ switch Mesh.ext
                 error('Forces are applied in a single node both in X and Y \n Define the forces separately')
             elseif abs(sscanf(temp(end-3,:), '%f')) % force on X
                BC_N_n(i,1) = 1; 
+               BC_N_n_set(i,1) =  sscanf(temp(end-3,:), '%f'); % Set label of force
             elseif abs(sscanf(temp(end-2,:), '%f')) % force on Y
                BC_N_n(i,2) = 1;
+               BC_N_n_set(i,1) =  sscanf(temp(end-2,:), '%f'); % Set label of force
             elseif abs(sscanf(temp(end-1,:), '%f'))
                 error('Nodal forces should not be applied in the Z direction in .fem file')
             end
         end
         % Correction for node labeling;
         BC_nN_n(:,:) = BC_nN_n(:,:) - min_conn + 1;
+        % Collect sets from data
+        u_N_n = unique(BC_N_n_set);
+        if length(u_N_n) ~= 1 && ~isempty(u_N_n)%Sets are used
+            % Create cell collector
+            c_BC_N_n = cell(1,length(u_N_n));
+            c_BC_nN_n = cell(1,length(u_N_n));      
+            for i = 1:length(u_N_n) % loop over all sets
+                temp = find(BC_N_n_set == i);
+                c_BC_N_n{i} = BC_N_n(temp,:);
+                c_BC_nN_n{i} = BC_nN_n (temp,:);
+            end
+        end
 end
 
 
@@ -329,13 +380,50 @@ Mesh.conn = conn;
 
 switch Mesh.ext
     case '.fem'
-        Mesh.BC_N_t = BC_N_t;
-        Mesh.BC_N_e_t = BC_N_e_t;
-        Mesh.BC_E = BC_E;
-        Mesh.BC_nE = BC_nE;
-        Mesh.BC_nN_n = BC_nN_n;
-        Mesh.BC_N_n = BC_N_n;
-        
+                        
         % Get normals to the tractions
-        Mesh = Normal_traction(Mesh);
+        if ~isempty(BC_N_t)
+             [n_m, BC_N_e_t,  BC_N_t_set] = Normal_traction(Mesh, BC_N_t, BC_N_e_t, BC_N_t_set);
+        end
+        
+        u_N_t = unique(BC_N_t_set);
+        if length(u_N_t) ~= 1 && ~isempty(u_N_t) %Sets are used on tractions applied as distributed forces
+            % Collect sets from data
+            if length(u_N_t) ~= 1 %Sets are used
+                % Create cell collector
+                c_BC_N_e_t = cell(1,length(u_N_t));   
+                c_BC_n_m = cell(1,length(u_N_t));   
+                c_BC_N_t = cell(1,length(u_N_t));
+                for i = 1:length(u_N_t) % loop over all sets
+                    temp = find(BC_N_t_set == i);
+                    c_BC_N_e_t{i} = BC_N_e_t(temp,:);
+                    c_BC_n_m{i} = n_m(temp,:);
+                    c_BC_N_t{i} = BC_N_t(temp,:);
+                end
+            end
+            Mesh.c_BC_N_t = c_BC_N_t;
+            Mesh.c_BC_N_e_t = c_BC_N_e_t;
+            Mesh.c_BC_N_t_n_m = c_BC_n_m;
+        else
+            Mesh.BC_N_t = BC_N_t;
+            Mesh.BC_N_e_t = BC_N_e_t;
+            Mesh.BC_N_t_n_m = n_m;
+        end
+        
+        if length(u_E) ~= 1 && ~isempty(u_E) %Sets are used on essential boundary conditions
+            Mesh.c_BC_E = c_BC_E;
+            Mesh.c_BC_nE = c_BC_nE;
+        else 
+            Mesh.BC_E = BC_E;
+            Mesh.BC_nE = BC_nE;
+        end
+        
+        if length(u_N_n) ~= 1 && ~isempty(u_N_n) %Sets are used on tractions applied at nodes directly 
+            Mesh.c_BC_N_n = c_BC_N_n;
+            Mesh.c_BC_nN_n = c_BC_nN_n;
+        else
+            Mesh.BC_nN_n = BC_nN_n;
+            Mesh.BC_N_n = BC_N_n;
+        end
+
 end
