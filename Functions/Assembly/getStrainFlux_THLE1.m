@@ -145,7 +145,7 @@ else
                 strain(:, e) = Bv'*de_mech;
                 stress(:, e) = D_mech*strain(:, e);
                 gradT(:, e) = B*de_sca;
-                flux(:, e) = D_sca*gradT;
+                flux(:, e) = D_sca*gradT(:, e);
             case 'nodal'
                 % initialize strain element
                 strain_e = zeros(dim_mech, Mesh.nne);
@@ -179,7 +179,7 @@ else
                     strain_e(:,n) = Bv'*de_mech;
                     stress_e(:,n) = D_mech*strain_e(:,n);
                     gradT_e(:,n) = B*de_sca;
-                    flux_e(:,n) = D_sca*gradT_e;
+                    flux_e(:,n) = D_sca*gradT_e(:,n);
                 end
                 % Add to global gradients
                 strain(:,enodes) = strain(:,enodes) + strain_e;
