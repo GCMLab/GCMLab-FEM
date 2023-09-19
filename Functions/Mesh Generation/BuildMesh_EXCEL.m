@@ -151,7 +151,7 @@ end
         Mesh.eneighbours = 'NA - currently only available for Q4 element';
     end
 %% Node sets
-    Mesh = NodeSets(Mesh);
+    Mesh = NodeSets(Mesh, problemtype);
     
 if progress_on
     disp([num2str(toc),': Done generating mesh...']);

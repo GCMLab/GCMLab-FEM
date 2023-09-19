@@ -208,11 +208,7 @@ end
     end
 
 %% Node sets
-    Mesh = NodeSets(Mesh);
-% create separate node sets for coupled problem
-if problemtype == 3
-    Mesh = NodeSetsCoupled(Mesh);
-end
+    Mesh = NodeSets(Mesh, problemtype);
    
 if progress_on
     disp([num2str(toc),': Done generating mesh...']);
