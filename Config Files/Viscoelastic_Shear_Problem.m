@@ -137,7 +137,7 @@ function [Mesh, Material, BC, Control] = Viscoelastic_Shear_Problem(config_dir, 
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Shear_Mesh.fem';
+            meshFileName = 'Mesh Files\Shear_Mesh.fem';
             % number of space dimensions 
             nsd = 2;
             
