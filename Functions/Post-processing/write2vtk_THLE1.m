@@ -234,7 +234,10 @@ function write2vtk_THLE1(config_name, vtk_dir, Mesh, Control, ...
                 elementdata(end+1).name = 'q';
                 elementdata(end).data = [flux(1,:)', flux(2,:)', zeros(Mesh.ne,1)];
                 elementdata(end).type = 'float';
-
+                
+                elementdata(end+1).name = 'gradT';
+                elementdata(end).data = [gradT(1,:)', gradT(2,:)', zeros(Mesh.ne,1)];
+                elementdata(end).type = 'float';
             end
     
         case 3
@@ -325,6 +328,10 @@ function write2vtk_THLE1(config_name, vtk_dir, Mesh, Control, ...
                 nodedata(end).data = [flux(1,:)',flux(2,:)',flux(3,:)'];
                 nodedata(end).type = 'float';
                 
+                nodedata(end+1).name = 'gradT';
+                nodedata(end).data = [gradT(1,:)',gradT(2,:)',gradT(3,:)'];
+                nodedata(end).type = 'float';
+                
             elseif strcmp(Control.stress_calc, 'center')
 
                 elementdata(end+1).name = 'exx';
@@ -377,6 +384,10 @@ function write2vtk_THLE1(config_name, vtk_dir, Mesh, Control, ...
                 
                 elementdata(end+1).name = 'q';
                 elementdata(end).data = [flux(1,:)',flux(2,:)',flux(3,:)'];
+                elementdata(end).type = 'float';
+                
+                elementdata(end+1).name = 'gradT';
+                elementdata(end).data = [gradT(1,:)',gradT(2,:)',gradT(3,:)'];
                 elementdata(end).type = 'float';
             end
     end
