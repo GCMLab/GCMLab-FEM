@@ -11,7 +11,7 @@
     % Folder name where config files are stored
     DirFolder = 'Config Files';
     % Config files to run. Choose either 'all' or give the file name.
-    FileList = 'ThermalConfigFile';
+    FileList = 'NLElastic_2DPlate';
 
     
     % Directory for VTK Files (end with \)

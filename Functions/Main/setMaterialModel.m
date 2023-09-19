@@ -1,5 +1,5 @@
 function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material)
-%SETMATERIALMODEL - creates pointers to material model files
+%SETMATERIALMODEL creates pointers to material model files
 %           Sets Material structure with the following fields
 %    .ConstitutiveLawFile:           Constitutive model file
 %    .StiffnessMatrixFile:           Stiffness matrix integration file

@@ -1,8 +1,13 @@
-function [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Mesh)
+function [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Mesh, Material, BC)
 %PATCHTEST_CHECK Calculates the error
-%   [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext)
-%   calculates the error related to displacements, reaction forces, and
-%   stress for using a patch test
+%   disp_er = PATCHTEST_CHECK(d, stress, Fext)
+%   calculates the error related to displacements for using a patch test
+%
+%   [disp_er, stress_er] = PATCHTEST_CHECK(d, stress, Fext)
+%   also calculates the error related to the stress for using a patch test
+%
+%   [disp_er, stress_er, reaction_er] = PATCHTEST_CHECK(d, stress, Fext)
+%   also calculates the error related to the reaction force for using a patch test
 %
 %   ----------------------------------------------------------
 %   Input
@@ -25,15 +30,13 @@ function [disp_er, stress_er, reaction_er] = PatchTest_check(d, stress, Fext, Me
 %   applied traction of traction in both x and y directions
 %   stress = [traction*ones(1,Mesh.nn); traction*ones(1,Mesh.nn); zeros(1,Mesh.nn)]
 
-global E nu traction
-
 % Calculate exact solutions
-sigma = traction;
+sigma = BC.traction;
 x = Mesh.x(:,1);
 y = Mesh.x(:,2);
 d_exact = zeros(2*Mesh.nn,1);
-d_exact(1:2:end) = (1-nu)*traction/E.*x;
-d_exact(2:2:end) = (1-nu)*traction/E.*y;
+d_exact(1:2:end) = (1-Material.Prop(1).nu)*BC.traction/Material.Prop(1).E0.*x;
+d_exact(2:2:end) = (1-Material.Prop(1).nu)*BC.traction/Material.Prop(1).E0.*y;
 stress_exact = [sigma*ones(1,Mesh.nn); sigma*ones(1,Mesh.nn); zeros(1,Mesh.nn)];
 
 % Calculate the error

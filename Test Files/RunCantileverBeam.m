@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 7 - Cantilever Beam as part of RunTests
+% Runs unit Test - Cantilever Beam as part of RunTests
 % ------------------------------------------------------------------------
 % Runs cantilever beam under bending. The nodes located at the left edge is
 % fully restrained, and nodal forces are applied to the nodes located at
@@ -23,11 +23,6 @@
 
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global  E nu traction
-        traction = -4e5; % applied traction
-        E = 2e11;  % elastic modulus
-        nu = 0.3;  % poisson's ratio
-        
         config_name = 'CantileverBeam';
 %         main  % Runs calculation
         main_nonlinear % Runs calculation

@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 6 - Plate with Hole as part of RunTests
+% Runs unit Test - Plate with Hole as part of RunTests
 % ------------------------------------------------------------------------
 % Runs plate case of Plate with hole under tension. Adapted from OpenFOAM
 % tutorial problem: https://www.openfoam.com/documentation/tutorial-guide/tutorialse9.php

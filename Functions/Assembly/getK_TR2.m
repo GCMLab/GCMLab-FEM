@@ -1,14 +1,21 @@
 function [K_hat, R_hat, Fint] = getK_TR2(Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, ~, ~, d, dt, ~, C, alpha)
-%GETK_NLELASTIC_TRANSIENT Stiffness matrix for iterative non linear elastic transient case
-%   [K, R, Fint] = GETK_NLELASTIC_TRANSIENT(Mesh, Quad, Material) returns the stiffness
-%   matrix K, the residual vector R, and the internal force vector for the 
-%   iterative solver where the problem uses a nonlinear elastic material
+%GETK_TR2 Stiffness matrix for iterative non linear elastic transient case
+%   K_hat = getK_TR2(Mesh, Quad, Material) returns the stiffness matrix K 
+%   for the iterative solver where the problem uses a nonlinear transient elastic material
 %   
+%   [K_hat, R_hat] = getK_TR2(Mesh, Quad, Material) also returns the residual vector R for the 
+%   iterative solver where the problem uses a nonlinear elastic transient material
+%
+%   [K_hat, R_hat, Fint] = getK_TR2(Mesh, Quad, Material) also returns 
+%   the internal force vector for the iterative solver where the problem uses 
+%   a nonlinear elastic transient material
+%
 %   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
 %   Accepted Inputs (in order)
 %   --------------------------------------------------------------------
-%   getK_elastic(Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1)
+%   getK_TR2(Mesh, Quad, Material, Klin, M, d, dnm1, dnm2, stress, strain, dt, dtnm1)
+%
 %   Mesh:       Structure array with the following fields, may be updated
 %               with new fields
 %               .ne:    Total number of elements in the mesh

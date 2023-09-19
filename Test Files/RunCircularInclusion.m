@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 21 - Circular Inclusion as part of RunTests
+% Runs unit Test - Circular Inclusion as part of RunTests
 % ------------------------------------------------------------------------
 % Runs plate case of circular plate composed of two different materials.
 % Adapted from the reference Sukumar, Natarajan, David L. Chopp, 
@@ -25,10 +25,7 @@
     
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global calc_type
-            config_name = 'CircularInclusion';
-            % run with nodal averaging
-            calc_type = 'center';
+        config_name = 'CircularInclusion';
 %       main  % Runs calculation
         main_nonlinear % Runs calculation
         
