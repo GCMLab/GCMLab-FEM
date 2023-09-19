@@ -135,7 +135,7 @@ function [Mesh, Material, BC, Control] = FineMesh(config_dir, progress_on)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'FineMesh.msh';
+            meshFileName = 'Mesh Files\FineMesh.msh';
             % number of space dimensions 
             nsd = 2;
             
