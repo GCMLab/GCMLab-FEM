@@ -61,7 +61,7 @@
                 disp([num2str(toc),': Assembling Linear Conductivity Matrix...']);
             end
             Klin = getK_dfsn(Mesh, Quad, Material); % Linear conductivity stiffness matrix
-        case 3 % Thermoelastic problem
+        case 3 % Mixed - Coupled problem
             if progress_on
                 disp([num2str(toc),': Assembling Coupled Thermoelasticity Matrix...']);
             end
@@ -120,14 +120,10 @@
         switch Material.ProblemType
             case 1 % Equilibrium problem
                 % Stress/Strain
-                [strain, stress] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
-                gradT = [];
-                flux = [];
+                [strain, stress, gradT, flux] = getStrain(d0, Mesh, Material, Control.stress_calc, Quad);
             case 2 % Diffusion problem
-                [gradT, flux] = getFlux_TH1(d0, Mesh, Material, Control.stress_calc, Quad);
-                strain = [];
-                stress = [];
-            case 3 % Thermoelasticity problem
+                [strain, stress, gradT, flux] = getFlux_TH1(d0, Mesh, Material, Control.stress_calc, Quad);
+            case 3 % Mixed - Coupled problem
                 [strain, stress, gradT, flux] = getStrainFlux_THLE1(d0, Mesh, Material, Control.stress_calc, Quad);
         end
 
@@ -260,7 +256,7 @@ end
         if progress_on
             disp([num2str(toc),': Post-Processing...']);
         end
-        [strain, stress] = feval(stressstrainfile_name, d_m.d, Mesh, Material, Control.stress_calc, Quad, d_m.dnm1);   
+        [strain, stress, gradT, flux] = feval(stressstrainfile_name, d_m.d, Mesh, Material, Control.stress_calc, Quad, d_m.dnm1);   
 
     % Write to vtk
         Fext(BC.fix_dof) = Fint(BC.fix_dof);   % Set external forces as equal to reaction forces at fixed dof for output
