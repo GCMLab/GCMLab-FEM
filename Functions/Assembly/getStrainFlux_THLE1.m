@@ -97,8 +97,8 @@ else
             flux = zeros(dim_sca, Mesh.ne);
         case 'L2projection'
             vec_size = Mesh.ne*Mesh.nne;
-            Amech = zeros(vec_size,1); % matrix of integrals of shape functions - vectorized
-            Asca = zeros(vec_size,1); % matrix of integrals of shape functions - vectorized
+            A_mech = zeros(vec_size,1); % matrix of integrals of shape functions - vectorized
+            A_sca = zeros(vec_size,1); % matrix of integrals of shape functions - vectorized
             
             row = zeros(vec_size,1); % vector of row indices
             col = zeros(vec_size,1); % vector of column indices
@@ -191,11 +191,11 @@ else
                 count_sca(:,enodes) = count_sca(:,enodes) + 1;
             case 'L2projection'
                 % initialize elemental matrices and vectors
-                Amech_e = zeros(Mesh.nne, Mesh.nne);
+                A_mech_e = zeros(Mesh.nne, Mesh.nne);
                 strain_e = zeros(Mesh.nne,dim_mech);    % column vector of strains exx
                 stress_e = zeros(Mesh.nne,dim_mech);    % column vector of stresses sxx
                 
-                Asca_e = zeros(Mesh.nne, Mesh.nne);
+                A_sca_e = zeros(Mesh.nne, Mesh.nne);
                 gradT_e = zeros(Mesh.nne,dim_sca);    % column vector of gradients
                 flux_e = zeros(Mesh.nne,dim_sca);    % column vector of fluxes
                 
@@ -229,8 +229,8 @@ else
                     flux_q = D_sca*gradT_q;
                     
                     % Element level integral of L2-projections
-                    Amech_e = Amech_e + N'*N*Quad.W(q)*dJe;
-                    Asca_e = Asca_e + N'*N*Quad.W(q)*dJe;
+                    A_mech_e = A_mech_e + N'*N*Quad.W(q)*dJe;
+                    A_sca_e = A_sca_e + N'*N*Quad.W(q)*dJe;
                     
                     for i = 1:dim_mech
                         strain_e(:,i) = strain_e(:,i) +  N'*Quad.W(q)*dJe*strain_q(i);
@@ -247,15 +247,15 @@ else
                 % Form the vectorized A matrix
                 nA_e = Mesh.nne^2; % number of entries in A matrix
                 count = count + nA_e;
-                Amech_e = reshape(Amech_e, [nA_e,1]);
-                Asca_e = reshape(Asca_e, [nA_e,1]);
+                A_mech_e = reshape(A_mech_e, [nA_e,1]);
+                A_sca_e = reshape(A_sca_e, [nA_e,1]);
                 
                 rowmatrix = enodes'*ones(1,Mesh.nne);
                 row_e = reshape(rowmatrix, [nA_e,1]);
                 col_e = reshape(rowmatrix',[nA_e,1]);
                 
-                Amech(count-nA_e:count-1) = Amech_e;
-                Asca(count-nA_e:count-1) = Asca_e;
+                A_mech(count-nA_e:count-1) = A_mech_e;
+                A_sca(count-nA_e:count-1) = A_sca_e;
                 
                 row(count-nA_e:count-1) = row_e;
                 col(count-nA_e:count-1) = col_e;
@@ -279,22 +279,22 @@ else
         case 'L2projection'
             % For L2 projection, solve the system of equations and assemble the
             % nodal matrix of stresses/fluxes and gradients
-            Amech = sparse(row, col, Amech, Mesh.nn, Mesh.nn);
+            A_mech = sparse(row, col, A_mech, Mesh.nn, Mesh.nn);
             strainL2 = zeros(size(b_strain));
             stressL2 = zeros(size(b_stress));
             
-            Asca = sparse(row, col, Asca, Mesh.nn, Mesh.nn);
+            A_sca = sparse(row, col, A_sca, Mesh.nn, Mesh.nn);
             gradTL2 = zeros(size(b_gradT));
             fluxL2 = zeros(size(b_flux));
             
             for i = 1:dim_mech
-                strainL2(:,i) = Amech\b_strain(:,i);
-                stressL2(:,i) = Amech\b_stress(:,i);
+                strainL2(:,i) = A_mech\b_strain(:,i);
+                stressL2(:,i) = A_mech\b_stress(:,i);
             end
             
             for i = 1:dim_sca
-                gradTL2(:,i) = Asca\b_gradT(:,i);
-                fluxL2(:,i) = Asca\b_flux(:,i);
+                gradTL2(:,i) = A_sca\b_gradT(:,i);
+                fluxL2(:,i) = A_sca\b_flux(:,i);
             end
             
             strain = strainL2';
