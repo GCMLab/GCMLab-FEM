@@ -1,4 +1,4 @@
-function [strain, stress] = getStrain(d, Mesh, Material, calc_type, Quad, ~)
+function [strain, stress, gradT, flux] = getStrain(d, Mesh, Material, calc_type, Quad, ~)
 %GETSTRAIN Evaluate stress and strain
 %   [strain, stress] = GETSTRAIN(d, Mesh, Material) returns two matrices of 
 %   strains and stresses computed at the center of each element. The 
@@ -56,6 +56,10 @@ function [strain, stress] = getStrain(d, Mesh, Material, calc_type, Quad, ~)
 %       	         each quadrature point
 %       	.Nv:     Cell array (size nq x 1) with shape functions 
 %       	         evaluated at each quadrature point in Voigt form
+
+% void parameters (used in diffusion/coupled problems)
+gradT = [];
+flux = [];
 
 if nargin < 4
     calc_type = 'center';
