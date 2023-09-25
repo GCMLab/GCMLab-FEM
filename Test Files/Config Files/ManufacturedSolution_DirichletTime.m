@@ -1,8 +1,8 @@
 function [Mesh, Material, BC, Control] = ManufacturedSolution_DirichletTime(config_dir, progress_on)
-global Omega1 Omega2 E nu
-%MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
+    global Omega1 Omega2
+%MANUFACTUREDSOLUTION_DIRICHLETTIME Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = MASTERCONFIGFILE() is a structure array with the
+%   Mesh = MANUFACTUREDSOLUTION_DIRICHLETTIME() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 
@@ -61,10 +61,10 @@ global Omega1 Omega2 E nu
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 %       
-%   Mesh = MASTERCONFIGFILE(config_dir) defines the mesh using GMSH file 
+%   Mesh = MANUFACTUREDSOLUTION_DIRICHLETTIME(config_dir) defines the mesh using GMSH file 
 %   import located in the directory config_dir
 %
-%   [Mesh, Material] = MASTERCONFIGFILE() also returns a
+%   [Mesh, Material] = MANUFACTUREDSOLUTION_DIRICHLETTIME() also returns a
 %   structure array with the following fields: 
 %       .nmp:           number of material properties
 %       .Prop:          Material properties
@@ -73,7 +73,7 @@ global Omega1 Omega2 E nu
 %       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
 %       .Prop.t:        Material thickness
 % 
-%   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
+%   [Mesh, Material, BC] = MANUFACTUREDSOLUTION_DIRICHLETTIME() also returns a structure
 %   array with the following fields: 
 %       .fix_disp_dof:              Column vector of degrees of freedom 
 %                                   with prescribed displacements
@@ -91,7 +91,7 @@ global Omega1 Omega2 E nu
 %       .b                          Anonymous function of distributed
 %                                   body force (size 1 x nsd)
 % 
-%   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
+%   [Mesh, Material, BC, Control] = MANUFACTUREDSOLUTION_DIRICHLETTIME() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
@@ -139,8 +139,8 @@ global Omega1 Omega2 E nu
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E0 = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).E0 = 2.5e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.25; % Poisson's ratio
 	
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -201,8 +201,6 @@ global Omega1 Omega2 E nu
             Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end    
    
-
-%% Assign Materials to Mesh
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     

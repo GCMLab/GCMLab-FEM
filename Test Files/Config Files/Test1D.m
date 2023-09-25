@@ -1,5 +1,5 @@
 function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
-%MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
+%TEST1D Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = MASTERCONFIGFILE() is a structure array with the
 %   following fields: 
@@ -60,10 +60,10 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 %       
-%   Mesh = MASTERCONFIGFILE(config_dir) defines the mesh using GMSH file 
+%   Mesh = TEST1D(config_dir) defines the mesh using GMSH file 
 %   import located in the directory config_dir
 %
-%   [Mesh, Material] = MASTERCONFIGFILE() also returns a
+%   [Mesh, Material] = TEST1D() also returns a
 %   structure array with the following fields: 
 %       .nmp:           number of material properties
 %       .Prop:          Material properties
@@ -72,7 +72,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
 %       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
 %       .Prop.t:        Material thickness
 % 
-%   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
+%   [Mesh, Material, BC] = TEST1D() also returns a structure
 %   array with the following fields: 
 %       .fix_disp_dof:              Column vector of degrees of freedom 
 %                                   with prescribed displacements
@@ -90,7 +90,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
 %       .b                          Anonymous function of distributed
 %                                   body force (size 1 x nsd)
 % 
-%   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
+%   [Mesh, Material, BC, Control] = TEST1D() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .MagCoef:       Displacement magnification coefficient
@@ -110,8 +110,6 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
 %                   unstructured mesh is stored
 
 %% Material Properties (Solid)
-    global E nu traction b
-
     % NOTES-------------------------------------------------------------
                                 
         % NOTE: anonymous functions are defined with respect to the variable x,
@@ -141,8 +139,8 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
     Material.nmp = 1;
         
     % Properties material 1
-    Material.Prop(1).E0 = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0; % Poisson's ratio
 
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = ''; 
@@ -200,9 +198,7 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
             
             Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end
-    
 
-%% Assign Materials to Mesh
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
@@ -242,7 +238,8 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         % tensile force applied to right edge
-        BC.traction_force_value = @(t) traction;
+        BC.traction = 6e9; % applied traction [N]
+        BC.traction_force_value = @(t) BC.traction;
             
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
@@ -252,7 +249,8 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t) b;    
+        BC.b_force = 2e9; % applied body force [N/m]
+        BC.b = @(x,t) BC.b_force;    
 
 %% Computation controls
 

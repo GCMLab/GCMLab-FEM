@@ -1,8 +1,11 @@
 function [error_nodal, error_L2] = PlateWithHole_check(Mesh, stress_nodal, stress_L2)
 %PLATEWITHHOLE_CHECK Calculates the error in nodal and L2 projected stresses
-%   [error_nodal, error_L2] = PlateWithHole_check(Mesh, stress_nodal, stress_L2)
-%   calculates the error in stress along the line x = 0 
-
+%   error_nodal = PLATEWITHHOLE_CHECK(Mesh, stress_nodal, stress_L2)
+%   calculates the error in nodal stress along the line x = 0 
+%
+%   [error_nodal, error_L2] = PLATEWITHHOLE_CHECK(Mesh, stress_nodal, stress_L2)
+%   also calculates the error in L2 projected stress along the line x = 0 
+%
 %   Adapted from OpenFOAM: https://www.openfoam.com/documentation/tutorial-guide/tutorialse9.php
 %
 %   ----------------------------------------------------------

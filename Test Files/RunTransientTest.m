@@ -33,7 +33,7 @@
 
         
         % Step 2 - Check results
-        L2d = Transient1D_check(d, Material, Mesh, Control,BC);
+        L2d = Transient1D_check(d, Material, Mesh, Control, BC);
         
         fprintf('\nT3 Transient Cantilever Bar Test: L2-norm of the displacement error at free-end of cantilever bar is %.2e', L2d);
 

@@ -2,7 +2,7 @@ function Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, Q
 %BUILDMESH_IMPORTED Import GMSH file or HYPERMESH file
 %    Mesh = BUILDMESH_IMPORTED(meshFileName, nsd, config_dir) is a structure 
 %   array with the mesh description. The mesh is imported from the GMSH 
-%   file meshFileName in the directory config_dir. The mesh has spatial 
+%   or HYPERMESH file meshFileName in the directory config_dir. The mesh has spatial 
 %   dimension nsd. The import is capable of handling unstructured meshes. 
 % 
 %   --------------------------------------------------------------------

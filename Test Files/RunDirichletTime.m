@@ -1,5 +1,5 @@
 % ------------------------------------------------------------------------
-% Runs unit Test 26 - Dirichlet Time
+% Runs unit Test - Dirichlet Time
 % ------------------------------------------------------------------------
 % This test applies time dependent Dirichlet boundary conditions on a
 % square domain and computes the stress as a function of time.
@@ -21,18 +21,16 @@
         
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global Omega1 Omega2 E nu
+        global Omega1 Omega2
         Omega1 = 2;
         Omega2 = 3;
-        E = 2.5e11;
-        nu = 0.25;
         config_name = 'ManufacturedSolution_DirichletTime'; 
 %       main  % Runs calculation
         main_nonlinear % Runs calculation
         
         % Step 2 - Check results
         % run check file, script is specific to each test
-        time_er = DirichletTime_check(sSave);          
+        time_er = DirichletTime_check(sSave, Material);          
         if time_er < 1e-10
             test_pass = 1;
         else

@@ -12,7 +12,7 @@
     DirFolder = 'Config Files';
     % Config files to run. Choose either 'all' or give the file name.
     FileList = 'MasterConfigFile';
-    
+
     % Directory for VTK Files (end with \)
     if ispc
 %         VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';

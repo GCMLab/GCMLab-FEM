@@ -24,9 +24,7 @@
         
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global meshfilename quadorder E nu
-            E = 2230;
-            nu = 0.3;
+        global meshfilename quadorder
             quadorder = 2; 
             config_name = 'ManufacturedSolution_PlaneStress';
             
@@ -39,6 +37,7 @@
             stress_coarse = stress;
             strain_coarse = strain;
             Mesh_coarse = Mesh;
+            
 
             % Run fine mesh
             meshfilename = 'Mesh Files\Manufactured_fineT6.msh';
@@ -49,6 +48,7 @@
             stress_fine = stress;
             strain_fine = strain;
             Mesh_fine = Mesh;
+            
 
             % Run finer mesh
             meshfilename = 'Mesh Files\Manufactured_finerT6.msh';
@@ -63,7 +63,7 @@
         % Step 2 - Check results
             [m_L2, m_e] = ManufacturedSolution_PlaneStress_check(d_coarse, d_fine, d_finer, ...
                 stress_coarse, stress_fine, stress_finer, strain_coarse, strain_fine, ...
-                strain_finer, Mesh_coarse, Mesh_fine, Mesh_finer);
+                strain_finer, Mesh_coarse, Mesh_fine, Mesh_finer, Material, Control);
             
             fprintf('\nT6 L2-norm converges at a rate of %.2f',m_L2)
             fprintf('\nT6  e-norm converges at a rate of %.2f',m_e)

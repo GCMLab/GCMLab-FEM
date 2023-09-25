@@ -60,10 +60,10 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 %       
-%   Mesh = PLATENLELASTIC(config_dir) defines the mesh using GMSH file 
+%   Mesh = NLELASTIC_2DPLATE(config_dir) defines the mesh using GMSH file 
 %   import located in the directory config_dir
 %
-%   [Mesh, Material] = PLATENLELASTIC() also returns a
+%   [Mesh, Material] = NLELASTIC_2DPLATE() also returns a
 %   structure array with the following fields: 
 %       .nmp:           number of material properties
 %       .Prop:          Material properties
@@ -72,7 +72,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
 %       .Prop.t:        Material thickness
 % 
-%   [Mesh, Material, BC] = PLATENLELASTIC() also returns a structure
+%   [Mesh, Material, BC] = NLELASTIC_2DPLATE() also returns a structure
 %   array with the following fields: 
 %       .fix_disp_dof:              Column vector of degrees of freedom 
 %                                   with prescribed displacements
@@ -90,7 +90,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %       .b                          Anonymous function of distributed
 %                                   body force (size 1 x nsd)
 % 
-%   [Mesh, Material, BC, Control] = PLATENLELASTIC() also returns a 
+%   [Mesh, Material, BC, Control] = NLELASTIC_2DPLATE() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
@@ -177,7 +177,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [1;1];
+            nex = [2;2];
             % element type ('Q4')
             type = 'Q4';
             
@@ -295,8 +295,8 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 3;
-        NumberOfSteps     = 50;
+        Control.EndTime   = 150;
+        NumberOfSteps     = 0.2*Control.EndTime;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise
@@ -317,5 +317,19 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
+        
+        % Aitken Relaxation
+        % Turn on Aitken Relxation (off by default if not specified)
+        Control.aitkenON    = 1;
+        % Min and max relaxation parameters
+        Control.aitkenRange = [0.1,2];
+        % Allow negative aitken relaxation (turn off by default, but may be
+        % useful in very stiff problems).
+        Control.aitkenNeg   = 0;
+        % Optional - specify the degrees of freedom to calculate the
+        % relaxation coefficient. These DOFs should not include any fixed
+        % DOFs as they interfere with the calculation of the relaxation
+        % paramter.
+        Control.relaxDOFs   = setdiff(1:Mesh.nDOF,BC.fix_disp_dof);
         
 end
