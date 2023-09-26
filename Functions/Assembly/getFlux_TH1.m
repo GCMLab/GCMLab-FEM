@@ -167,7 +167,7 @@ else
                     B = Je\dNdxi;
 
                     % calculate stress and strain at quadrature point
-                    gradT_q = D*B*de;
+                    gradT_q = B*de;
                     flux_q = D*gradT_q;
 
                     % Element level integral of L2-projections
