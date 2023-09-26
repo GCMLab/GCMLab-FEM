@@ -60,7 +60,7 @@ function Mesh = LoadMesh(meshfile, nsd, config_dir)
 %       Mesh.MatList    Material type of each element (1 x ne)
 
 
-% Acknowledgements: Matin Parchei Esfahani
+% Acknowledgements: Matin Parchei Esfahani & Nils Betancourt
 
 % Define if it is a .msh or .fem file
 temp = strfind(meshfile,'.');
@@ -225,7 +225,13 @@ switch Mesh.ext
         
         % start of FORCE for Mesh.BC_N_n
         if ~isempty(find(strcmp(s{1}, '$$  FORCE Data'), 1, 'first'))
-            nbc_str = t_e_str_e + 4;
+            % CONTINUE FROM HERE - PROBLEM IF BC_N_e_t does not exists!!
+            if exist('t_e_str_e', 'var')
+                % Tractions where applied as distributed boundary conditions
+                nbc_str = t_e_str_e + 4;
+            else
+                nbc_str = ebc_str_e + 4;
+            end
             % end of section
             nbc_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>nbc_str,1, 'first')) - 1;
             % number of forces
@@ -240,8 +246,10 @@ switch Mesh.ext
         BC_N_t = zeros(nt,2);
         BC_N_e_t = zeros(nt,1);
         BC_N_t_set = zeros(nt,1);
+        n_m = zeros(nt,1);
         
-        BC_E = zeros(nebc,4);
+%         BC_E = zeros(nebc,4); % For rotated DOF case
+        BC_E = zeros(nebc,2);
         BC_nE = zeros(nebc,1);
         BC_E_set = zeros(nebc,1);
         
@@ -313,12 +321,12 @@ switch Mesh.ext
                 BC_E(i,2) = 1;  
             % Case for rotated DOF
             elseif supp == 4        % constrain on X'
-                BC_E(i,3) = 1;         
+%                 BC_E(i,3) = 1;         
             elseif supp == 5    % constrain on Y'
-                BC_E(i,4) = 1;  
+%                 BC_E(i,4) = 1;  
             elseif supp == 45   % constrain on X' and Y'
-                BC_E(i,3) = 1;  
-                BC_E(i,4) = 1;    
+%                 BC_E(i,3) = 1;  
+%                 BC_E(i,4) = 1;    
             else
                 error('Essential boundary conditions should be applied only on X and Y directions in .fem file')
             end
