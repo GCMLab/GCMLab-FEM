@@ -1,15 +1,17 @@
-function Mesh = NodeSets(Mesh)
+function Mesh = NodeSets(Mesh, problemtype)
 %NODESETS define sets of nodes and DOFs in the domain
 %   Mesh = NODESETS(Mesh) updates the structure array containing mesh
 %   information with relevant node sets
-% 
+%
 %   --------------------------------------------------------------------
 %   Input
 %   --------------------------------------------------------------------
 %   Mesh:
 %       .nsd        number of spatial dimensions
-%       .x          array of nodal spatial locations for undeformed mesh 
+%       .x          array of nodal spatial locations for undeformed mesh
 %                   (size nn x nsd in which nn is the number of nodes)
+%   problemtype     type of problem (1) equilibrium, (2) diffusion, (3)
+%                   mixed/coupled
 %   --------------------------------------------------------------------
 %   Output
 %   --------------------------------------------------------------------
@@ -34,7 +36,7 @@ function Mesh = NodeSets(Mesh)
 %       .left_dofy      DOFs on the left boundary in the y-direction
 %       .right_dofx     DOFs on the right boundary in the x-direction
 %       .right_dofy     DOFs on the right boundary in the y-direction
-%   Three-dimensional meshes also contain the new fields, 
+%   Three-dimensional meshes also contain the new fields,
 %       .near_nodes     nodes on the nearest face of the domain
 %       .near_dof       DOFs on the nearest face of the domain
 %       .near_dofx      DOFs on the near face in the x-direction
@@ -54,16 +56,30 @@ switch Mesh.nsd
     case 1
         Mesh.left_nodes = find(Mesh.x(:,1)==min(Mesh.x(:,1)));
         Mesh.right_nodes = find(Mesh.x(:,1)==max(Mesh.x(:,1)));
-
+        
         Mesh.left_dof = Mesh.DOF(Mesh.left_nodes);
         Mesh.right_dof = Mesh.DOF(Mesh.right_nodes);
-
+        
         Mesh.xdofs = 1:Mesh.nDOF;
         Mesh.ydofs = [];
         Mesh.zdofs = [];
-
+        
+        % sets for coupled problem
+        if problemtype == 3
+            Mesh.left_dof_u = Mesh.left_dof(1:2:end);
+            Mesh.left_dof_t = Mesh.left_dof(2:2:end);
+            Mesh.right_dof_u = Mesh.right_dof(1:2:end);
+            Mesh.right_dof_t = Mesh.right_dof(2:2:end);
+            Mesh.xdofs_u = Mesh.xdofs(1:2:end);
+            Mesh.ydofs_u = Mesh.ydofs(1:2:end);
+            Mesh.zdofs_u = Mesh.zdofs(1:2:end);
+            Mesh.xdofs_t = Mesh.xdofs(2:2:end);
+            Mesh.ydofs_t = Mesh.ydofs(2:2:end);
+            Mesh.zdofs_t = Mesh.zdofs(2:2:end);
+        end
+        
     case 2
-        if isfield(Mesh,'ext') 
+        if isfield(Mesh,'ext')
             switch Mesh.ext
                 case '.fem'
                     % The following variables are not prescribed when the data
@@ -71,28 +87,28 @@ switch Mesh.nsd
                     Mesh.xdofs = 1:Mesh.nDOF;
                     Mesh.ydofs = [];
                     Mesh.zdofs = [];
-
-                    if Mesh.nDOFn > 1                                        
+                    
+                    if Mesh.nDOFn > 1
                         % DOFs in the x- and y- directions
                         Mesh.xdofs = 1:2:Mesh.nDOF;
                         Mesh.ydofs = 2:2:Mesh.nDOF;
                         Mesh.zdofs = [];
                     end
-                case '.msh' 
+                case '.msh'
                     % Nodes and dofs on the left face of the domain
                     % (left and right are defined along the x-direction)
                     Mesh.left_nodes = find(Mesh.x(:,1)==min(Mesh.x(:,1)));
-                    Mesh.left_dof = Mesh.DOF(Mesh.left_nodes,:);        
-
+                    Mesh.left_dof = Mesh.DOF(Mesh.left_nodes,:);
+                    
                     % Nodes and dofs on the right face of the domain
                     Mesh.right_nodes = find(Mesh.x(:,1)==max(Mesh.x(:,1)));
                     Mesh.right_dof = Mesh.DOF(Mesh.right_nodes,:);
-
+                    
                     % Nodes and dofs on the top face of the domain
                     % (top and bottom are defined along the y-direction)
                     Mesh.top_nodes = find(Mesh.x(:,2)==max(Mesh.x(:,2)));
                     Mesh.top_dof = Mesh.DOF(Mesh.top_nodes,:);
-
+                    
                     % Nodes and dofs on the bottom face of the domain
                     Mesh.bottom_nodes = find(Mesh.x(:,2)==min(Mesh.x(:,2)));
                     Mesh.bottom_dof =  Mesh.DOF(Mesh.bottom_nodes,:);
@@ -112,7 +128,7 @@ switch Mesh.nsd
                         Mesh.bottom_dofx = Mesh.bottom_dof(:,1);
                         Mesh.bottom_dofy = Mesh.bottom_dof(:,2);
                         
-                                        
+                        
                         % DOFs in the x- and y- directions
                         Mesh.xdofs = 1:2:Mesh.nDOF;
                         Mesh.ydofs = 2:2:Mesh.nDOF;
@@ -122,24 +138,24 @@ switch Mesh.nsd
                     Mesh.left_dof = reshape(Mesh.left_dof',numel(Mesh.left_dof),1);
                     Mesh.right_dof = reshape(Mesh.right_dof',numel(Mesh.right_dof),1);
                     Mesh.top_dof = reshape(Mesh.top_dof',numel(Mesh.top_dof),1);
-                    Mesh.bottom_dof = reshape(Mesh.bottom_dof',numel(Mesh.bottom_dof),1);                 
-
+                    Mesh.bottom_dof = reshape(Mesh.bottom_dof',numel(Mesh.bottom_dof),1);
+                    
             end
-        else % In case BuildMesh_structured.m is used 
-             % Nodes and dofs on the left face of the domain
+        else % In case BuildMesh_structured.m is used
+            % Nodes and dofs on the left face of the domain
             % (left and right are defined along the x-direction)
             Mesh.left_nodes = find(Mesh.x(:,1)==min(Mesh.x(:,1)));
-            Mesh.left_dof = Mesh.DOF(Mesh.left_nodes,:);        
-
+            Mesh.left_dof = Mesh.DOF(Mesh.left_nodes,:);
+            
             % Nodes and dofs on the right face of the domain
             Mesh.right_nodes = find(Mesh.x(:,1)==max(Mesh.x(:,1)));
             Mesh.right_dof = Mesh.DOF(Mesh.right_nodes,:);
-
+            
             % Nodes and dofs on the top face of the domain
             % (top and bottom are defined along the y-direction)
             Mesh.top_nodes = find(Mesh.x(:,2)==max(Mesh.x(:,2)));
             Mesh.top_dof = Mesh.DOF(Mesh.top_nodes,:);
-
+            
             % Nodes and dofs on the bottom face of the domain
             Mesh.bottom_nodes = find(Mesh.x(:,2)==min(Mesh.x(:,2)));
             Mesh.bottom_dof =  Mesh.DOF(Mesh.bottom_nodes,:);
@@ -147,7 +163,7 @@ switch Mesh.nsd
             Mesh.xdofs = 1:Mesh.nDOF;
             Mesh.ydofs = [];
             Mesh.zdofs = [];
-
+            
             
             if Mesh.nDOFn > 1
                 Mesh.left_dofx = Mesh.left_dof(:,1);
@@ -171,17 +187,44 @@ switch Mesh.nsd
             Mesh.left_dof = reshape(Mesh.left_dof',numel(Mesh.left_dof),1);
             Mesh.right_dof = reshape(Mesh.right_dof',numel(Mesh.right_dof),1);
             Mesh.top_dof = reshape(Mesh.top_dof',numel(Mesh.top_dof),1);
-            Mesh.bottom_dof = reshape(Mesh.bottom_dof',numel(Mesh.bottom_dof),1);                      
+            Mesh.bottom_dof = reshape(Mesh.bottom_dof',numel(Mesh.bottom_dof),1);
         end
         
+        % sets for coupled problem
+        if problemtype == 3
+            Mesh.xdofs_u = 1:3:Mesh.nDOF;
+            Mesh.ydofs_u = 2:3:Mesh.nDOF;
+            Mesh.dofs_t = 3:3:Mesh.nDOF;
+            
+            Mesh.top_dof_ux = Mesh.top_dof(1:3:end);
+            Mesh.top_dof_uy = Mesh.top_dof(2:3:end);
+            Mesh.top_dof_u = sort([Mesh.top_dof_ux; Mesh.top_dof_uy]);
+            
+            Mesh.bottom_dof_ux = Mesh.bottom_dof(1:3:end);
+            Mesh.bottom_dof_uy = Mesh.bottom_dof(2:3:end);
+            Mesh.bottom_dof_u  = sort([Mesh.bottom_dof_ux; Mesh.bottom_dof_uy]);
+            
+            Mesh.left_dof_ux = Mesh.left_dof(1:3:end);
+            Mesh.left_dof_uy = Mesh.left_dof(2:3:end);
+            Mesh.left_dof_u  = sort([Mesh.left_dof_ux; Mesh.left_dof_uy]);
+            
+            Mesh.right_dof_ux = Mesh.right_dof(1:3:end);
+            Mesh.right_dof_uy = Mesh.right_dof(2:3:end);
+            Mesh.right_dof_u  = sort([Mesh.right_dof_ux; Mesh.right_dof_uy]);
+            
+            Mesh.top_dof_t = Mesh.top_dof(3:3:end);
+            Mesh.bottom_dof_t = Mesh.bottom_dof(3:3:end);
+            Mesh.left_dof_t = Mesh.left_dof(3:3:end);
+            Mesh.right_dof_t = Mesh.right_dof(3:3:end);
+        end
         
     case 3
         
         % Nodes and dofs on the left face of the domain
         % (left and right are defined along the x-direction)
         Mesh.left_nodes = find(Mesh.x(:,1)==min(Mesh.x(:,1)));
-        Mesh.left_dof = Mesh.DOF(Mesh.left_nodes,:,:);        
-
+        Mesh.left_dof = Mesh.DOF(Mesh.left_nodes,:,:);
+        
         % Nodes and dofs on the right face of the domain
         Mesh.right_nodes = find(Mesh.x(:,1)==max(Mesh.x(:,1)));
         Mesh.right_dof = Mesh.DOF(Mesh.right_nodes,:);
@@ -203,7 +246,7 @@ switch Mesh.nsd
         % Nodes and dofs on the far face of the domain
         Mesh.far_nodes = find(Mesh.x(:,3)==max(Mesh.x(:,3)));
         Mesh.far_dof =  Mesh.DOF(Mesh.far_nodes,:);
-
+        
         if Mesh.nDOFn > 1
             Mesh.left_dofx = Mesh.left_dof(:,1);
             Mesh.left_dofy = Mesh.left_dof(:,2);
@@ -235,19 +278,40 @@ switch Mesh.nsd
         end
         
         Mesh.left_dof = reshape(Mesh.left_dof',numel(Mesh.left_dof),1);
-        Mesh.right_dof = reshape(Mesh.right_dof',numel(Mesh.right_dof),1);        
+        Mesh.right_dof = reshape(Mesh.right_dof',numel(Mesh.right_dof),1);
         Mesh.top_dof = reshape(Mesh.top_dof',numel(Mesh.top_dof),1);
         Mesh.bottom_dof = reshape(Mesh.bottom_dof',numel(Mesh.bottom_dof),1);
         Mesh.near_dof = reshape(Mesh.near_dof',numel(Mesh.near_dof),1);
-        Mesh.far_dof = reshape(Mesh.far_dof',numel(Mesh.far_dof),1);       
+        Mesh.far_dof = reshape(Mesh.far_dof',numel(Mesh.far_dof),1);
         
         Mesh.xdofs = 1:Mesh.nDOF;
         Mesh.ydofs = [];
         Mesh.zdofs = [];
-
-
-
+        
+        % sets for coupled problem
+        if problemtype == 3
+            Mesh.near_dof_ux = Mesh.near_dof(1:4:end);
+            Mesh.near_dof_uy = Mesh.near_dof(2:4:end);
+            Mesh.near_dof_uz = Mesh.near_dof(3:4:end);
+            Mesh.near_dof_u = sort([Mesh.near_dof_ux; Mesh.near_dof_uy; Mesh.near_dof_uz]);
+            
+            Mesh.far_dof_ux = Mesh.far_dof(1:4:end);
+            Mesh.far_dof_uy = Mesh.far_dof(2:4:end);
+            Mesh.far_dof_uz = Mesh.far_dof(3:4:end);
+            Mesh.far_dof_u = sort([Mesh.far_dof_ux; Mesh.far_dof_uy; Mesh.far_dof_uz]);
+            
+            Mesh.left_dof_uz = Mesh.left_dof(3:4:end);
+            Mesh.right_dof_uz = Mesh.right_dof(3:4:end);
+            Mesh.top_dof_uz = Mesh.top_dof(3:4:end);
+            Mesh.bottom_dof_uz = Mesh.bottom_dof(3:4:end);
+            
+            Mesh.near_dof_t = Mesh.near_dof(4:4:end);
+            Mesh.far_dof_t = Mesh.far_dof(4:4:end);
+            Mesh.left_dof_t = Mesh.left_dof(4:4:end);
+            Mesh.right_dof_t = Mesh.right_dof(4:4:end);
+            Mesh.top_dof_t = Mesh.top_dof(4:4:end);
+            Mesh.bottom_dof_t = Mesh.bottom_dof(4:4:end);
+        end
 end
-
 
 end

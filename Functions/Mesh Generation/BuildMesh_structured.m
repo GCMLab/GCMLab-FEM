@@ -338,7 +338,8 @@ end
     Mesh.nodeconn = NodalConn(Mesh);
 
 %% Node sets
-    Mesh = NodeSets(Mesh);       
+    Mesh = NodeSets(Mesh, problemtype);       
+    
 if progress_on
     disp([num2str(toc),': Done generating mesh...']);
 end

@@ -1,5 +1,5 @@
-function [strain, stress] = getStrain_ST1(d, Mesh, Material, calc_type, Quad, dnm1)
-%GETSTRAIN_ST1 Evaluate stress and strain for non linear elastic material
+function [strain, stress, gradT, flux] = getStrain_ST1(d, Mesh, Material, calc_type, Quad, dnm1)
+%GETSTRAIN Evaluate stress and strain
 %   [strain, stress] = GETSTRAIN_ST1(d, Mesh, Material) returns two 
 %   matrices of strains and stresses computed at the center of each element. 
 %   The matrices are of size dim x ne, in which dim = 1 for 1D elements, 3 
@@ -61,6 +61,10 @@ function [strain, stress] = getStrain_ST1(d, Mesh, Material, calc_type, Quad, dn
 %       	         evaluated at each quadrature point in Voigt form
 %
 %   dnm1:       d at time step n-1 
+
+% void parameters (used in diffusion/coupled problems)
+gradT = [];
+flux = [];
 
 % initialize D matrix file pointer
 [~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);
