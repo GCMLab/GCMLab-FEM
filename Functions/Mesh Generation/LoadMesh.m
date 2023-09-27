@@ -47,11 +47,6 @@ function Mesh = LoadMesh(meshfile, nsd, config_dir)
 %       Mesh.c_BC_N_n     Direction of neumann boundary conditions (natural) - points
 %       Mesh.c_BC_nN_n    Nodes of dirichlet boundary conditions (essential)
 %
-%       Mesh.BC_N_t     Nodes of neumann boundary conditions (natural) -
-%                       tractions (related to edge elements)
-%       Mesh.BC_N_e_t   List of elements where tractions are applied
-%       Mesh.BC_N_t_n_m        List of normasl to edge elements
-%                                   OR in case sets are used
 %       Mesh.c_BC_N_t     Nodes of neumann boundary conditions (natural) -
 %                       tractions (related to edge elements)
 %       Mesh.c_BC_N_e_t   List of elements where tractions are applied
@@ -413,9 +408,9 @@ switch Mesh.ext
             Mesh.c_BC_N_e_t = c_BC_N_e_t;
             Mesh.c_BC_N_t_n_m = c_BC_n_m;
         else
-            Mesh.BC_N_t = BC_N_t;
-            Mesh.BC_N_e_t = BC_N_e_t;
-            Mesh.BC_N_t_n_m = n_m;
+            Mesh.c_BC_N_t = BC_N_t;
+            Mesh.c_BC_N_e_t = BC_N_e_t;
+            Mesh.c_BC_N_t_n_m = n_m;
         end
         
         if length(u_E) ~= 1 && ~isempty(u_E) %Sets are used on essential boundary conditions
