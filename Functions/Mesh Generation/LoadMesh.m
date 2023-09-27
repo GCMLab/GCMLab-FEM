@@ -50,7 +50,8 @@ function Mesh = LoadMesh(meshfile, nsd, config_dir)
 %       Mesh.c_BC_N_t     Nodes of neumann boundary conditions (natural) -
 %                       tractions (related to edge elements)
 %       Mesh.c_BC_N_e_t   List of elements where tractions are applied
-%       Mesh.c_BC_N_t_n_m        List of normasl to edge elements
+%       Mesh.c_BC_N_t_n_m        List of normals to edge elements
+%       Mesh.c_BC_N_t_t_m        List of tangents to edge elements
 %
 %       Mesh.MatList    Material type of each element (1 x ne)
 
@@ -242,6 +243,7 @@ switch Mesh.ext
         BC_N_e_t = zeros(nt,1);
         BC_N_t_set = zeros(nt,1);
         n_m = zeros(nt,1);
+        t_m = zeros(nt,1);
         
 %         BC_E = zeros(nebc,4); % For rotated DOF case
         BC_E = zeros(nebc,2);
@@ -386,7 +388,7 @@ switch Mesh.ext
                         
         % Get normals to the tractions
         if ~isempty(BC_N_t)
-             [n_m, BC_N_e_t,  BC_N_t_set] = Normal_traction(Mesh, BC_N_t, BC_N_e_t, BC_N_t_set);
+             [n_m, t_m, BC_N_e_t,  BC_N_t_set] = Normal_traction(Mesh, BC_N_t, BC_N_e_t, BC_N_t_set);
         end
         
         u_N_t = unique(BC_N_t_set);
@@ -396,21 +398,25 @@ switch Mesh.ext
                 % Create cell collector
                 c_BC_N_e_t = cell(1,length(u_N_t));   
                 c_BC_n_m = cell(1,length(u_N_t));   
+                c_BC_t_m = cell(1,length(u_N_t));
                 c_BC_N_t = cell(1,length(u_N_t));
                 for i = 1:length(u_N_t) % loop over all sets
                     temp = find(BC_N_t_set == i);
                     c_BC_N_e_t{i} = BC_N_e_t(temp,:);
                     c_BC_n_m{i} = n_m(temp,:);
+                    c_BC_t_m{i} = t_m(temp,:);
                     c_BC_N_t{i} = BC_N_t(temp,:);
                 end
             end
             Mesh.c_BC_N_t = c_BC_N_t;
             Mesh.c_BC_N_e_t = c_BC_N_e_t;
             Mesh.c_BC_N_t_n_m = c_BC_n_m;
+            Mesh.c_BC_N_t_t_m = c_BC_t_m;
         else
             Mesh.c_BC_N_t = BC_N_t;
             Mesh.c_BC_N_e_t = BC_N_e_t;
             Mesh.c_BC_N_t_n_m = n_m;
+            Mesh.c_BC_N_t_t_m = t_m;
         end
         
         if length(u_E) ~= 1 && ~isempty(u_E) %Sets are used on essential boundary conditions

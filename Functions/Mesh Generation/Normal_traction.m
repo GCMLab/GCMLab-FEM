@@ -1,4 +1,4 @@
-function [n_m, BC_N_e_t,  BC_N_t_set] = Normal_traction(Mesh, BC_N_t, BC_N_e_t, BC_N_t_set)
+function [n_m, t_m, BC_N_e_t,  BC_N_t_set] = Normal_traction(Mesh, BC_N_t, BC_N_e_t, BC_N_t_set)
 %Normal_traction Get the normals of the boundary elements to apply
 %tractions and rearranges the elements of BC_N_e_t so that they match the
 %location of BC_N_t
@@ -19,6 +19,7 @@ function [n_m, BC_N_e_t,  BC_N_t_set] = Normal_traction(Mesh, BC_N_t, BC_N_e_t, 
 %   --------------------------------------------------------------------
 %
 %   n_m         list of normals to edge elements
+%   t_m         list of tangents to edge elements
 %   BC_N_e_t    List of elements where tractions are applied    
 %                               arranged in the same order as BC_N_t
 %   BC_N_t_set  List with information related to which set they belong to
@@ -27,6 +28,7 @@ function [n_m, BC_N_e_t,  BC_N_t_set] = Normal_traction(Mesh, BC_N_t, BC_N_e_t, 
 % Acknowledgements: Nils Betancourt
 
 n_m = zeros(length(BC_N_t),2);
+t_m = zeros(length(BC_N_t),2);
 BC_N_e_t_arranged = zeros(length(BC_N_t),1);
 BC_N_t_set_arranged = zeros(length(BC_N_t),1);
 
@@ -62,18 +64,24 @@ for i = 1:length(BC_N_t)
             n_i(1) = 1;
         end
         
-        if (x_interior(:,2) <= m*(x_interior(:,1) - x0) + y0) %&& ...
-%                 (x_interior(2,2) <= m*(x_interior(2,1) - x0) + y0)
+        % Conventions:
+        %   Normal: outwards of domain
+        %   Tangent: considered in counterclockwise direction
+        if (x_interior(:,2) <= m*(x_interior(:,1) - x0) + y0) 
             if max(x_interior(:,1)) < max(x_edge(:,1))
                 n_m(i,:) = n_i;
+                t_m(i,:) = [-n_i(2), n_i(1)];
             else
                 n_m(i,:) = [-n_i(1), n_i(2)];
+                t_m(i,:) = [-n_i(2), -n_i(1)];
             end
         else
             if max(x_interior(:,1)) < max(x_edge(:,1))
                 n_m(i,:) = [n_i(1), -n_i(2)];
+                t_m(i,:) = [n_i(2), n_i(1)];
             else
                 n_m(i,:) = -n_i;
+                t_m(i,:) = [n_i(2), -n_i(1)];
             end
         end   
 end
