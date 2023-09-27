@@ -19,6 +19,11 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         err_mesh = sprintf('%s\t\t\tError #%d\t:\t Edge elements have been defined but the normals have not been computed as input. Includ Mesh.c_BC_N_t_n_m in input.\n',err_mesh,err_count);
     end
     
+    if isfield(Mesh, 'c_BC_N_t') && ~isfield(Mesh,'c_BC_N_t_t_m')
+        err_count = err_count+1;
+        err_mesh = sprintf('%s\t\t\tError #%d\t:\t Edge elements have been defined but the tangents have not been computed as input. Includ Mesh.c_BC_N_t_t_m in input.\n',err_mesh,err_count);
+    end
+    
     if ~isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m')
         err_count = err_count+1;
         err_mesh = sprintf('%s\t\t\tError #%d\t:\t Normals for traction computation have been defined, but edge elements are not included in input. Include Mesh.c_BC_N_t in input.\n',err_mesh,err_count);
@@ -31,6 +36,13 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         end
     end
     
+    if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_t_m')
+        if length(Mesh.c_BC_N_t) ~= length(Mesh.c_BC_N_t_t_m)
+            err_count = err_count+1;
+            err_mesh = sprintf('%s\t\t\tError #%d\t:\t The number of sets of edge elements is not compatible with the number of sets given for the tangent vectors. Review Mesh.BC_N_t and Mesh.c_BC_N_t_t_m.\n',err_mesh,err_count);
+        end
+    end
+    
     if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m')
         if length(Mesh.c_BC_N_t) == length(Mesh.c_BC_N_t_n_m)
             for i = 1:length(Mesh.c_BC_N_t_n_m)
@@ -39,6 +51,17 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
                 if length(BC_N_t_temp) ~= length(BC_N_t_n_m_temp)
                     err_count = err_count+1;
                     err_mesh = sprintf('%s\t\t\tError #%d\t:\t The number of edge elements and normals in set %d is not compatible. Check size of Mesh.c_BC_N_t{%d} and Mesh.c_BC_N_t_n_m{%d}.\n',err_mesh,err_count, i, i , i);    
+                end
+            end
+        end
+        
+        if length(Mesh.c_BC_N_t) == length(Mesh.c_BC_N_t_t_m)
+            for i = 1:length(Mesh.c_BC_N_t_t_m)
+                BC_N_t_temp = Mesh.c_BC_N_t{i};
+                BC_N_t_t_m_temp = Mesh.c_BC_N_t_n_m{i};
+                if length(BC_N_t_temp) ~= length(BC_N_t_t_m_temp)
+                    err_count = err_count+1;
+                    err_mesh = sprintf('%s\t\t\tError #%d\t:\t The number of edge elements and tangents in set %d is not compatible. Check size of Mesh.c_BC_N_t{%d} and Mesh.c_BC_N_t_t_m{%d}.\n',err_mesh,err_count, i, i , i);    
                 end
             end
         end
