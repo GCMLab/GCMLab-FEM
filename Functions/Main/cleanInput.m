@@ -67,9 +67,13 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         end
     end
     
-    if isfield(Mesh, 'c_BC_N_t') &&  ( ~strcmp(Mesh.type, 'Q4') || ~strcmp(Mesh.type, 'T3') )
-        err_count = err_count+1;
-        err_mesh = sprintf('%s\t\t\tError #%d\t:\tThe computation of tractions using edge elements only works for Q4 and T3 elements.\n',err_mesh,err_count);
+    if ~strcmp(Mesh.type, 'Q4')
+        if ~strcmp(Mesh.type, 'T3')
+            if isfield(Mesh, 'c_BC_N_t')
+                err_count = err_count+1;
+                err_mesh = sprintf('%s\t\t\tError #%d\t:\tThe computation of tractions using edge elements only works for Q4 and T3 elements.\n',err_mesh,err_count);
+            end
+        end
     end
     
 %% Material
