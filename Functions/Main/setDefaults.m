@@ -170,6 +170,12 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         BC.traction_force_node = [];  
         BC.traction_force_value = [];
     end
+    
+    if ~isfield(BC, 'c_N_t_f')
+        war_count = war_count+1;
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.c_N_t_f  not defined - has been set as []\n',war_BC,war_count);
+        BC.c_N_t_f = @(x,t) [];  
+    end
 
     if ~isfield(BC, 'b')    
         war_count = war_count+1;
