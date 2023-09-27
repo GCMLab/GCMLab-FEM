@@ -46,6 +46,12 @@
     % (Done at beginning of code - this assumes all elements are the 
     % same type and same order of quadrature for all integrals)
     Quad = GlobalQuad(Mesh.nsd, Mesh.type, Control.qo);
+    
+    if (isa(BC.c_N_t_f,'cell'))%If edge elements are used
+        Quad_edge = GlobalQuad(1, 'L2', Control.qo);
+    else
+        Quad_edge = [];
+    end
 
 %% Compute system matrices 
 
@@ -102,7 +108,7 @@
 
     d0 = BC.IC(t-dt); % Initial condition for displacement
     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
-    Fext = getFext(Mesh, BC, Quad, t - dt + Dyn_ON*Control.alpha*dt); % External forces
+    Fext = getFext(Mesh, BC, Quad, t - dt + Dyn_ON*Control.alpha*dt, Quad_edge); % External forces
     Fextnm1 = Fext; % Fext at timestep n-1
     d_m.d = d0;     % d at timestep n (trial)
     d_m.dnm1 = d0;  % d at timestep n-1
