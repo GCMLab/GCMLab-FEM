@@ -159,6 +159,8 @@ end
  %% Solve the time-dependent nonlinear problem
  % Set tolerance on the final end time
     t_tol = 1e-10; 
+    k_store = 0;
+    T_store = 0;
  while true   % Timestep loop
     % Output progress
         if progress_on
@@ -172,6 +174,8 @@ end
         converged = 0;                                                          % convergence status
         FintPrev = 0;                                                           % Internal force vector from previous iteration
 
+        iter_store = 0;
+        res_store = 0;
     % Compute external force and residual vectors
         if progress_on
             disp([num2str(toc),': Compute Force Vector...']);
@@ -196,9 +200,7 @@ end
                 fprintf('%d',iter');
                 msg_len = numel(num2str(iter));
             end
-        
-
-      
+          
         % Compute nonlinear stiffness matrix and internal forces
             [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha); 
 
@@ -211,13 +213,35 @@ end
                 resScale = 1+norm(Fint);
             end
         
-        % Calculate residual
             res = norm(ResForce)/resScale;
+            iter_store(end+1) = iter;
+            res_store(end+1) = res;
             rSave(iter) = res;
-        
-        % Check convergence
+
+            % Check convergence
             if res < Control.r_tol
                 converged = 1;
+
+                % NR Plot for Convergence
+                semilogy(iter_store(2:end),res_store(2:end),'o')
+                grid on
+                xlabel('Newton-Raphson Iteration')
+                ylabel('Residual')
+                index = find(max(d_prevIter)==d_prevIter);
+                nMat = 1;
+                [Dtemp, alpha] = getD_NLTH1(nMat, Material, Mesh, d_prevIter(index(1)));
+                k_store(end+1,1) = Dtemp(1,1);
+                T_store(end+1) = d_prevIter(index(1));
+
+                % Estimate rate of convergence
+                if length(res_store) > 2  % Need at least 3 residuals to estimate rate
+                    ratio_1 = res_store(end) / res_store(end-1);
+                    ratio_2 = res_store(end-1) / res_store(end-2);
+
+                    p_estimate = log(ratio_1) / log(ratio_2);
+
+                    fprintf('\n Estimated rate of convergence: %f\n', p_estimate);
+                end
             else
                 % Solve incremental form of system of equations
                     switch Control.LinearSolver
@@ -327,3 +351,9 @@ end
     if progress_on
         disp('done')
     end
+
+    figure(2)
+    plot(T_store(2:end),k_store(2:end))
+    grid on
+    xlabel('Temperature [k]')
+    ylabel('Diffusion Coefficient [W/mK]')
