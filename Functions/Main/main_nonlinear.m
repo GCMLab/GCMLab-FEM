@@ -224,6 +224,7 @@ end
 
                 % NR Plot for Convergence
                 semilogy(iter_store(2:end),res_store(2:end),'o')
+                hold on
                 grid on
                 xlabel('Newton-Raphson Iteration')
                 ylabel('Residual')
@@ -235,8 +236,8 @@ end
 
                 % Estimate rate of convergence
                 if length(res_store) > 2  % Need at least 3 residuals to estimate rate
-                    ratio_1 = res_store(end) / res_store(end-1);
-                    ratio_2 = res_store(end-1) / res_store(end-2);
+                    ratio_1 = res_store(end) / res_store(round(length(res_store)/2));
+                    ratio_2 = res_store(round(length(res_store)/2)) / res_store(2);
 
                     p_estimate = log(ratio_1) / log(ratio_2);
 
