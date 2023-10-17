@@ -16,9 +16,9 @@ function [Mesh, Material, BC, Control] = NLTH1_ABAQUS_Config(config_dir, progres
     Material.nmp = 1;
 
     % Properties Material 1
-    Material.Prop(1).k1 = 0; % Conductivity in the x-direction [W/mK]
+    Material.Prop(1).k1 = 0; % Conductivity in the x-direction [W/m-K]
     Material.Prop(1).C = 19300*100;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
-    Material.Prop(1).a1 = 1; % Conductivity Constant in x-direction [W/mK]
+    Material.Prop(1).a1 = 1000; % Conductivity Constant in x-direction [W/m-K]
     Material.Prop(1).n = 1; % Power Conductivity Constant 
 
     % Constitutive law: 'ISO' or 'ORTHO'
@@ -180,7 +180,7 @@ function [Mesh, Material, BC, Control] = NLTH1_ABAQUS_Config(config_dir, progres
         % time controls
         Control.StartTime = 0;
         Control.EndTime   = 2e6;
-        NumberOfSteps     = 1000;
+        NumberOfSteps     = 1e1;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise
