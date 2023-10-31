@@ -122,6 +122,17 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
                 Material.PostProcessor          = 'write2vtk_THLE1';
                 Material.ProblemType            = 3;
                 Material.TimeType               = 0;
+                
+        % Thermoelasticity (Steady-state)
+            case 'THLE2'
+                Material.ConstitutiveLawFile    = 'getD_THLE1';
+                Material.StiffnessMatrixFile    = 'getK_THLE2';
+                Material.DampingFile            = 'getC_THLE';
+                Material.ExternalForceFile      = 'getFext_coupled';
+                Material.StressStrainFile       = 'getStrainFlux_THLE1';
+                Material.PostProcessor          = 'write2vtk_THLE1';
+                Material.ProblemType            = 3;
+                Material.TimeType               = 1;
     end
 
     % Create function pointers
