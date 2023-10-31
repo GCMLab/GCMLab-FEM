@@ -78,7 +78,7 @@
                 case 2
                     disp([num2str(toc),': Assembling Capacity Matrix...']);
                 case 3
-                    disp([num2str(toc),': Assembling Coupling Thermoelasticity Matrix...']);
+                    disp([num2str(toc),': Assembling Damping Thermoelasticity Matrix...']);
             end
         end
         C = feval(Material.DampingFile, Mesh, Quad, Material); 
