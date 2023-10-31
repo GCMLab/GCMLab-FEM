@@ -111,6 +111,26 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
                 Material.ProblemType            = 2;
                 Material.TimeType               = 1;
 
+            % Thermal Nonlinear Diffusion (Transient)
+            case 'NLTH1'
+                Material.ConstitutiveLawFile    = 'getD_NLTH1';
+                Material.StiffnessMatrixFile    = 'getK_NLTH1';
+                Material.DampingFile            = 'getC';
+                Material.StressStrainFile       = 'getFlux_TH1';
+                Material.PostProcessor          = 'write2vtk_dfsn';
+                Material.ProblemType            = 2;
+                Material.TimeType               = 1;
+     
+        %%%%%%%%%% Thermoelasticity Models
+        % Thermoelasticity (Steady-state)
+            case 'THLE1'
+                Material.ConstitutiveLawFile    = 'getD_THLE1';
+                Material.StiffnessMatrixFile    = 'getK_THLE1';
+                Material.ExternalForceFile      = 'getFext_coupled';
+                Material.StressStrainFile       = 'getStrainFlux_THLE1';
+                Material.PostProcessor          = 'write2vtk_THLE1';
+                Material.ProblemType            = 3;
+                Material.TimeType               = 0;
     end
 
     % Create function pointers
