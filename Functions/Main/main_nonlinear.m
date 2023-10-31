@@ -230,27 +230,27 @@ end
             if res < Control.r_tol
                 converged = 1;
 
-                % NR Plot for Convergence
-                semilogy(iter_store(2:end),res_store(2:end),'o')
-                hold on
-                grid on
-                xlabel('Newton-Raphson Iteration')
-                ylabel('Residual')
-                index = find(max(d_prevIter)==d_prevIter);
-                nMat = 1;
-                [Dtemp, alpha] = getD_NLTH1(nMat, Material, Mesh, d_prevIter(index(1)));
-                k_store(end+1,1) = Dtemp(1,1);
-                T_store(end+1) = d_prevIter(index(1));
+%                 % NR Plot for Convergence
+%                 semilogy(iter_store(2:end),res_store(2:end),'o')
+%                 hold on
+%                 grid on
+%                 xlabel('Newton-Raphson Iteration')
+%                 ylabel('Residual')
+%                 index = find(max(d_prevIter)==d_prevIter);
+%                 nMat = 1;
+%                 [Dtemp, alpha] = getD_NLTH1(nMat, Material, Mesh, d_prevIter(index(1)));
+%                 k_store(end+1,1) = Dtemp(1,1);
+%                 T_store(end+1) = d_prevIter(index(1));
 
-                % Estimate rate of convergence
-                if length(res_store) > 2  % Need at least 3 residuals to estimate rate
-                    ratio_1 = res_store(end) / res_store(round(length(res_store)/2));
-                    ratio_2 = res_store(round(length(res_store)/2)) / res_store(2);
-
-                    p_estimate = log(ratio_1) / log(ratio_2);
-
-                    fprintf('\n Estimated rate of convergence: %f\n', p_estimate);
-                end
+%                 % Estimate rate of convergence
+%                 if length(res_store) > 2  % Need at least 3 residuals to estimate rate
+%                     ratio_1 = res_store(end) / res_store(round(length(res_store)/2));
+%                     ratio_2 = res_store(round(length(res_store)/2)) / res_store(2);
+% 
+%                     p_estimate = log(ratio_1) / log(ratio_2);
+% 
+%                     fprintf('\n Estimated rate of convergence: %f\n', p_estimate);
+%                 end
             else
                 % Solve incremental form of system of equations
                     switch Control.LinearSolver
@@ -361,8 +361,8 @@ end
         disp('done')
     end
 
-    figure(2)
-    plot(T_store(2:end),k_store(2:end))
-    grid on
-    xlabel('Temperature [k]')
-    ylabel('Diffusion Coefficient [W/mK]')
+%     figure(2)
+%     plot(T_store(2:end),k_store(2:end))
+%     grid on
+%     xlabel('Temperature [k]')
+%     ylabel('Diffusion Coefficient [W/mK]')
