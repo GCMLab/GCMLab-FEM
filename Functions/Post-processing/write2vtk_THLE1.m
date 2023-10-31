@@ -1,13 +1,12 @@
-function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
-                        fixedDOF, d, strain, stress, ~, ~, Fint, Fext,~)
-%WRITE2VTK_STATIC Exports results to VTK file 
-%   WRITE2VTK_STATIC(Mesh, Control, fixedDOF, d, strain, stress, Fint, Fext) 
+function write2vtk_THLE1(config_name, vtk_dir, Mesh, Control, ...
+                        fixedDOF, d, strain, stress, gradT, flux, Fint, Fext, timestep, BC)
+%WRITE2VTK_DFSN Exports results to VTK file 
+%   WRITE2VTK_DFSN(Mesh, Control, fixedDOF, d, flux, ~, Fint, Fext) 
 %   produces vtk files that can be opened in Paraview to visualize
 %   the simulation results. The mesh, boundary conditions, and 
 %   simulation parameters are described in the structure arrays
-%   Mesh, fixedDOF, and Control, respectively. The simulation results are 
-%   the vectors d, Fint, and Fext of size ndof x 1, containing the 
-%   displacement, internal forces, and external forces, respectively. 
+%   Mesh, fixedDOF, and Control, respectively. The simulation results is
+%   the vector d, and the fluxes. 
 % 
 %   --------------------------------------------------------------------
 %   Input
@@ -31,23 +30,18 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
 %   fixedDOF:   Row vector containing fixed degrees of freedom
 %   d:          Column vector of displacements (size ndof x 1 where ndof 
 %               is the number of degrees of freedom)
-%   strain:     if Control.stress_calc = 'nodal': Matrix of nodal strains 
-%                           (size dim x nn in which dim is 1 for 1D 
-%                           elements, 3 for 2D elements, and 6 for 3D 
-%                           elements and nn is the number of nodes)
-%               if Control.stress_calc = 'center': Matrix of element 
-%                           strains (calculated at the center of each 
-%                           element); size dim x ne in which ne is the 
-%                           number of elements
-%   stress:     Matrix of stresses (same size as strain matrix)
+%   flux:       Fluxes either nodal or at the center of the elements.
 %   Fint:       Column vector of internal forces (size ndof x 1)
 %   Fext:       Column vector of external forces (size ndof x 1)
 
 %% Define variables
     description = config_name;
-    filename = fullfile(vtk_dir, [config_name '.vtk']); 
+    filename = fullfile(vtk_dir, [config_name '.vtk.',num2str(timestep)]); 
 
     R = Fext - Fint;
+    
+    fixedDOF_mech = BC.fix_disp_dof;
+    fixedDOF_sca = BC.fix_temp_dof;
 
 %% Data
     nodedata(1).name = 'nID';
@@ -62,59 +56,119 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
     nodedata(end).data = Mesh.DOF;
     nodedata(end).type = 'int';
 
-    fixed = zeros(Mesh.nDOF,1);
-    fixed(fixedDOF) = 1;
-    nodedata(end+1).name = 'fixed';
-    nodedata(end).data = fixed(Mesh.DOF);
+    fixed_mech = zeros(Mesh.nDOF,1);
+    fixed_mech(fixedDOF_mech) = 1;
+    nodedata(end+1).name = 'fixed_mech';
+    nodedata(end).data = fixed_mech(Mesh.DOF_mech);
+    nodedata(end).type = 'int';
+    
+    fixed_sca = zeros(Mesh.nDOF,1);
+    fixed_sca(fixedDOF_sca) = 1;
+    nodedata(end+1).name = 'fixed_sca';
+    nodedata(end).data = fixed_sca(Mesh.DOF_sca);
     nodedata(end).type = 'int';
 
     switch Mesh.nsd
         case 1
 
             nodedata(end+1).name = 'U';
-            nodedata(end).data = d(Mesh.DOF);
+            nodedata(end).data = d(Mesh.DOF_mech);
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'T';
+            nodedata(end).data = d(Mesh.DOF_sca);
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'Fext_mech';
+            nodedata(end).data = Fext(Mesh.DOF_mech);
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'Fext_sca';
+            nodedata(end).data = Fext(Mesh.DOF_sca);
             nodedata(end).type = 'float';
 
-            nodedata(end+1).name = 'Fext';
-            nodedata(end).data = Fext(Mesh.DOF);
+            nodedata(end+1).name = 'Fint_mech';
+            nodedata(end).data = Fext(Mesh.DOF_mech);
             nodedata(end).type = 'float';
 
-            nodedata(end+1).name = 'Fint';
-            nodedata(end).data = Fext(Mesh.DOF);
+            nodedata(end+1).name = 'Fint_sca';
+            nodedata(end).data = Fext(Mesh.DOF_sca);
             nodedata(end).type = 'float';
-
-            nodedata(end+1).name = 'R';
-            nodedata(end).data = R(Mesh.DOF);
+            
+            nodedata(end+1).name = 'R_mech';
+            nodedata(end).data = R(Mesh.DOF_mech);
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'R_sca';
+            nodedata(end).data = R(Mesh.DOF_sca);
             nodedata(end).type = 'float';
 
             if strcmp(Control.stress_calc,'nodal') || strcmp(Control.stress_calc,'L2projection') 
                 nodedata(end+1).name = 'exx';
                 nodedata(end).data = strain';
                 nodedata(end).type = 'float';
+                
                 nodedata(end+1).name = 'sxx';
                 nodedata(end).data = stress';
-                nodedata(end).type = 'float';                
+                nodedata(end).type = 'float';   
+                
+                nodedata(end+1).name = 'gradTx';
+                nodedata(end).data = gradT';
+                nodedata(end).type = 'float';
+
+                nodedata(end+1).name = 'qx';
+                nodedata(end).data = flux';
+                nodedata(end).type = 'float';
+
             elseif strcmp(Control.stress_calc, 'center')
                 elementdata(end+1).name = 'exx';
                 elementdata(end).data = strain';
+                elementdata(end).type = 'float';
+                
+                elementdata(end+1).name = 'sxx';
+                elementdata(end).data = stress';
+                elementdata(end).type = 'float';
+                
+                elementdata(end+1).name = 'gradTx';
+                elementdata(end).data = gradT';
+                elementdata(end).type = 'float';
+                
+                elementdata(end+1).name = 'qx';
+                elementdata(end).data = flux';
                 elementdata(end).type = 'float';
             end
             
         case 2
             nodedata(end+1).name = 'U';
-            nodedata(end).data = [d(Mesh.DOF), zeros(size(Mesh.xdofs'))];
-            nodedata(end).type = 'float';
-
-            nodedata(end+1).name = 'Fext';
-            nodedata(end).data = [Fext(Mesh.DOF), zeros(size(Mesh.xdofs'))];
+            nodedata(end).data = [d(Mesh.DOF_mech), zeros(size(Mesh.xdofs_u'))];
             nodedata(end).type = 'float';
             
-            nodedata(end+1).name = 'Fint';
-            nodedata(end).data = [Fint(Mesh.DOF), zeros(size(Mesh.xdofs'))];
+            nodedata(end+1).name = 'T';
+            nodedata(end).data = d(Mesh.DOF_sca);
             nodedata(end).type = 'float';
 
-            nodedata(end+1).name = 'R';
-            nodedata(end).data = [R(Mesh.DOF), zeros(size(Mesh.xdofs'))];
+            nodedata(end+1).name = 'Fext_mech';
+            nodedata(end).data = [Fext(Mesh.DOF_mech), zeros(size(Mesh.xdofs_u'))];
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'Fext_sca';
+            nodedata(end).data = Fext(Mesh.DOF_sca);
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'Fint_mech';
+            nodedata(end).data = [Fint(Mesh.DOF_mech), zeros(size(Mesh.xdofs_u'))];
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'Fint_sca';
+            nodedata(end).data = Fint(Mesh.DOF_sca);
+            nodedata(end).type = 'float';
+
+            nodedata(end+1).name = 'R_mech';
+            nodedata(end).data = [R(Mesh.DOF_mech), zeros(size(Mesh.xdofs_u'))];
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'R_sca';
+            nodedata(end).data = R(Mesh.DOF_sca);
             nodedata(end).type = 'float';
             
 
@@ -142,6 +196,14 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
                 nodedata(end+1).name = 'Sxy';
                 nodedata(end).data = stress(3,:)';
                 nodedata(end).type = 'float';
+                
+                nodedata(end+1).name = 'gradT';
+                nodedata(end).data = [gradT(1,:)',gradT(2,:)', zeros(size(Mesh.dofs_t'))];
+                nodedata(end).type = 'float';
+                
+                nodedata(end+1).name = 'q';
+                nodedata(end).data = [flux(1,:)',flux(2,:)', zeros(size(Mesh.dofs_t'))];
+                nodedata(end).type = 'float';
             
 
             elseif strcmp(Control.stress_calc, 'center')
@@ -168,24 +230,48 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
                 elementdata(end+1).name = 'Sxy';
                 elementdata(end).data = stress(3,:)';
                 elementdata(end).type = 'float';
+                
+                elementdata(end+1).name = 'q';
+                elementdata(end).data = [flux(1,:)', flux(2,:)', zeros(Mesh.ne,1)];
+                elementdata(end).type = 'float';
+                
+                elementdata(end+1).name = 'gradT';
+                elementdata(end).data = [gradT(1,:)', gradT(2,:)', zeros(Mesh.ne,1)];
+                elementdata(end).type = 'float';
             end
     
         case 3
 
             nodedata(end+1).name = 'U';
-            nodedata(end).data = d(Mesh.DOF);
+            nodedata(end).data = d(Mesh.DOF_mech);
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'T';
+            nodedata(end).data = d(Mesh.DOF_sca);
             nodedata(end).type = 'float';
 
-            nodedata(end+1).name = 'Fext';
-            nodedata(end).data = Fext(Mesh.DOF);
+            nodedata(end+1).name = 'Fext_mech';
+            nodedata(end).data = Fext(Mesh.DOF_mech);
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'Fext_sca';
+            nodedata(end).data = Fext(Mesh.DOF_sca);
             nodedata(end).type = 'float';
 
-            nodedata(end+1).name = 'Fint';
-            nodedata(end).data = Fext(Mesh.DOF);
+            nodedata(end+1).name = 'Fint_mech';
+            nodedata(end).data = Fext(Mesh.DOF_mech);
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'Fint_sca';
+            nodedata(end).data = Fext(Mesh.DOF_sca);
             nodedata(end).type = 'float';
 
-            nodedata(end+1).name = 'R';
-            nodedata(end).data = R(Mesh.DOF);
+            nodedata(end+1).name = 'R_mech';
+            nodedata(end).data = R(Mesh.DOF_mech);
+            nodedata(end).type = 'float';
+            
+            nodedata(end+1).name = 'R_sca';
+            nodedata(end).data = R(Mesh.DOF_sca);
             nodedata(end).type = 'float';
 
             if strcmp(Control.stress_calc,'nodal') || strcmp(Control.stress_calc,'L2projection') 
@@ -237,9 +323,17 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
                 nodedata(end+1).name = 'Sxy';
                 nodedata(end).data = stress(6,:)';
                 nodedata(end).type = 'float';
- 
-
+                
+                nodedata(end+1).name = 'q';
+                nodedata(end).data = [flux(1,:)',flux(2,:)',flux(3,:)'];
+                nodedata(end).type = 'float';
+                
+                nodedata(end+1).name = 'gradT';
+                nodedata(end).data = [gradT(1,:)',gradT(2,:)',gradT(3,:)'];
+                nodedata(end).type = 'float';
+                
             elseif strcmp(Control.stress_calc, 'center')
+
                 elementdata(end+1).name = 'exx';
                 elementdata(end).data = strain(1,:)';
                 elementdata(end).type = 'float';
@@ -287,8 +381,15 @@ function write2vtk_static(config_name, vtk_dir, Mesh, Control, ...
                 elementdata(end+1).name = 'Sxy';
                 elementdata(end).data = stress(6,:)';
                 elementdata(end).type = 'float';
+                
+                elementdata(end+1).name = 'q';
+                elementdata(end).data = [flux(1,:)',flux(2,:)',flux(3,:)'];
+                elementdata(end).type = 'float';
+                
+                elementdata(end+1).name = 'gradT';
+                elementdata(end).data = [gradT(1,:)',gradT(2,:)',gradT(3,:)'];
+                elementdata(end).type = 'float';
             end
-
     end
 
 %% Write to vtk

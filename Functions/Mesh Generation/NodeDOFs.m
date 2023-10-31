@@ -30,19 +30,30 @@ function Mesh = NodeDOFs(Mesh, problemtype)
             Mesh.nDOFn = Mesh.nsd;
         case 2  % Diffusion
             Mesh.nDOFn = 1;
-        case 3  % Mixed
-            Mesh.nDOFn = Mesh.nsd+1;
+        case 3  % Mixed - Coupled problem
+            Mesh.nDOFn = Mesh.nsd+1; % total number of DOF per node
+            Mesh.nDOFn_mech = Mesh.nsd; % DOF per node for mechanical problem
+            Mesh.nDOFn_sca = 1; % DOF per node for scalar (e.g., temperature, pressure) problem
     end
-
 
     Mesh.nDOFe = Mesh.nne*Mesh.nDOFn;         % number of DOF per element
     Mesh.nDOF = Mesh.nn*Mesh.nDOFn;           % total number of DOF
     Mesh.DOF = zeros(Mesh.nn, Mesh.nDOFn); 
     
-
-
     for sd = 1:Mesh.nDOFn
        Mesh.DOF(:,sd) = (sd : Mesh.nDOFn : (Mesh.nDOF-(Mesh.nDOFn-sd)))';
+    end
+    
+    if problemtype == 3
+        % mechanical problem
+        Mesh.nDOFe_mech = Mesh.nne*Mesh.nDOFn_mech;         % number of DOF per element
+        Mesh.nDOF_mech = Mesh.nn*Mesh.nDOFn_mech;           % total number of DOF
+        Mesh.DOF_mech = Mesh.DOF(:,1:end-1); 
+    
+        % scalar problem
+        Mesh.nDOFe_sca = Mesh.nne*Mesh.nDOFn_sca;         % number of DOF per element
+        Mesh.nDOF_sca = Mesh.nn*Mesh.nDOFn_sca;           % total number of DOF
+        Mesh.DOF_sca = Mesh.DOF(:,end); 
     end
 
 end

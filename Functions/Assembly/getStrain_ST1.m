@@ -1,4 +1,4 @@
-function [strain, stress] = getStrain_ST1(d, Mesh, Material, calc_type, Quad, dnm1)
+function [strain, stress, gradT, flux] = getStrain_ST1(d, Mesh, Material, calc_type, Quad, dnm1)
 %GETSTRAIN Evaluate stress and strain
 %   [strain, stress] = GETSTRAIN_ST1(d, Mesh, Material) returns two 
 %   matrices of strains and stresses computed at the center of each element. 
@@ -8,17 +8,17 @@ function [strain, stress] = getStrain_ST1(d, Mesh, Material, calc_type, Quad, dn
 %   The non linear elastic material is defined by the law:
 %   E = E0 + E1*I1^2
 %
-%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material, 'none') does 
+%   [strain, stress] = GETSTRAIN_ST1(d, Mesh, Material, 'none') does 
 %   not compute the stresses or strains
 %
-%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material, 'nodal') 
+%   [strain, stress] = GETSTRAIN_ST1(d, Mesh, Material, 'nodal') 
 %   returns matrices of nodal-averaged strains (size dim x nn).
 %
-%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material, 'center') 
+%   [strain, stress] = GETSTRAIN_ST1(d, Mesh, Material, 'center') 
 %   returns matrices of strains computed at the center of each element
 %   (size dim x ne).
 %
-%   [strain, stress] = GETSTRAIN_NLELASTIC(d, Mesh, Material, 'L2projection') 
+%   [strain, stress] = GETSTRAIN_ST1(d, Mesh, Material, 'L2projection') 
 %   returns matrices of L2-projected stresses at the nodes (size dim x nn).
 %
 %   --------------------------------------------------------------------
@@ -61,6 +61,10 @@ function [strain, stress] = getStrain_ST1(d, Mesh, Material, calc_type, Quad, dn
 %       	         evaluated at each quadrature point in Voigt form
 %
 %   dnm1:       d at time step n-1 
+
+% void parameters (used in diffusion/coupled problems)
+gradT = [];
+flux = [];
 
 % initialize D matrix file pointer
 [~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);

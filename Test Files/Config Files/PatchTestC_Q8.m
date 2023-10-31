@@ -1,6 +1,113 @@
 function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
-    global E nu traction quadorder meshfilename
-	
+    global meshfilename quadorder
+%PATCHTESTC_Q8 Mesh, material parameters, boundary conditions, 
+%and control parameters
+%   Mesh = PATCHTESTC_Q8() is a structure array with the
+%   following fields: 
+%       .type:          the topological class of finite element; it is in 
+%                       the general form 'topology-#of nodes' ie a three 
+%                       node triangle is T3 a four node quadralateral is 
+%                       Q4 a 4 node tetrahedra is H4 a 27 node brick is 
+%                       B27 etc. Presently defined are L2, Q4, and Q9. 
+%       .nsd:           Number of spatial dimensions
+%       .ne:            Total number of elements in the mesh
+%       .nne:           Vector of number of nodes per element (size nsd x 1)
+%       .nn:            Total number of nodes 
+%       .nDOFe:         Number of DOFs per element
+%       .nDOF:          Total number of DOFs
+%       .x:             Array of nodal spatial locations for
+%                       undeformed mesh (size nn x nsd)
+%       .conn:          Array of element connectivity (size ne x nne)
+%       .eneighbours:   Array of neighbouring elements (size ne x nneighbours
+%                       in which nneighbours is 1 for 1D elements and 4
+%                       for 2D elements)
+%       .DOF:           Array of DOF indices (size nn x nsd)
+%       .nodeconn:      Array of nodal connectivity (size nn x 8)
+%                       containing the indices of elements connected to 
+%                       each node
+%       .left_nodes     Nodes on the left edge of the domain
+%       .left_dof       DOFs on the left edge of the domain
+%       .right_nodes    Nodes on the right edge of the domain
+%       .right_dof      DOFs on the right edge of the domain
+%       .xdofs          DOFs in the x-direction
+%       .ydofs          DOFs in the y-direction
+%       .zdofs          DOFs in the z-direction
+%   Two-dimensional meshes also contain the fields,
+%       .top_nodes      Nodes on the top edge of the domain
+%       .top_dof        DOFs on the top edge of the domain
+%       .top_dofx       DOFs on the top boundary in the x-direction
+%       .top_dofy       DOFs on the top boundary in the y-direction
+%       .bottom_nodes   Nodes on the bottom edge of the domain
+%       .bottom_dof     DOFs on the bottom edge of the domain
+%       .bottom_dofx    DOFs on the bottom boundary in the x-direction
+%       .bottom_dofy    DOFs on the bottom boundary in the y-direction
+%       .left_dofx      DOFs on the left boundary in the x-direction
+%       .left_dofy      DOFs on the left boundary in the y-direction
+%       .right_dofx     DOFs on the right boundary in the x-direction
+%       .right_dofy     DOFs on the right boundary in the y-direction
+%   Three-dimensional meshes also contain the fields, 
+%       .near_nodes     nodes on the nearest face of the domain
+%       .near_dof       DOFs on the nearest face of the domain
+%       .near_dofx      DOFs on the near face in the x-direction
+%       .near_dofy      DOFs on the near face in the y-direction
+%       .near_dofz      DOFs on the near face in the z-direction
+%       .far_nodes      Nodes on the farthest face of the domain
+%       .far_dof        DOFs on the farthest face of the domain
+%       .far_dofx       DOFs on the far face in the x-direction
+%       .far_dofy       DOFs on the far face in the y-direction
+%       .far_dofz       DOFs on the far face in the z-direction
+%       .left_dofz      DOFs on the left face in the z-direction
+%       .right_dofz     DOFs on the right face in the z-direction
+%       .top_dofz       DOFs on the top face in the z-direction
+%       .bottom_dofz    DOFs on the bottom face in the z-direction
+%       
+%   Mesh = PATCHTESTC_Q8(config_dir) defines the mesh using GMSH file 
+%   import located in the directory config_dir
+%
+%   [Mesh, Material] = PATCHTESTC_Q8() also returns a
+%   structure array with the following fields: 
+%       .nmp:           number of material properties
+%       .Prop:          Material properties
+%       .Prop.E0:       Modulus of elasticity
+%       .Prop.nu:       Poisson's ratio
+%       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
+%       .Prop.t:        Material thickness
+% 
+%   [Mesh, Material, BC] = PATCHTESTC_Q8() also returns a structure
+%   array with the following fields: 
+%       .fix_disp_dof:              Column vector of degrees of freedom 
+%                                   with prescribed displacements
+%                                   (size nfixed x 1)
+%       .fix_disp_value             Column vector of prescribed 
+%                                   displacements (size nfixed x 1)
+%       .traction_force_dof         Column vector of degrees of freedom
+%                                   with prescribed tractions
+%       .traction_force_dof_value   Column vector of prescribed tractions
+%                                   on DOF
+%       .traction_force_node        Column vector of nodes with 
+%                                   prescribed tractions
+%       .traction_force_value       Column vector of prescribed tractions
+%                                   on nodes
+%       .b                          Anonymous function of distributed
+%                                   body force (size 1 x nsd)
+% 
+%   [Mesh, Material, BC, Control] = PATCHTESTC_Q8() also returns a 
+%   structure array with the following fields: 
+%       .qo:            Quadrature order
+%       .stress_calc    Calculation of values for discontinous variables
+%                       ('none', 'nodal', 'center', 'L2projection')
+%       .beta:          Penalty parameter  
+%       .LinearSolver   Method used for solving linear problem:
+%                       'LinearSolver1': Partitioning
+%                       'LinearSolver2': Zeroing DOFs in stiffness matrix 
+%                                        corresponding to essential boundaries
+%                       'LinearSolver3': Penalty method
+%   --------------------------------------------------------------------
+%   Input
+%   --------------------------------------------------------------------
+%   config_dir:     (OPTIONAL) File path for the directory where 
+%                   unstructured mesh is stored
+
 %% Material Properties (Solid)
 
 
@@ -33,8 +140,8 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
     Material.nmp = 1;
     
     % Properties material 1
-    Material.Prop(1).E0 = E; % Young's modulus [Pa]
-    Material.Prop(1).nu = nu; % Poisson's ratio
+    Material.Prop(1).E0 = 2540; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.3; % Poisson's ratio
     
     % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype = 'PlaneStress'; 
@@ -91,11 +198,7 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
             
             Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end
-    
 
-
-
-%% Assign Materials to Mesh
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
@@ -118,8 +221,10 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
     % uy = (1-nu)*t/E*y
     % -----------------------------------------------------------------
         
-        BC.UU = @(x) (1-nu)*traction/E*x(:,1);
-        BC.VV = @(x) (1-nu)*traction/E*x(:,2);
+        BC.traction = 3.495; % applied traction (both directions)
+    
+        BC.UU = @(x) (1-Material.Prop(1).nu)*BC.traction/Material.Prop(1).E0*x(:,1);
+        BC.VV = @(x) (1-Material.Prop(1).nu)*BC.traction/Material.Prop(1).E0*x(:,2);
         
         % column vector of prescribed displacement dof  
         topleftnode = Mesh.left_nodes(find(Mesh.x(Mesh.left_nodes,2) == max(Mesh.x(:,2))));
@@ -155,8 +260,8 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         %t = 4;
         if strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T3')
-            Fright = traction*max(Mesh.x(:,2))/(length(Mesh.right_nodes) - 1); % traction * 1 element length (assumed evenly distributed)
-            Ftop   = traction*max(Mesh.x(:,1))/(length(Mesh.top_nodes)   - 1); % traction * 1 element length (assumed evenly distributed)
+            Fright = BC.traction*max(Mesh.x(:,2))/(length(Mesh.right_nodes) - 1); % traction * 1 element length (assumed evenly distributed)
+            Ftop   = BC.traction*max(Mesh.x(:,1))/(length(Mesh.top_nodes)   - 1); % traction * 1 element length (assumed evenly distributed)
             BC.traction_force_value =       [   Fright*ones(size(Mesh.right_nodes(index_right))),     zeros(size(Mesh.right_nodes(index_right)));      % right side nodes
                                                 zeros(size(Mesh.top_nodes(index_top))),               Ftop*ones(size(Mesh.top_nodes(index_top)));           % top side nodes
                                                 Fright*1/2,                                           Ftop*1/2                                           ]; % top right node
@@ -168,8 +273,8 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
             BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
             BC.traction_force_value(topleftnode,2) = BC.traction_force_value(topleftnode,2)/2;
         elseif strcmp(Mesh.type, 'Q9') || strcmp(Mesh.type, 'T6') || strcmp(Mesh.type, 'Q8')
-            Fright = traction*max(Mesh.x(:,2))/((length(Mesh.right_nodes) - 1)/2);
-            Ftop   = traction*max(Mesh.x(:,1))/((length(Mesh.top_nodes)   - 1)/2);
+            Fright = BC.traction*max(Mesh.x(:,2))/((length(Mesh.right_nodes) - 1)/2);
+            Ftop   = BC.traction*max(Mesh.x(:,1))/((length(Mesh.top_nodes)   - 1)/2);
             BC.traction_force_value = zeros(length(BC.traction_force_node),2);
             for n = 1:length(BC.traction_force_node)
                 if n <= length(Mesh.right_nodes(index_right)) % then node is on the right edge
@@ -217,8 +322,16 @@ function [Mesh, Material, BC, Control] = PatchTestC_Q8(config_dir, progress_on)
         % quadrature order
         Control.qo = quadorder;
 
-        % Nodal averaging for discontinuous variables (stress/strain)
-        % 'none', 'nodal', 'center'
+        % Calculation of values for discontinuous variables 
+        % (i.e. stress/strain)
+        % 'none': calculated at each node for each element separately; 
+        %           no output in vtk
+        % 'nodal': averaged at each node for all elements attached to 
+        %           the node; output as nodal values in vtk
+        % 'center': calculated at the center of each element; output as 
+        %           single value for each element in vtk
+        % 'L2projection': Least squares projection of stress and strain,
+        %           output as nodal values
         Control.stress_calc = 'nodal';
 
         % penalty parameter for solution of static problem with 

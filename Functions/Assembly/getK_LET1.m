@@ -1,9 +1,14 @@
 function [K, R, Fint] = getK_LET1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d_m, dt, ~,C,alpha)
 %GETK_LET1 Stiffness matrix for iterative elastic transient case
-%   [K, R, Fint] = GETK_LET1(...) returns the stiffness
-%   matrix K, the residual vector R, and the internal force vector for the 
-%   iterative solver where the problem uses a linear elastic material
+%   K = GETK_LET1(...) returns the stiffness matrix K for the 
+%   iterative solver where the problem uses a linear elastic transient material
 %   
+%   [K, R] = GETK_LET1(...) also returns the residual vector R for the 
+%   iterative solver where the problem uses a linear elastic transient material
+%
+%   [K, R, Fint] = GETK_LET1(...) also returns the internal force vector for the 
+%   iterative solver where the problem uses a linear elastic transient material
+%
 %   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
 %   Accepted Inputs (in order)

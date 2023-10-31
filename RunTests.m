@@ -9,10 +9,6 @@
     
     % Test VTK output
     plot2vtk = 1;
-%      VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
-%    VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\Fall 2022\Github\Documents\Matlab Results\';
-%     VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
-    VTKFolder ='C:\Users\GZingaro\Desktop\Results';
 
 
     % suppress progress messages
@@ -31,7 +27,7 @@
     addpath(genpath(ConfigDir));
        
     % number of tests - Update when new tests added!
-    ntests = 1; 
+
 
     nameslist = {};
     testnum = 0;
@@ -179,6 +175,10 @@
   %% Test 32 Nonlinear Diffusion - Manufactured Solution
   % Pass Condition: Discrete norm of temperature vs exact solution
       run('TestFile\RunNLDiffusionManufacture')
+
+%% Test 32: Thermoelastic Test - Manufactured solution
+%  Pass Condtion: FEA solution displacements, stresses, and strains are exact
+     run('Test Files\RunThermoelasticTest')
 
 %% Test X: [Test Name] - Short Test Description
 %  Pass Condtion:

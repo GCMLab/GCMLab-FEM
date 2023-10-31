@@ -1,7 +1,8 @@
 function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, progress_on)
-%MASTERCONFIGFILE Mesh, material parameters, boundary conditions, 
+    global calc_type
+%PLATEWITHHOLE_HYPERMESH Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = MASTERCONFIGFILE() is a structure array with the
+%   Mesh = PLATEWITHHOLE_HYPERMESH() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 
@@ -60,10 +61,10 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 %       
-%   Mesh = MASTERCONFIGFILE(config_dir) defines the mesh using GMSH file 
+%   Mesh = PLATEWITHHOLE_HYPERMESH(config_dir) defines the mesh using GMSH file 
 %   import located in the directory config_dir
 %
-%   [Mesh, Material] = MASTERCONFIGFILE() also returns a
+%   [Mesh, Material] = PLATEWITHHOLE_HYPERMESH() also returns a
 %   structure array with the following fields: 
 %       .nmp:           number of material properties
 %       .Prop:          Material properties
@@ -72,7 +73,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
 %       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
 %       .Prop.t:        Material thickness
 % 
-%   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
+%   [Mesh, Material, BC] = PLATEWITHHOLE_HYPERMESH() also returns a structure
 %   array with the following fields: 
 %       .fix_disp_dof:              Column vector of degrees of freedom 
 %                                   with prescribed displacements
@@ -90,7 +91,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
 %       .b                          Anonymous function of distributed
 %                                   body force (size 1 x nsd)
 % 
-%   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
+%   [Mesh, Material, BC, Control] = PLATEWITHHOLE_HYPERMESH() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
@@ -196,10 +197,7 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
             
             Mesh = BuildMesh_EXCEL(meshFileName, nsd, config_dir, progress_on, Material.ProblemType);
     end
-    
 
-
-%% Assign Materials to Mesh
     % type of material per element
     Mesh.MatList = zeros(Mesh.ne, 1, 'int8');
     
@@ -281,7 +279,6 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
         %           single value for each element in vtk
         % 'L2projection': Least squares projection of stress and strain,
         %           output as nodal values
-        global calc_type
         Control.stress_calc = calc_type;
 
         % penalty parameter for solution of static problem with 

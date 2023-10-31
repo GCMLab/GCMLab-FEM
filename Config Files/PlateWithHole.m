@@ -186,13 +186,13 @@ function [Mesh, Material, BC, Control] = PlateWithHole(config_dir, progress_on)
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'PlateWithHoleQ9.msh';
+            meshFileName = 'Mesh Files\PlateWithHoleQ9.msh';
             % number of space dimensions 
             nsd = 2;
             
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);            
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'Mesh Files\CircularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
