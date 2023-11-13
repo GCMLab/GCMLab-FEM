@@ -132,6 +132,7 @@ function [Mesh, Material, BC, Control] = NLElastic_Transient_2DBeam(config_dir, 
         % VE1 - Viscoelaticity with stiffness based damping
         % TH1 - Thermal Diffusion (Steady-State)
         % TH2 - Thermal Diffusion (Transient)
+        % NLTH1 - Nonlinear thermal transient
     Material.Model = 'TR2';
     
     % number of material properties

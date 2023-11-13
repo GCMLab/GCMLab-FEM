@@ -11,7 +11,7 @@
     % Folder name where config files are stored
     DirFolder = 'Config Files';
     % Config files to run. Choose either 'all' or give the file name.
-    FileList = 'NLTH1_ABAQUS_Config';
+    FileList = 'NLThermal1';
 
     % Directory for VTK Files (end with \)
     if ispc
