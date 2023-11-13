@@ -1,4 +1,4 @@
-function [H, R, Fint] = getK_NLTH1(Mesh, Quad, Material, ~, Fext, Fextnm1, ~, ~, d_m, dt, ~, C, beta)
+function [K_hat, R_hat, Fint] = getK_NLTH1(Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, ~, ~, d_m, dt, ~, C, beta)
 %GETK_NLTH1 computes the Hessian matrix (H) and the residual vector for a  
 %   nonlinear heat diffusion problem, where the nonlinearity arises as
 %   k(T) = k_0 + αT^n. 
@@ -38,10 +38,13 @@ function [H, R, Fint] = getK_NLTH1(Mesh, Quad, Material, ~, Fext, Fextnm1, ~, ~,
 %               .t:         Material thickness
 %
 %   Fext:       External force vector at timestep n
-%   H:          Hessian matrix for nonlinear heat diffusion
-%   K:          Stiffness matrix for nonlinear heat diffusion at timestep n
-%   Knm1:       Stiffness matrix for nonlinear heat diffusion at timestep n-1
-%   M:          Mass matrix
+%   Fextnm1:    External force vector at timestep n-1
+%   K:          Hessian matrix for nonlinear heat diffusion
+%   K_hat:      Equivalent stiffness matrix for nonlinear heat diffusion
+%   R_hat:      Equivalent residual force for nonlinear heat diffusion
+%   Fint:       Internal force for nonlinear heat diffusion at timestep n
+%   Fintnm1:    Internal force for nonlinear heat diffusion at timestep n-1
+%   C:          Heat capacity matrix
 %   d_m:        Structure array with the following fields
 %               d:          unconverged degree of freedom vector at current
 %                           timestep n and iteration
@@ -59,21 +62,24 @@ function [H, R, Fint] = getK_NLTH1(Mesh, Quad, Material, ~, Fext, Fextnm1, ~, ~,
 %   dt:         timestep size between timesteps n-1 and n
 %   dtnm1:      timestep size between timesteps n-2 and n-1
 %
-% Acknowledgements: Jonathan Zingaro
+% Acknowledgements: Jonathan Zingaro, Saeed Hatefi Ardakani
 
-d = d_m.d; % Get data from d_m structure for timestep n
-dnm1 = d_m.dnm1; % Get temperature from d_m structure for timestep n-1
+
 
 % initialize stiffness matrix
 vec_size = Mesh.ne*(Mesh.nne)^2; % vector size (solid dofs)
 row = zeros(vec_size, 1);                   % vector of row indices
 col = zeros(vec_size, 1);                   % vector of column indices
-Hvec = zeros(vec_size, 1);                  % vectorized stiffness matrix
+Kvec = zeros(vec_size, 1);                  % vectorized stiffness matrix
+
 count = 1;                                  % DOF counter
 
-% initialize stiffness matrices for K and Knm1
-Kvec = zeros(vec_size, 1);                  % vectorized stiffness matrix
-Knm1vec = zeros(vec_size, 1);               % vectorized stiffness matrix
+% initialize internal force vector
+Fint = zeros(Mesh.nDOF, 1);  
+
+% initialize d vector
+d = d_m.d; % Get data from d_m structure for timestep n
+dnm1 = d_m.dnm1; % Get temperature from d_m structure for timestep n-1
 
 % for each element, compute element stiffness matrix and add to global
 for e = 1:Mesh.ne
@@ -90,7 +96,6 @@ for e = 1:Mesh.ne
         ndofE = numel(dofE);
         % temperature of the element's nodes
         de = d(dofE);
-        denm1 = dnm1(dofE);
         % element material type
         nMat = Mesh.MatList(e); 
         % Constutitive Law Parameters
@@ -106,9 +111,10 @@ for e = 1:Mesh.ne
         A = 0;
 
         % initialize element stiffness matrix
-        He = zeros(ndofE, ndofE); 
         Ke = zeros(ndofE, ndofE); 
-        Knm1e = zeros(ndofE, ndofE); 
+        
+        % initialize element internal force vector
+        fe = zeros(ndofE, 1); 
       
         % loop through all quadrature points
         for q = 1:nq     
@@ -143,62 +149,44 @@ for e = 1:Mesh.ne
                     L = Material.t(Xi);         
             end
 
-            % Tangent Matrix 
             % Compute Temperature at Gaussian Point
             dG = N'*de;
 
-            % Constutitive Law for Nonlinear Diffusion -> TH3
-            [D,alpha] = getD_NLTH1(nMat, Material, Mesh, dG);
+            % Constutitive Law for Nonlinear Diffusion
+            [D, alpha] = getD_NLTH1(nMat, Material, Mesh, dG);
 
-            % Calculate Linear Portion of Hessian Matrix
-            He = He + W(q)*B'*D*B*dJe*L;
+            % Calculate Hessian Matrix
+            Ke = Ke + W(q)*B'*D*B*dJe*L + W(q)*B'*n*alpha*(dG.^(n-1))*B*de*N'*dJe*L;
 
-            % Contruct Remaining Nonlinear Portion of Hessian Matrix
-            for i = 1:Mesh.nne
-                for j = 1:Mesh.nne
-                    He(i,j) = He(i,j) + W(q)*B(:,i)'*n*alpha*(dG.^(n-1))*B(:,j)*dG*dJe*L;
-                end
-            end
+            % Calculate local internal force vector
+            fe = fe + W(q)*B'*D*B*de*L*dJe;
 
-            % Compute Elemental Stiffness Matrix at timestep n
-            Ke = Ke + W(q)*B'*D*B*dJe*L;
-
-            % Compute Elemental Stiffness Matrix at timestep n-1
-            dGnm1 = N'*denm1; % Temperature at Gaussian Point at timestep n-1
-            Dnm1 = getD_NLTH1(nMat, Material, Mesh, dGnm1);
-            Knm1e = Knm1e + W(q)*B'*Dnm1*B*dJe*L;
-          
             % quadrature debug tool
             A = A + W(q)*dJe; 
         end
    
     %% Forming the vectorized stiffness matrix
         count = count + ndofE^2;
-        He = reshape(He, [ndofE^2, 1]);
         Ke = reshape(Ke, [ndofE^2, 1]);
-        Knm1e = reshape(Knm1e, [ndofE^2, 1]);
         rowmatrix = dofE*ones(1,ndofE);        
         rowe = reshape(rowmatrix,[ndofE^2, 1]);
         cole = reshape(rowmatrix',[ndofE^2, 1]);
         
-        Hvec(count-ndofE^2:count-1) = He;
         Kvec(count-ndofE^2:count-1) = Ke;
-        Knm1vec(count-ndofE^2:count-1) = Knm1e;
         row(count-ndofE^2:count-1) = rowe;
         col(count-ndofE^2:count-1) = cole;
        
+        %% Assemble element internal forces
+        Fint(dofE) = Fint(dofE) + fe;
 end
 
 % Sparse Stiffness Matrix
-H = sparse(row, col, Hvec, Mesh.nDOF, Mesh.nDOF);
 K = sparse(row, col, Kvec, Mesh.nDOF, Mesh.nDOF);
-Knm1 = sparse(row, col, Knm1vec, Mesh.nDOF, Mesh.nDOF);
 
-% Final  Hessian Matrix  
-H = beta*H + C./dt;
+% Stiffness matrix in transient case
+K_hat = beta*K + C./dt;
 
 % Residual
-Fint = C*(d-dnm1)./dt + (1-beta)*Knm1*dnm1 + beta*K*d;
-R = beta*Fext + (1-beta)*Fextnm1 - Fint;
+R_hat = beta*Fext + (1-beta)*Fextnm1 - (C*(d-dnm1)./dt + beta*Fint + (1-beta)*Fintnm1);
 
 end

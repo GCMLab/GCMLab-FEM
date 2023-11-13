@@ -17,9 +17,9 @@
     if ispc
 %         VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
 %         VTKFolder ='C:\Users\GZingaro\Desktop\Results';
-%         VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\Fall 2022\Github\Documents\Matlab Results\';
+        VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\Fall 2022\Github\Documents\Matlab Results\';
 %         VTKFolder = 'C:\Users\bccampos\Downloads\Matlab Results\';
-        VTKFolder = 'C:\Users\GZingaro\Documents\MATLAB Results';
+%        VTKFolder = 'C:\Users\GZingaro\Documents\MATLAB Results';
     else
     end
      
