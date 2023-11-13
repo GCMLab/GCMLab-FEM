@@ -2,9 +2,18 @@ function [K_hat, R_hat, Fint] = getK_NLTH1(Mesh, Quad, Material, Fintnm1, Fext, 
 %GETK_NLTH1 computes the Hessian matrix (H) and the residual vector for a  
 %   nonlinear heat diffusion problem, where the nonlinearity arises as
 %   k(T) = k_0 + αT^n. 
-%   [K, R, Fint] = getK_NLTH1(Mesh, Quad, Material, ~, Fext, Fextnm1, ~, ~,
-%   d_m, dt, ~, C, beta) returns the Hessian matrix (H), the residual 
-%   vector (R), and the internal force vector (Fint) used in the 
+%
+%   [K_hat] = getK_NLTH1(Mesh, Quad, Material, ~, Fext, Fextnm1, ~, ~,
+%   d_m, dt, ~, C, beta) returns the stiffness matrix (Hessian matrix) used in the 
+%   computation of the Newton-Raphson solver. 
+
+%   [K_hat, R_hat] = getK_NLTH1(Mesh, Quad, Material, ~, Fext, Fextnm1, ~, ~,
+%   d_m, dt, ~, C, beta) returns the stiffness matrix (Hessian matrix),and the residual 
+%   vector used in the computation of the Newton-Raphson solver. 
+%
+%   [K_hat, R_hat, Fint] = getK_NLTH1(Mesh, Quad, Material, ~, Fext, Fextnm1, ~, ~,
+%   d_m, dt, ~, C, beta) returns the stiffness matrix (Hessian matrix), the residual 
+%   vector, and the internal force vector used in the 
 %   computation of the Newton-Raphson solver. 
 %   
 %   --------------------------------------------------------------------
