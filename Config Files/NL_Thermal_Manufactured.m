@@ -217,11 +217,5 @@ function [Mesh, Material, BC, Control] = NL_Thermal_Manufactured(config_dir, pro
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
-
-        % Manufactured Solution
-        Control.Manufactured = 1; % Compares with Manufactured Solution = 1
-        Control.u_man = @(x,t) sqrt(x(1)^2+x(2)^2)*exp(-t); % Define Manufactured Solution
-        Control.q = @(x,t) [(x(1).*exp(-t).*(10.*exp(-2.*t).*(x(1).^2 + x(2).^2) + 10))./(x(1).^2 + x(2).^2).^(1/2),(x(2).*exp(-t).*(exp(-2.*t).*(x(1).^2 + x(2).^2) + 1))./(x(1).^2 + x(2).^2).^(1/2)];
- 
         
 end
