@@ -163,10 +163,10 @@ for e = 1:Mesh.ne
             dG = N'*de;
 
             % Constutitive Law for Nonlinear Diffusion
-            [D, k] = feval(DMatrix_functn, nMat, Material, Mesh, dG);
+            [D, a] = feval(DMatrix_functn, nMat, Material, Mesh, dG);
 
             % Calculate Hessian Matrix
-            Ke = Ke + W(q)*B'*D*B*dJe*L + W(q)*B'*n*k*(dG.^(n-1))*B*de*N'*dJe*L;
+            Ke = Ke + W(q)*B'*D*B*dJe*L + W(q)*B'*n*a*(dG.^(n-1))*B*de*N'*dJe*L;
 
             % Calculate local internal force vector
             fe = fe + W(q)*B'*D*B*de*L*dJe;
