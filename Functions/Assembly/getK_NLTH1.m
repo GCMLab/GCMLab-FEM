@@ -73,7 +73,8 @@ function [K_hat, R_hat, Fint] = getK_NLTH1(Mesh, Quad, Material, Fintnm1, Fext, 
 %
 % Acknowledgements: Jonathan Zingaro, Saeed Hatefi Ardakani
 
-
+% initialize D matrix file pointer
+[~,DMatrix_functn] = fileparts(Material.ConstitutiveLawFile);
 
 % initialize stiffness matrix
 vec_size = Mesh.ne*(Mesh.nne)^2; % vector size (solid dofs)
@@ -162,10 +163,10 @@ for e = 1:Mesh.ne
             dG = N'*de;
 
             % Constutitive Law for Nonlinear Diffusion
-            [D, alpha] = getD_NLTH1(nMat, Material, Mesh, dG);
+            [D, k] = feval(DMatrix_functn, nMat, Material, Mesh, dG);
 
             % Calculate Hessian Matrix
-            Ke = Ke + W(q)*B'*D*B*dJe*L + W(q)*B'*n*alpha*(dG.^(n-1))*B*de*N'*dJe*L;
+            Ke = Ke + W(q)*B'*D*B*dJe*L + W(q)*B'*n*k*(dG.^(n-1))*B*de*N'*dJe*L;
 
             % Calculate local internal force vector
             fe = fe + W(q)*B'*D*B*de*L*dJe;
