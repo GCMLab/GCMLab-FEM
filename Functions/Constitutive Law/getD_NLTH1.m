@@ -1,4 +1,4 @@
-function [D, k] = getD_NLTH1(nMat, Material, Mesh, dG)
+function [D, a] = getD_NLTH1(nMat, Material, Mesh, dG)
 %getD_NLTH1 Constitutive law for nonlinear diffusion problem
 %   D = getD_NLTH1(nMat, Material, Mesh, dG) is the nonlinear diffusion 
 %   tensor where the constitutive law is a nonlinear relation given as
@@ -30,7 +30,7 @@ function [D, k] = getD_NLTH1(nMat, Material, Mesh, dG)
 %   dG:         temperature at Gaussian point of element e for current
 %               iteration
 %   D:          nonlinear diffusivity tensor
-%   k:          slope of diffusivity tensor
+%   a:          slope of diffusivity tensor
 %   --------------------------------------------------------------------
 %
 %   Acknowledgements : Jonathan Zingaro
@@ -54,16 +54,16 @@ n = Material.Prop(nMat).n; % n Constant
 switch Mesh.nsd
     case 1
         D = k1+a1*dG.^n;
-        k = a1;
+        a = a1;
     case 2
         switch Material.Dtype
             case 'ISO'
-               k = a1*eye(2);
-               D = k1*eye(2)+k*dG.^n;
+               a = a1*eye(2);
+               D = k1*eye(2)+a*dG.^n;
             case 'ORTHO'
                 k0 = [k1,0;0,k2];
-                k = [a1,0;0,a2];
-                D = k0+k*dG.^n;
+                a = [a1,0;0,a2];
+                D = k0+a*dG.^n;
         end
 end
 end
