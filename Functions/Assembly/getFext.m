@@ -219,7 +219,7 @@ if (isa(BC.c_N_t_f,'cell')) && ( strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T
             % Get transversal vector
             t_e = set_BC_N_t_t_m(e_t,:);
             
-            % Loop through all quadratyure points
+            % Loop through all quadrature points
             for q = 1:nq
 
                 % Shape functions and derivatives in parent coordinates

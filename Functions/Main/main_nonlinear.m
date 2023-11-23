@@ -183,7 +183,7 @@ end
             disp([num2str(toc),': Compute Force Vector...']);
         end
         
-        Fext = getFext(Mesh, BC, Quad, t + Dyn_ON*Control.alpha*dt);
+        Fext = getFext(Mesh, BC, Quad, t + Dyn_ON*Control.alpha*dt, Quad_edge);
     
     % Output progress to command window
         if progress_on
