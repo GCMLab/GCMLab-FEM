@@ -169,6 +169,7 @@ switch Mesh.ext
         n_str = find(strcmp(s{1}, '$$  GRID Data'), 1, 'first') + 2;
         % end of node section
         temp_m = find(strcmp(s{1}, '$$')); % Positions where $$ is found
+        temp_m0 = find(strcmp(s{1}, '$')); % Positions where $ is found
         n_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>n_str,1, 'first')) - 1;
         % number of nodes 
         nnode = n_str_e - n_str + 1;
@@ -178,15 +179,23 @@ switch Mesh.ext
         e_str = n_str_e + 5;
         % end of node section
         e_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>e_str,1, 'first')) - 1;
+        e_str_e_1 = temp_m0(find(find(strcmp(s{1}, '$'))>e_str,1, 'first')) - 1; %Addition due to changes in Hypermesh 2022.2
+        if e_str_e > e_str_e_1
+            e_str_e = e_stre_e_1;
+        end
         % number of elements
         nelem = e_str_e - e_str + 1;
-        
+
         % start of CROD section for tractions Mesh.BC_N_t
         %       Note: supports only one element type per mesh
         if ~isempty(find(strcmp(s{1}, '$$  CROD Elements'), 1, 'first'))
             t_str = e_str_e + 5;
             % end of section
             t_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>t_str,1, 'first')) - 1;
+            t_str_e_1 = temp_m0(find(find(strcmp(s{1}, '$$'))>t_str,1, 'first')) - 1; %Addition due to changes in Hypermesh 2022.2
+            if t_str_e > t_str_e_1
+                t_str_e = t_str_e_1;
+            end
             % number of surfaces
             nt = t_str_e - t_str + 1;
         else
