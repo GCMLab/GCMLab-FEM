@@ -53,6 +53,7 @@ function [Mesh, Material, BC, Control] = BoreholePressure_hypermesh(config_dir, 
     end
 
     meshFileName = 'Mesh Files\borehole_pressure.fem';
+%     meshFileName = 'Mesh Files\borehole_pressure_finer.fem';
     % number of space dimensions 
     nsd = 2;
 
@@ -74,7 +75,9 @@ function [Mesh, Material, BC, Control] = BoreholePressure_hypermesh(config_dir, 
     %       of both Dirichlet and Neumann BC.
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
+        temp_DOF = [Mesh.DOF(Mesh.c_BC_nE{1},:); Mesh.DOF(Mesh.c_BC_nE{2},:)];
+        temp_BC_flag = [Mesh.c_BC_E{1}; Mesh.c_BC_E{2}];
+        temp = temp_DOF.*temp_BC_flag;
         BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
 
         % prescribed displacement for each dof [u1; u2; ...] [m]
@@ -87,30 +90,34 @@ function [Mesh, Material, BC, Control] = BoreholePressure_hypermesh(config_dir, 
 
         % magnitude of prescribed tractions [N]
         BC.traction_force_dof_value = [];
-
-%         temp = Mesh.BC_nN_n;
-        BC.traction_force_node = [];
-
+        
+        %--------------------------------------------------------------
+        % Edge elements and normals are obtained from Mesh structure.
+        % Tractions boundary conditions can be applied as:
+        %    → function for vector on x and y 
+        %    → function for vector on n and s (normal
+        %           and tangential directions of each point of the boundary)
+        % These functions are stored in BC.c_N_t_f
+        % To recognize if the function is case 1 or 2, BC.c_N_t_flag must include
+        % a vector with:
+        %   0 → function for vector on x and y
+        %   1 → function for vector on n and s
+        % -------------------------------------------------------------
+        % Note: The total number of traction functions must be compatible
+        % with the number of sets defined for edge elements
+        % -------------------------------------------------------------
+        BC.c_N_t_f = cell(1,1);
+        BC.c_N_t_f{1} = @(x,t) [-1;0];
+  
+        BC.c_N_t_flag = [1,1];
+        %--------------------------------------------------------------
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
-        t = 10e3; % uniform tensile stress applied to right edge
-        Fnode = t*max(Mesh.x(:,2))/(length(BC.traction_force_node) - 1);
-        BC.traction_force_value = Fnode*[ones(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
+        BC.traction_force_node = [];
         
-        % find the nodes in the top right and bottom right corners
-        toprightnode = find(Mesh.x(BC.traction_force_node,2) == max(Mesh.x(:,2)));
-        botrightnode = find(Mesh.x(BC.traction_force_node,2) == min(Mesh.x(:,2)));
-        
-        BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
-        BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-    
-        % NOTE: point loads at any of the element nodes can also be 
-        % added as a traction.
+        BC.traction_force_value = [];
 
-        % magnitude of distributed body force [N/m] [bx;by]
-            % 1D: [N/m], 2D: [N/m2]
-        	% NOTE: if no body force, use '@(x)[]'
-         	% NOTE: anonymous functions is defined with respect to the 
-            %      variable x,  which is a vector [x(1) x(2)] = [x y]
+        %--------------------------------------------------------------
+        % body force     
         BC.b = @(x)[];    
 
 %% Computation controls

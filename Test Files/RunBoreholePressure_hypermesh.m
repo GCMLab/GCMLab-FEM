@@ -22,17 +22,21 @@
         % Step 1 - Run Simulation
         global calc_type
             config_name = 'BoreholePressure_hypermesh';
-%             config_name = 'PlateWithHole_hypermesh';
-            % run with nodal averaging
+            calc_type = 'L2projection';
+            main_nonlinear % Runs calculation
+            
+            stress_L2 = stress;
+            
+            config_name = 'BoreholePressure_hypermesh';
             calc_type = 'nodal';
             main_nonlinear % Runs calculation
-           
+            
             stress_nodal = stress;
-        
+           
         % Step 2 - Check results
-        % run check file, script is specific to each test
-%         [error_nodal, error_L2] = PlateWithHole_check_hypermesh(Mesh,stress_nodal,stress_L2);
-        [error_nodal, error_L2] = PlateWithHole_check(Mesh,stress_nodal,stress_L2);
+        p = BC.c_N_t_f{1}(1);
+        error = BoreholePressure_check(Mesh,d,p(1),stress_L2, stress_nodal);
+        
         if error_L2 < error_nodal
             test_pass = 1;
         else
