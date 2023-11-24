@@ -16,12 +16,12 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
     
     if isfield(Mesh, 'c_BC_N_t') && ~isfield(Mesh,'c_BC_N_t_n_m')
         err_count = err_count+1;
-        err_mesh = sprintf('%s\t\t\tError #%d\t:\t Edge elements have been defined but the normals have not been computed as input. Includ Mesh.c_BC_N_t_n_m in input.\n',err_mesh,err_count);
+        err_mesh = sprintf('%s\t\t\tError #%d\t:\t Edge elements have been defined but the normals have not been computed as input. Include Mesh.c_BC_N_t_n_m in input.\n',err_mesh,err_count);
     end
     
     if isfield(Mesh, 'c_BC_N_t') && ~isfield(Mesh,'c_BC_N_t_t_m')
         err_count = err_count+1;
-        err_mesh = sprintf('%s\t\t\tError #%d\t:\t Edge elements have been defined but the tangents have not been computed as input. Includ Mesh.c_BC_N_t_t_m in input.\n',err_mesh,err_count);
+        err_mesh = sprintf('%s\t\t\tError #%d\t:\t Edge elements have been defined but the tangents have not been computed as input. Include Mesh.c_BC_N_t_t_m in input.\n',err_mesh,err_count);
     end
     
     if ~isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m')
@@ -43,7 +43,7 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         end
     end
     
-    if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m')
+    if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m')  && isfield(Mesh,'c_BC_N_t_t_m')
         if length(Mesh.c_BC_N_t) == length(Mesh.c_BC_N_t_n_m)
             for i = 1:length(Mesh.c_BC_N_t_n_m)
                 BC_N_t_temp = Mesh.c_BC_N_t{i};
@@ -194,6 +194,16 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         if ~isfield(BC, 'c_N_t_f') 
             err_count = err_count+1;
             err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions functions compatible with the use of edge elements for integration have not been applied. Include BC.c_N_t_f in input.\n',err_BC,err_count);
+        end
+        
+        switch class(BC.c_N_t_f)
+            case 'cell'
+                % Nothing to check
+            otherwise
+                if isempty(BC.c_N_t_f(0,0))
+                    err_count = err_count+1;
+                    err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions functions compatible with the use of edge elements for integration have not been applied. Include BC.c_N_t_f in input.\n',err_BC,err_count);
+                end
         end
         
         if ~isfield(BC, 'c_N_t_flag') 

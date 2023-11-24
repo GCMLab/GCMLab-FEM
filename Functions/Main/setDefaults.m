@@ -173,7 +173,7 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     
     if ~isfield(BC, 'c_N_t_f')
         war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.c_N_t_f  not defined - has been set as []\n',war_BC,war_count);
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.c_N_t_f  not defined - has been set as @(x,t)[]\n',war_BC,war_count);
         BC.c_N_t_f = @(x,t)[];  
     end
 
@@ -185,8 +185,8 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
 
     if ~isfield(BC, 'b')    
         war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.b not defined - has been set as @(x)[]\n',war_BC,war_count);
-        BC.b = @(x)[];  
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.b not defined - has been set as @(x,t)[]\n',war_BC,war_count);
+        BC.b = @(x,t)[];  
     end  
     
     if ~isfield(BC, 'IC')

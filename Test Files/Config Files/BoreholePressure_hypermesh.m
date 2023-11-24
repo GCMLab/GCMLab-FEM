@@ -109,7 +109,7 @@ function [Mesh, Material, BC, Control] = BoreholePressure_hypermesh(config_dir, 
         BC.c_N_t_f = cell(1,1);
         BC.c_N_t_f{1} = @(x,t) [-10^6;0];
   
-        % BC.c_N_t_flag = [1];
+        BC.c_N_t_flag = [1];
         %--------------------------------------------------------------
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         BC.traction_force_node = [];
