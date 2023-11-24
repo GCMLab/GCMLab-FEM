@@ -217,14 +217,17 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
         
-        % TIP for .fem file - HYPERMESH
-        %   Fixed BC
-        %   temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
-        %   BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
-        %
-        %   temp = Mesh.BC_nN_n;
-        %   BC.traction_force_node = temp;
-
+        % TIP for .fem file - HYPERMESH when using sets to define different
+        % forms of essential BC
+        % % column vector of prescribed displacement dof  
+        % temp_DOF = [Mesh.DOF(Mesh.c_BC_nE{1},:); Mesh.DOF(Mesh.c_BC_nE{2},:)];
+        % temp_BC_flag = [Mesh.c_BC_E{1}; Mesh.c_BC_E{2}];
+        % temp = temp_DOF.*temp_BC_flag;
+        % BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
+        % 
+        % % prescribed displacement for each dof [u1; u2; ...] [m]
+        % BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+        
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
@@ -234,13 +237,41 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.fix_disp_value = @(t) sin(t)/1e5*ones(length(BC.fix_disp_dof),1);  
 
     %% Neumann BC
-    % -----------------------------------------------------------------
+    % ----------------------------------------------------------------- 
+        %--------------------------------------------------------------
+        % Method 1:
+        %--------------------------------------------------------------
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
 
         % magnitude of prescribed tractions [N]
         BC.traction_force_dof_value = [];
+        
+        %--------------------------------------------------------------
+        % Method 2:
+        %--------------------------------------------------------------
+        % Edge elements and normals are obtained from Mesh structure.
+        % Tractions boundary conditions can be applied as:
+        %    → function for vector on x and y 
+        %    → function for vector on n and s (normal
+        %           and tangential directions of each point of the boundary)
+        % These functions are stored in BC.c_N_t_f (Neuman _ traction _ function)
+        % To recognize if the function is case 1 or 2, BC.c_N_t_flag must include
+        % a vector with:
+        %   0 → function for vector on x and y
+        %   1 → function for vector on n and s
+        % -------------------------------------------------------------
+        % Note: The total number of traction functions must be compatible
+        % with the number of sets defined for edge elements
+        % -------------------------------------------------------------
+        BC.c_N_t_f = cell(1,1);
+        BC.c_N_t_f{1} = @(x,t) [];
+        % add other functions in cases other sets have been defined
+        BC.c_N_t_flag = [];
 
+        %--------------------------------------------------------------
+        % Method 3:
+        %--------------------------------------------------------------
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
         BC.traction_force_node = Mesh.right_nodes;  
@@ -261,7 +292,10 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
-
+        
+        %--------------------------------------------------------------
+        % Body forces
+        %--------------------------------------------------------------
         % magnitude of distributed body force [N/m] [bx;by]
             % 1D: [N/m], 2D: [N/m2]
         	% NOTE: if no body force, use '@(x)[]'
