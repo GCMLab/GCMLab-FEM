@@ -97,7 +97,7 @@ function [Mesh, Material, BC, Control] = BoreholePressure_hypermesh(config_dir, 
         %    → function for vector on x and y 
         %    → function for vector on n and s (normal
         %           and tangential directions of each point of the boundary)
-        % These functions are stored in BC.c_N_t_f
+        % These functions are stored in BC.c_N_t_f (Neuman _ traction _ function)
         % To recognize if the function is case 1 or 2, BC.c_N_t_flag must include
         % a vector with:
         %   0 → function for vector on x and y
@@ -107,9 +107,9 @@ function [Mesh, Material, BC, Control] = BoreholePressure_hypermesh(config_dir, 
         % with the number of sets defined for edge elements
         % -------------------------------------------------------------
         BC.c_N_t_f = cell(1,1);
-        BC.c_N_t_f{1} = @(x,t) [-1;0];
+        BC.c_N_t_f{1} = @(x,t) [-10^6;0];
   
-        BC.c_N_t_flag = [1,1];
+        BC.c_N_t_flag = [1];
         %--------------------------------------------------------------
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         BC.traction_force_node = [];
