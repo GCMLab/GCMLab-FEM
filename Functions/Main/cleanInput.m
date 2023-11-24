@@ -190,7 +190,7 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions are prescribed at nodes which exceed the total number of nodes\n',err_BC,err_count);
     end
     
-    if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m')
+    if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m') && ~isempty(cell2mat(Mesh.c_BC_N_t)) && ~isempty(cell2mat(Mesh.c_BC_N_t_n_m))
         if ~isfield(BC, 'c_N_t_f') 
             err_count = err_count+1;
             err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions functions compatible with the use of edge elements for integration have not been applied. Include BC.c_N_t_f in input.\n',err_BC,err_count);
@@ -200,17 +200,17 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
             err_count = err_count+1;
             err_BC = sprintf('%s\t\t\tError #%d\t:\t Vector related to orientation of traction application has not been defined. Include BC.c_N_t_flag in input.\n',err_BC,err_count);
         end
-        
+       
         if length(BC.c_N_t_f) ~= length(Mesh.c_BC_N_t)
             err_count = err_count+1;
             err_BC = sprintf('%s\t\t\tError #%d\t:\t Number of functions BC.c_N_t_f is not compatible with the number of sets of edge elements.\n',err_BC,err_count);
         end
-        
+       
         if length(BC.c_N_t_flag) ~= length(Mesh.c_BC_N_t)
             err_count = err_count+1;
             err_BC = sprintf('%s\t\t\tError #%d\t:\t Number of elements in BC.c_N_t_flag is not compatible with the number of functions defined in Mesh.c_BC_N_t.\n',err_BC,err_count);
         end
-        
+
     end
     
     
