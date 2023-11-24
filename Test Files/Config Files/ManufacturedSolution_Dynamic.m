@@ -168,7 +168,10 @@ global nex quadorder E nu rho alpha tf n_steps
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         BC.traction_force_value = @(t) [];
-    
+        
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+          
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 

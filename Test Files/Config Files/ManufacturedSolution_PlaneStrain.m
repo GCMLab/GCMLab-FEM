@@ -147,7 +147,10 @@ global meshfilename quadorder E nu
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         Fnode = 1/(length(BC.traction_force_node) - 1);
         BC.traction_force_value = Fnode*[zeros(size(BC.traction_force_node)), zeros(size(BC.traction_force_node))];
-    
+        
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+          
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 

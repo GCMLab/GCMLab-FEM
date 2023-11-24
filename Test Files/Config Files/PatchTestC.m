@@ -200,6 +200,9 @@ function [Mesh, Material, BC, Control] = PatchTestC(config_dir, progress_on)
         end
   
         
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+          
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.

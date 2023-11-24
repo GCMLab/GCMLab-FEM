@@ -184,7 +184,8 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
             % Version 2 ASCII
             % Ctrl + e to export the mesh, specify extension .msh, specify
             % format Version 2 ASCII
-            meshFileName = 'Mesh Files\PlateWithHole.fem';
+            meshFileName = 'Mesh Files\PlateWithHole_Q4.fem';
+%             meshFileName = 'Mesh Files\borehole_pressure.fem';
             % number of space dimensions 
             nsd = 2;
             
@@ -220,7 +221,6 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-%         BC.fix_disp_dof = [Mesh.left_dofx; Mesh.bottom_dofy];
         temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
         BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
 
@@ -255,7 +255,10 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
         
         BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
         BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-    
+        
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 

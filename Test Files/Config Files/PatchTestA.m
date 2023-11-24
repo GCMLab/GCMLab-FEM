@@ -149,7 +149,10 @@ function [Mesh, Material, BC, Control] = PatchTestA(config_dir, progress_on)
         
         BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
         BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-    
+        
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+          
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
