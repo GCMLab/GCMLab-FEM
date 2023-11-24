@@ -1,9 +1,14 @@
-function [K, R, Fint] = getK_LED1(~, ~, ~, ~, Fext, ~, Klin, M, d_m, dt, ~ ,C,alpha)
+function [K, R, Fint] = getK_LED1(~, ~, ~, ~, Fext, ~, Klin, M, d_m, dt, ~, C, alpha)
 %GETK_LED1 Relevant matrices for HHT dynamic solver
-%   [K, R, Fint] = GETK_LED1(...) returns the coefficient matrix
-%   , the residual vector R, and the internal force vector for the 
+%   K = GETK_LED1(...) returns the coefficient matrix for the 
 %   iterative solver where the problem uses a linear elastic material
 %   
+%   [K, R] = GETK_LED1(...) also returns the residual vector R for the 
+%   iterative solver where the problem uses a linear elastic material
+%
+%   [K, R, Fint] = GETK_LED1(...) also returns the internal force vector for the 
+%   iterative solver where the problem uses a linear elastic material
+%
 %   --------------------------------------------------------------------
 %   Accepted Inputs (in order)
 %   --------------------------------------------------------------------

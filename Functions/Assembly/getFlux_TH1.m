@@ -1,8 +1,9 @@
-function [flux, stress] = getFlux_TH1(d, Mesh, Material, calc_type, Quad, ~)
+function [strain, stress, gradT, flux] = getFlux_TH1(d, Mesh, Material, calc_type, Quad, ~)
 %GETFLUX_TH1 Evaluate fluxes from a diffusion problem
-%   [flux] = GETFLUX_TH1(d, Mesh, Material) returns one matrix of 
-%   fluxes. The matrices are of size dim x ne, in which dim = 1 for 1D elements, 3 for 
-%   2D elements, and 6 for 3D elements.
+%   [gradT, flux] = GETFLUX_TH1(d, Mesh, Material) returns one matrix of 
+%   temperature gradients and one matrix offluxes. The matrices are of size 
+%   dim x ne, in which dim = 1 for 1D elements, 3 for 2D elements, and 6 
+%   for 3D elements.
 %   
 %   Supported input for calc_type:
 %   'none' -  does not compute the fluxes
@@ -50,25 +51,30 @@ function [flux, stress] = getFlux_TH1(d, Mesh, Material, calc_type, Quad, ~)
 %       	.Nv:     Cell array (size nq x 1) with shape functions 
 %       	         evaluated at each quadrature point in Voigt form
 
+% void parameters (used in elasticity problems)
+strain = [];
+stress = [];
+
 if nargin < 4
     calc_type = 'center';
 end
-
-stress = [];
 
 % Specify dimension of the flux matrix
 dim = Mesh.nsd;
 
 if strcmp(calc_type, 'none')
     flux = zeros(dim, Mesh.ne);
+    gradT = zeros(dim, Mesh.ne);
 else
     % Specify type of strain/stress matrix/cell
     switch calc_type
         case 'nodal'
             flux = zeros(dim, Mesh.nn);
+            gradT = zeros(dim, Mesh.nn);
             count = zeros(dim, Mesh.nn);
         case 'center'
             flux = zeros(dim, Mesh.ne);
+            gradT = zeros(dim, Mesh.ne);
         case 'L2projection'
             vec_size = Mesh.ne*Mesh.nne;
             A = zeros(vec_size,1); % matrix of integrals of shape functions - vectorized
@@ -76,7 +82,8 @@ else
             col = zeros(vec_size,1); % vector of column indices
             count = 1;
 
-            be = zeros(Mesh.nn, dim); % column vectors of fluxs 
+            be_gradT = zeros(Mesh.nn, dim); % column vectors of gradients
+            be_flux = zeros(Mesh.nn, dim); % column vectors of fluxes 
     end
 
     % Loop through all elements
@@ -102,9 +109,11 @@ else
                 [~, dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
                 Je = dNdxi'*xI;
                 B = Je\(dNdxi');
-                flux(:, e) = D*B*de;
+                gradT(:, e) = B*de;
+                flux(:, e) = D*gradT(:, e);
             case 'nodal'
-                % initialize flux element
+                % initialize grad/flux element
+                gradT_e = zeros(dim, Mesh.nne);
                 flux_e = zeros(dim, Mesh.nne);   
 
                 % loop through all nodes and calculate nodal strains/stresses
@@ -125,15 +134,18 @@ else
                     dNdxi = dNdxi';
                     B = Je\dNdxi;
 
-                    flux_e(:,n) = D*B*de;
+                    gradT_e(:,n) = B*de;
+                    flux_e(:,n) = D*gradT_e(:,n);
                 end
                 % Add to global strains
                     flux(:,enodes) = flux(:,enodes) + flux_e;
+                    gradT(:,enodes) = gradT(:,enodes) + gradT_e;
                     count(:,enodes) = count(:,enodes) + 1;
             case 'L2projection'
                 % initialize elemental matrices and vectors
                 A_e = zeros(Mesh.nne, Mesh.nne);
-                de_e = zeros(Mesh.nne,dim);    % column vector of fluxes
+                gradT_e = zeros(Mesh.nne,dim);    % column vector of gradients
+                flux_e = zeros(Mesh.nne,dim);    % column vector of fluxes
 
                 % loop through all quadrature points
                 for q = 1:Quad.nq     
@@ -155,13 +167,15 @@ else
                     B = Je\dNdxi;
 
                     % calculate stress and strain at quadrature point
-                    flux_q = D*B*de;
+                    gradT_q = B*de;
+                    flux_q = D*gradT_q;
 
                     % Element level integral of L2-projections
                     A_e = A_e + N'*N*Quad.W(q)*dJe;
                     
                     for i = 1:dim
-                       de_e(:,i) = de_e(:,i) +  N'*Quad.W(q)*dJe*flux_q(i);
+                       gradT_e(:,i) = gradT_e(:,i) +  N'*Quad.W(q)*dJe*gradT_q(i);
+                       flux_e(:,i) = flux_e(:,i) +  N'*Quad.W(q)*dJe*flux_q(i);
                     end
                 end
 
@@ -179,26 +193,30 @@ else
                 col(count-nAe:count-1) = col_e;
 
                 % Add element vectors to global vectors
-                be(enodes,:) = be(enodes,:) + de_e;
+                be_gradT(enodes,:) = be_gradT(enodes,:) + gradT_e;
+                be_flux(enodes,:) = be_flux(enodes,:) + flux_e;
          end
     end
-
 
     switch calc_type
         case 'nodal' 
            % For nodal strains, divide by count to get the average
+           gradT = gradT./count;
            flux = flux./count;
         case 'L2projection'
             % For L2 projection, solve the system of equations and assemble the
             % nodal matrix of stresses and strains
             A = sparse(row, col, A, Mesh.nn, Mesh.nn);
-            eL2 = zeros(size(be));
+            eL2_gradT = zeros(size(be_gradT));
+            eL2_flux = zeros(size(be_flux));
             
             for i = 1:dim
-               eL2(:,i) = A\be(:,i);
+               eL2_gradT(:,i) = A\be_gradT(:,i);
+               eL2_flux(:,i) = A\be_flux(:,i);
             end
             
-            flux = eL2';
+            gradT = eL2_gradT';
+            flux = eL2_flux';
     end
 end
 

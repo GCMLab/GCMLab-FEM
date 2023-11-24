@@ -1,8 +1,12 @@
 function [m_L2, m_e] = ManufacturedSolution_Dynamic_check(d1, d2, d3, s1, s2, s3, e1, e2, e3, Mesh1, Mesh2, Mesh3)
-%MANUFACTUREDSOLUTION_CHECK Calculates the convergence rates
-%   [m_L2, m_e] = ManufacturedSolution_check(d1, d2, d3, s1, s2, s3, Mesh1,
-%   Mesh2, Mesh3) calculates the rates of convergence of the L2 error norm
-%   and the energy norm for using a manufactured solution
+%MANUFACTUREDSOLUTION_DYNAMIC_CHECK Calculates the convergence rates
+%   m_L2 = MANUFACTUREDSOLUTION_DYNAMIC_CHECK(d1, d2, d3, s1, s2, s3, Mesh1,
+%   Mesh2, Mesh3) calculates the rate of convergence of the L2 error norm
+%   for using a manufactured solution
+%
+%   [m_L2, m_e] = MANUFACTUREDSOLUTION_DYNAMIC_CHECK(d1, d2, d3, s1, s2, s3, Mesh1,
+%   Mesh2, Mesh3) also calculates the rate of convergence of the energy norm
+%   for using a manufactured solution
 %
 %   Does this for the final time step
 %
@@ -151,8 +155,6 @@ if plot_on
     xlabel('Mesh size')
     ylabel('e-norm')
 end
-
-
 
 
 end

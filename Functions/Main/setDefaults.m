@@ -130,8 +130,12 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     end
 
     if ~isfield(Material, 'Dtype')
-        err_count = err_count+1;
-        err_mat = sprintf('%s\t\t\tError #%d\t:\t Two-dimensional approximation is not defined - Define Material.Dtype\n',err_mat,err_count);
+        % exception: coupled problem where Dtype_mech and Dtype_therm need
+        % to be prescribed
+        if ~isfield(Material, 'Dtype_mech') && ~isfield(Material, 'Dtype_therm')
+            err_count = err_count+1;
+            err_mat = sprintf('%s\t\t\tError #%d\t:\t Two-dimensional approximation is not defined - Define Material.Dtype\n',err_mat,err_count);
+        end
     end
 
     if ~isfield(Material, 't')
@@ -145,6 +149,10 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         war_mat = sprintf('%s\t\t\tError #%d\t:\t Material model not defined, set to linear elastic\n',err_mat,err_count);
     end
     
+    if ~isfield(Material, 'ExternalForceFile')
+        % Assume uncoupled problme unless otherwise specified.
+        Material.ExternalForceFile = 'getFext';
+    end    
    
 %% Boundary conditions
     err_BC = sprintf('\t\tBoundary conditions \n');
@@ -193,7 +201,45 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         % Assume start from rest unless otherwise specified. 
         %war_count = war_count+1;
         %war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.IC not defined - set as Mesh.nsd*Mesh.nn\n',war_BC,war_count);
-        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
+        BC.IC = @(t) zeros(Mesh.nDOFn*Mesh.nn,1);
+    end
+
+    % set boundary conditions defaults for coupled thermoelasticity problem
+    if Material.ProblemType == 3
+        if ~isfield(BC, 'fix_temp_dof')
+            war_count = war_count+1;
+            war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.fix_temp_dof and BC.fix_temp_value not defined - has been set as []\n',war_BC,war_count);
+    	    BC.fix_temp_dof = [];
+            BC.fix_temp_value = [];
+        end
+
+        if ~isfield(BC, 'flux_dof')
+            war_count = war_count+1;
+            war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.flux_dof and BC.flux_dof_value not defined - has been set as []\n',war_BC,war_count);
+            BC.flux_dof = [];
+            BC.flux_dof_value = [];
+        end
+
+        if ~isfield(BC, 'flux_node')
+            war_count = war_count+1;
+            war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.flux_node and BC.flux_node_value not defined - has been set as []\n',war_BC,war_count);
+            BC.flux_node = [];
+            BC.flux_value = [];
+        end
+
+        if ~isfield(BC, 's')
+            war_count = war_count+1;
+            war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.s not defined - has been set as @(x)[]\n',war_BC,war_count);
+            BC.s = @(x)[];
+        end
+        
+        % define unique set of fixed DOFs
+        BC.fix_dof = [BC.fix_disp_dof; BC.fix_temp_dof];
+        BC.fix_value = @(t) [BC.fix_disp_value(t); BC.fix_temp_value(t)];
+
+    else
+        BC.fix_dof = BC.fix_disp_dof;
+        BC.fix_value = BC.fix_disp_value;
     end
 
 %% Control parameters

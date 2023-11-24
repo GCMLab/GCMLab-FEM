@@ -1,9 +1,9 @@
-function [L2d] = VE1_1D_check(d, Material, ~, Control,BC)
-%TEST1D_CHECK Calculates the error between FEA and Kelvin-Voigt anyaltical
+function [L2d] = VE1_1D_check(d, Material, ~, Control, BC)
+%VE1_1D_CHECK Calculates the error between FEA and Kelvin-Voigt anyaltical
 %   solutions for a 1D bar. 
-%   [disp_er] = Test1D_check(d, Material, BC, Mesh)
-%   Calculates the error between FEA and analytical displacements along the
-%   free edge of a one dimensional problem
+%   [disp_er] = VE1_1D_CHECK(d, Material, BC, Mesh)
+%   Calculates the error between FEA and Kelvin-Voigt anyaltical
+%   solutions for a 1D bar. 
 %
 %   ----------------------------------------------------------
 %   Input

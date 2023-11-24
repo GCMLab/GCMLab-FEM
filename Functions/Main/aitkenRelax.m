@@ -1,11 +1,23 @@
 function [sol_mp1_relaxed, res_m_nextIter, delta_m_nextIter, sol_m_NextIter] = ...
     aitkenRelax(sol_mp1, sol_m, idxSol, res_m, delta_m, negON, range)
 %AITKENRELAX Apply Aitken delta^2 relaxation method with limited range of relaxation parameter
-%   [sol_mp1_damped, res_m_nextCall, delta_m_nextCall, sol_m_NextCall] =
-%       aitkenRelax(sol_mp1, sol_m, idxSol, res_m, delta_m, negON, range)
+%   sol_mp1_damped = 
+%       AITKENRELAX(sol_mp1, sol_m, idxSol, res_m, delta_m, negON, range)
 %   returns the relaxed solution at the current iteration having used the
 %   previous two iterations to improve the guess at the solution.
+%
+%   [sol_mp1_damped, res_m_nextCall] =
+%       AITKENRELAX(sol_mp1, sol_m, idxSol, res_m, delta_m, negON, range)
+%   also returns Delta d to be used as res_m in the next iter.
 % 
+%   [sol_mp1_damped, res_m_nextCall, delta_m_nextCall] =
+%       AITKENRELAX(sol_mp1, sol_m, idxSol, res_m, delta_m, negON, range)
+%   also returns the relaxation paramter to be used in next iter.
+%
+%   [sol_mp1_damped, res_m_nextCall, delta_m_nextCall, sol_m_NextCall] =
+%       AITKENRELAX(sol_mp1, sol_m, idxSol, res_m, delta_m, negON, range)
+%   also returns the solution to be used as sol_m in next iter.
+%
 %   --------------------------------------------------------------------
 %   Input
 %   --------------------------------------------------------------------

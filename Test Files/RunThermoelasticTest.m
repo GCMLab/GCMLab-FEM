@@ -1,13 +1,15 @@
 % ------------------------------------------------------------------------
-% Runs unit Test - Dirichlet Time
+% Runs unit test - Thermoelastic Solution as part of RunTests
 % ------------------------------------------------------------------------
-% This test applies time dependent Dirichlet boundary conditions on a
-% square domain and computes the stress as a function of time.
-%
+% Test consists of a 2D plate where all the boundaries are fixed according
+% to a prescribed manufactured solution. The error between the finite
+% element solution and such manufactured solution is then calculated. The
+% FE solution should be exact.
 
+       
         testnum = testnum + 1;
-        testname = 'Time dependent manufactured solution'; 
-        nameslist{testnum} = testname;          
+        testname = '2D quasi-steady thermoelastic solution';
+        nameslist{testnum} = testname;
        
         % Create test VTK folder
         if plot2vtk
@@ -17,26 +19,25 @@
                 mkdir(vtk_dir)
             end
         end
-
-        
+    
         fprintf('\n\n Test %d : %s\n', testnum, testname)
         % Step 1 - Run Simulation
-        global Omega1 Omega2
-        Omega1 = 2;
-        Omega2 = 3;
-        config_name = 'ManufacturedSolution_DirichletTime'; 
-%       main  % Runs calculation
+        config_name = 'ThermoElastic_Dirichlet';
         main_nonlinear % Runs calculation
+
         
         % Step 2 - Check results
-        % run check file, script is specific to each test
-        time_er = DirichletTime_check(sSave, Material);          
-        if time_er < 1e-10
+        [d_er, reaction_er] = Thermoelasticity_check(d, Fext, Mesh);
+        
+        fprintf('\nQ4 Quasi-steady Thermoelastic Test: Disp./Temp. error is %.2e', d_er);
+        fprintf('\nQ4 Quasi-steady Thermoelastic Test: Reaction forces error is %.2e', reaction_er);
+        
+        convergence_tolerance = 1e-4;
+        if d_er <= convergence_tolerance && reaction_er <= convergence_tolerance
             test_pass = 1;
         else
             test_pass = 0;
         end
-        
         
         % Step 3 - Output results
         if test_pass

@@ -1,6 +1,6 @@
 function [TH_er] = Diffusion_check(d, Mesh)
 %DIFFUSION_CHECK Calculates the error between FEA and analytical solutions
-%   [TH_er] = Diffusion_check(d, Mesh)
+%   [TH_er] = DIFFUSION_CHECK(d, Mesh)
 %   calculates the error between FEA and analytical displacements at the
 %   center point of the domain
 %

@@ -6,6 +6,11 @@ function Mesh = LoadMesh(meshfile, nsd, config_dir)
 %   The mesh is defined in the file exported from GMSH (meshfile) or Hyperworks, 
 %   located in the directory config_dir.  
 %
+%   [x, conn] = LOADMESH(meshfile, nsd, config_dir) also 
+%   returns the element connectivity matrix (size ne x nne in which  
+%   ne is the number of elements in the mesh and nne is the number of 
+%   nodes per element).
+%
 %   Note: Hyperworks files only for 2D meshes
 % 
 %   --------------------------------------------------------------------
@@ -16,11 +21,6 @@ function Mesh = LoadMesh(meshfile, nsd, config_dir)
 %   nsd:            Number of spatial dimensions
 %   config_dir:     Directory where mesh file is stored
 % 
-%   [x, conn] = LOADMESH(meshfile, nsd, config_dir) also 
-%   returns the element connectivity matrix (size ne x nne in which  
-%   ne is the number of elements in the mesh and nne is the number of 
-%   nodes per element).
-%
 %   --------------------------------------------------------------------
 %   Output
 %   --------------------------------------------------------------------
