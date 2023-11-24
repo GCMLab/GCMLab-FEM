@@ -181,7 +181,7 @@ switch Mesh.ext
         e_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>e_str,1, 'first')) - 1;
         e_str_e_1 = temp_m0(find(find(strcmp(s{1}, '$'))>e_str,1, 'first')) - 1; %Addition due to changes in Hypermesh 2022.2
         if e_str_e > e_str_e_1
-            e_str_e = e_stre_e_1;
+            e_str_e = e_str_e_1;
         end
         % number of elements
         nelem = e_str_e - e_str + 1;
@@ -189,10 +189,10 @@ switch Mesh.ext
         % start of CROD section for tractions Mesh.BC_N_t
         %       Note: supports only one element type per mesh
         if ~isempty(find(strcmp(s{1}, '$$  CROD Elements'), 1, 'first'))
-            t_str = e_str_e + 5;
+            t_str = e_str_e + 6;
             % end of section
             t_str_e = temp_m(find(find(strcmp(s{1}, '$$'))>t_str,1, 'first')) - 1;
-            t_str_e_1 = temp_m0(find(find(strcmp(s{1}, '$$'))>t_str,1, 'first')) - 1; %Addition due to changes in Hypermesh 2022.2
+            t_str_e_1 = temp_m0(find(find(strcmp(s{1}, '$'))>t_str,1, 'first')) - 1; %Addition due to changes in Hypermesh 2022.2
             if t_str_e > t_str_e_1
                 t_str_e = t_str_e_1;
             end
@@ -422,10 +422,10 @@ switch Mesh.ext
             Mesh.c_BC_N_t_n_m = c_BC_n_m;
             Mesh.c_BC_N_t_t_m = c_BC_t_m;
         else
-            Mesh.c_BC_N_t = BC_N_t;
-            Mesh.c_BC_N_e_t = BC_N_e_t;
-            Mesh.c_BC_N_t_n_m = n_m;
-            Mesh.c_BC_N_t_t_m = t_m;
+            Mesh.c_BC_N_t = cell(1,1); Mesh.c_BC_N_t{1} = BC_N_t;
+            Mesh.c_BC_N_e_t = cell(1,1); Mesh.c_BC_N_e_t{1} = BC_N_e_t;
+            Mesh.c_BC_N_t_n_m = cell(1,1); Mesh.c_BC_N_t_n_m{1} = n_m;
+            Mesh.c_BC_N_t_t_m = cell(1,1); Mesh.c_BC_N_t_t_m{1} = t_m;
         end
         
         if length(u_E) ~= 1 && ~isempty(u_E) %Sets are used on essential boundary conditions
