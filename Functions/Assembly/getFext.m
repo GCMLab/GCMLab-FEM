@@ -45,7 +45,7 @@ function F = getFext(Mesh, BC, Quad, t, Quad_edge)
 %                       each quadrature point
 %
 %   Quad_edge: Structure array with same fields as Quad
-%               Used for 
+%               Used computation of tractions with edge elements
 
 
 % Acknowledgements: Chris Ladubec

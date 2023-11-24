@@ -1,4 +1,4 @@
-function F = getFext_coupled(Mesh, BC, Quad, t)
+function F = getFext_coupled(Mesh, BC, Quad, t, Quad_edge)
 %GETFEXT_COUPLED External forces for coupled problem
 %   F = GETFEXT_COUPLED(Mesh, BC, Quad) is a column vector of external forces
 %   acting on each degree of freedom (size ndof x 1 in which ndof is the
@@ -43,6 +43,9 @@ function F = getFext_coupled(Mesh, BC, Quad, t)
 %           .dNdxiq:    Cell array (size nq x 1) with derivative of shape
 %                       functions w.r.t. parent coordinates evaluated at
 %                       each quadrature point
+%   
+%   Quad_edge: Structure array with same fields as Quad
+%               Used computation of tractions with edge elements
 
 % Acknowledgements: Chris Ladubec
 
@@ -88,7 +91,8 @@ if isempty(BC.traction_force_node) ...
         && isempty(BC.traction_force_dof) ...
         && isempty(BC.flux_node) ...
         && strcmp(func2str(BC.s),'@(x)[]') ...
-        && isempty(BC.flux_dof)
+        && isempty(BC.flux_dof) ...
+        && ~isa(BC.c_N_t_f,'cell')
     return
 end
 
