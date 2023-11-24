@@ -150,6 +150,7 @@ global meshfilename quadorder E nu
         
         % Empty function for application of tractions using edge elements
         BC.c_N_t_f = @(x,t)[];
+        BC.c_N_t_flag = [];
           
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
