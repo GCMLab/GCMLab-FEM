@@ -195,15 +195,10 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
             err_count = err_count+1;
             err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions functions compatible with the use of edge elements for integration have not been applied. Include BC.c_N_t_f in input.\n',err_BC,err_count);
         end
-        
-        switch class(BC.c_N_t_f)
-            case 'cell'
-                % Nothing to check
-            otherwise
-                if isempty(BC.c_N_t_f(0,0))
-                    err_count = err_count+1;
-                    err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions functions compatible with the use of edge elements for integration have not been applied. Include BC.c_N_t_f in input.\n',err_BC,err_count);
-                end
+
+        if ~isa(BC.c_N_t_f,'cell')
+            err_count = err_count+1;
+            err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions functions compatible with the use of edge elements for integration have not been applied. Include BC.c_N_t_f in input.\n',err_BC,err_count);
         end
         
         if ~isfield(BC, 'c_N_t_flag') 
