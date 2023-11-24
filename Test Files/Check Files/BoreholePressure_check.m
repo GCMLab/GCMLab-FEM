@@ -1,4 +1,4 @@
-function [error] = BoreholePressure_check(Mesh,d,p,stress_L2, stress_nodal)
+function [stress_rt_L2, stress_rt_nodal, stress_rt_an] = BoreholePressure_check(Mesh,d,p,stress_L2, stress_nodal)
 %BOREHOLEPRESSURE_CHECK Calculates the error of the exact solution of a
 %borehole subjected to a internal normal pressure
 
@@ -14,6 +14,15 @@ function [error] = BoreholePressure_check(Mesh,d,p,stress_L2, stress_nodal)
 %   p :                     Pressure
 %   stress_L2:              Stress solution using L2 projection
 %   stress_nodal:           Stress solution using nodal computation
+%   ----------------------------------------------------------
+%   Output
+%   ----------------------------------------------------------
+%   stress_rt_L2:           Stress in cylindrical coordinates using L2
+%                           projection
+%   stress_rt_nodal:        Stress in cylindrical coordinates using nodal
+%                           computation
+%   stress_rt_an:           Analytical solution of stress in cylindrical
+%                           coordinates
 
 % The displacement vector is obtained as
 % u = - p R^2 / r^2 e_r 
@@ -55,10 +64,6 @@ for i = 1:Mesh.nn
     stress_i = (T*scar*T')';  
     stress_rt_nodal(i,:) = [stress_i(1,1), stress_i(2,2), stress_i(1,2)];
 end
-
-% Get analytical solution in cylindrical coordinates
-drt_an = zeros(Mesh.nn,2);
-drt_an(:,1) = -p.*R^2./r_m.^2;
 
 % Get analytical solution of stress in each node
 stress_rt_an = zeros(Mesh.nn,2);
