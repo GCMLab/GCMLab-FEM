@@ -286,7 +286,9 @@ function [Mesh, Material, BC, Control] = ManufacturedSolution_Dynamic(config_dir
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-
+        nu = Material.Prop(1).nu;
+        rho = Material.Prop(1).rho;
+        E = Material.Prop(1).E0;
         BC.b = @(x,t) [((32*nu^2*rho - E*nu + 3*E - 32*rho)*sin(2*pi*t) + E*cos(2*pi*t)*(nu + 1))*sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2/(8*nu^2 - 8); ...
             cos(pi*x(1)/2)*((-32*nu^2*rho + E*nu - 3*E + 32*rho)*cos(2*pi*t) - E*sin(2*pi*t)*(nu + 1))*cos(pi*x(2)/2)*pi^2/(8*nu^2 - 8)]./1000;
 
