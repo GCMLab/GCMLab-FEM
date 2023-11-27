@@ -85,7 +85,7 @@ function [Mesh, Material, BC, Control] = NL_Thermal_Manufactured(config_dir, pro
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
-            meshFileName = 'NLTH1_ABAQUS_Mesh.xlsx';
+            meshFileName = 'Mesh Files\NLTH1_ABAQUS_Mesh.xlsx';
             % number of space dimensions
             nsd = 2;
             
