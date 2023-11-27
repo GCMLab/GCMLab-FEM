@@ -3,6 +3,10 @@ function F = getFext(Mesh, BC, Quad, t, Quad_edge)
 %   F = GETFEXT(Mesh, BC, Quad) is a column vector of external forces 
 %   acting on each degree of freedom (size ndof x 1 in which ndof is the
 %   number of degrees of freedom)
+%
+%   Note: this Algorithm works only for the case where the equilibrium
+%   (vector) or diffusion (scalar) problem are treated separately. Refer to
+%   getFext_coupled.m for coupled vector-scalar algorithm.
 %   
 %   --------------------------------------------------------------------
 %   Input
@@ -186,6 +190,15 @@ if (isa(BC.c_N_t_f,'cell')) && ( strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T
     W = Quad_edge.W;
     Q = Quad_edge.Q;
     nq = Quad_edge.nq;
+
+    % Auxiliary variables to account for the cases of a equilibrium or a
+    % diffusion problem in a single code
+        temp_1 = cell(1,2);
+        temp_1{1} = [0,0];
+        temp_1{2} = 1;
+        temp_2 = cell(1,2);
+        temp_2{1} = 1;
+        temp_2{2} = zeros(2,2);
     
     % Loop through all sets
     for set_i = 1:length(Mesh.c_BC_N_t)
@@ -208,7 +221,7 @@ if (isa(BC.c_N_t_f,'cell')) && ( strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T
             sI = [0; l];
             % degrees of freedom
             dofE = Mesh.DOF(enodes,:);
-            dofE = reshape(dofE',4,[]);
+            dofE = reshape(dofE',Mesh.nDOFn*2,[]);
             % number of degrees of freedom
             ndofE = length(dofE);
             % Initialize force vector
@@ -247,7 +260,9 @@ if (isa(BC.c_N_t_f,'cell')) && ( strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T
                 t_f_g = [(t_f(Xi,t))'*n_e'; (t_f(Xi,t))'*t_e'].*...
                         (1 - BC.c_N_t_flag(set_i)) + ... % when tractions are given in  x and y directions
                         t_f(Xi,t).*BC.c_N_t_flag(set_i); % when tractions are given in n and s directions               
-                
+                % Account for equilibrium (vector) or diffusion (scalar) problem
+                t_f_g = t_f_g(1:Mesh.nDOFn);
+
                 % Applied traction force in normal and tangential
                 % directions
                 Fte_n = Fte_n + W(q)*Nv*t_f_g*dJe;
@@ -257,10 +272,10 @@ if (isa(BC.c_N_t_f,'cell')) && ( strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T
             % Transform local force vector to global system and add to
             % total force vector
             % rotation(transformation) matrix
-            r_m = [n_e', t_e'];
-            T = [r_m, zeros(2,2); zeros(2,2), r_m];
+            r_m = temp_1{Mesh.nDOFn}*[n_e', t_e']*temp_1{Mesh.nDOFn}' + temp_2{Mesh.nDOFn};
+            T = [r_m, zeros(Mesh.nDOFn,Mesh.nDOFn); zeros(Mesh.nDOFn,Mesh.nDOFn), r_m];
             Fte = T*Fte_n;
-            
+
             % Assemble tractions
             F(dofE) = F(dofE) + Fte;
 
