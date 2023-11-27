@@ -194,7 +194,7 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
     if ~isfield(BC, 'b')    
         war_count = war_count+1;
         war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.b not defined - has been set as @(x,t)[]\n',war_BC,war_count);
-        BC.b = @(x,t)[];  
+        BC.b = @(x)[];  
     end  
     
     if ~isfield(BC, 'IC')
