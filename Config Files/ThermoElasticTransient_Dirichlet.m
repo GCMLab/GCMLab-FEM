@@ -384,7 +384,7 @@ function [Mesh, Material, BC, Control] = ThermoElasticTransient_Dirichlet(config
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 10;
+        Control.EndTime   = 1.5;
         NumberOfSteps     = 100;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
