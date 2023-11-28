@@ -88,6 +88,11 @@ function F = getFext(Mesh, BC, Quad, t, Quad_edge)
 %% loop through all elements
 
 if ~strcmp(func2str(BC.b),'@(x)[]')
+    %% Shape functions and derivatives in parent coordinates
+    W = Quad.W;
+    Q = Quad.Q;
+    nq = Quad.nq;
+
     for e = 1:Mesh.ne
 
         %% Element variables
@@ -100,11 +105,6 @@ if ~strcmp(func2str(BC.b),'@(x)[]')
             dofE = reshape(dofE',Mesh.nDOFe,[]);
             % number of degrees of freedom
             ndofE = length(dofE);
-
-        %% Shape functions and derivatives in parent coordinates
-            W = Quad.W;
-            Q = Quad.Q;
-            nq = Quad.nq;
 
         %% Calculate element body force
 
