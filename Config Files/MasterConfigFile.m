@@ -279,7 +279,8 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % tangential components are not defined in a diffusive problem.
         % Moreover, BC.c_N_t_flag{i} must be set as 1.
         % -------------------------------------------------------------
-        BC.c_N_t_f = cell(1,1); % change to cell(1,number of sets)
+        BC.c_N_t_f = cell(1,1); % change to cell(1,number of sets) or set as  @(x,t) [] 
+        % directly if no tractions of this type are applied
         BC.c_N_t_f{1} = @(x,t) []; % call BC.c_N_t_f{1.. number of stes} and define all sets
         BC.c_N_t_flag = []; %change to row vector if required. Example → [0,0,1]
         
