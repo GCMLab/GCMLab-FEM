@@ -132,6 +132,7 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         % VE1 - Viscoelaticity with stiffness based damping
         % TH1 - Thermal Diffusion (Steady-State)
         % TH2 - Thermal Diffusion (Transient)
+        % NLTH1 - Nonlinear thermal transient
     Material.Model = 'LE1';
     
     % number of material properties
