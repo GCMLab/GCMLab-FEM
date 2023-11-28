@@ -237,9 +237,15 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         BC.fix_dof = [BC.fix_disp_dof; BC.fix_temp_dof];
         BC.fix_value = @(t) [BC.fix_disp_value(t); BC.fix_temp_value(t)];
 
+        if ~isfield(BC, 'c_N_t_flag_case')
+            war_count = war_count+1;
+            war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.c_N_t_flag_case not defined - has been set as []\n',war_BC,war_count);
+            BC.c_N_t_flag_case = [];  
+        end
+
     else
         BC.fix_dof = BC.fix_disp_dof;
-        BC.fix_value = BC.fix_disp_value;
+        BC.fix_value = BC.fix_disp_value;gith
     end
 
 %% Control parameters
