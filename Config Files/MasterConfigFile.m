@@ -251,24 +251,38 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % Method 2:
         %--------------------------------------------------------------
         % Edge elements and normals are obtained from Mesh structure.
+        %
         % Tractions boundary conditions can be applied as:
-        %    → function for vector on x and y 
-        %    → function for vector on n and s (normal
+        %    1 → function for vector on x and y 
+        %    2 → function for vector on n and s (normal
         %           and tangential directions of each point of the boundary)
-        % These functions are stored in BC.c_N_t_f (Neuman _ traction _ function)
+        %
+        % These functions are stored in BC.c_N_t_f{i}(Neuman _ traction _ function)
         % To recognize if the function is case 1 or 2, BC.c_N_t_flag must include
         % a vector with:
         %   0 → function for vector on x and y
         %   1 → function for vector on n and s
+        %
+        % To rectognize if the function is applied on the mechanical or diffusive DOF
+        % Bc.c_N_t_flag_case must include a vector with
+        %   1 → if the set {i} is applied to the diffusive part
+        %   2 → if the set {i} is applied to the mechanical part
+        %
         % -------------------------------------------------------------
         % Note: The total number of traction functions must be compatible
         % with the number of sets defined for edge elements
+        %
+        % Note: BC.c_N_t_f and BC.c_N_t_flag must have the same length 
+        %
+        % Note: If set 'i' is a diffusive problem, in BC.c_N_t_f{i} bust be
+        % defined in normal components, and must be a single term, as
+        % tangential components are not defined in a diffusive problem.
+        % Moreover, BC.c_N_t_flag{i} must be set as 1.
         % -------------------------------------------------------------
-        BC.c_N_t_f = cell(1,1);
-        BC.c_N_t_f{1} = @(x,t) [];
-        % add other functions in cases other sets have been defined
-        BC.c_N_t_flag = [];
-
+        BC.c_N_t_f = cell(1,1); % change to cell(1,number of sets)
+        BC.c_N_t_f{1} = @(x,t) []; % call BC.c_N_t_f{1.. number of stes} and define all sets
+        BC.c_N_t_flag = []; %change to row vector if required. Example → [0,0,1]
+        
         %--------------------------------------------------------------
         % Method 3:
         %--------------------------------------------------------------
