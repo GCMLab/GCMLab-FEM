@@ -149,6 +149,10 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
 
         % magnitude of prescribed tractions [N]
         BC.traction_force_dof_value = [];
+        
+        BC.c_N_t_f = @(x,t) []; % call BC.c_N_t_f{1.. number of stes} and define all sets
+        BC.c_N_t_flag = []; %change to row vector if required. Example → [0,0,1]
+        BC.c_N_t_flag_case = []; %change to row vector if required. Example → [1,1,2]
 
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
