@@ -245,7 +245,7 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
 
     else
         BC.fix_dof = BC.fix_disp_dof;
-        BC.fix_value = BC.fix_disp_value;gith
+        BC.fix_value = BC.fix_disp_value;
     end
 
 %% Control parameters
@@ -336,6 +336,7 @@ err_message = sprintf('%s %s %s %s %s', err_message, err_mesh, err_mat, err_BC, 
 
 if war_count > 0
     warning('\n%s', war_message)
+    pause(3)
 end
 
 if err_count > 0 
