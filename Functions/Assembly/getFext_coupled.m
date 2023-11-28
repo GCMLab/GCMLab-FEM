@@ -97,6 +97,10 @@ if isempty(BC.traction_force_node) ...
 end
 
 %% loop through all elements
+% number of degrees of freedom displacement field
+ndofE_mech = Mesh.nne*Mesh.nsd;
+% number of degrees of freedom temperature field
+ndofE_sca = Mesh.nne;
 
 for e = 1:Mesh.ne
     
@@ -105,15 +109,6 @@ for e = 1:Mesh.ne
     enodes = Mesh.conn(e,:);
     % global coordinates of the element's nodes
     xI = Mesh.x(enodes,:);
-    % 	    % DOFs of element nodes
-    %         dofE = Mesh.DOF(enodes,:);
-    %         dofE = reshape(dofE',Mesh.nDOFe,[]);
-    %         % number of degrees of freedom
-    %         ndofE = length(dofE);
-    % number of degrees of freedom displacement field
-    ndofE_mech = Mesh.nne*Mesh.nsd;
-    % number of degrees of freedom temperature field
-    ndofE_sca = Mesh.nne;
     % displacement DOFs (mechanical problem)
     dofE_mech = Mesh.DOF_mech(enodes,:);
     dofE_mech = reshape(dofE_mech', Mesh.nDOFe_mech,[]);
@@ -194,10 +189,10 @@ for e = 1:Mesh.ne
         
     %% Calculate element traction force vector
     % initialize element traction force vector
-    Fte = zeros(ndofE_mech, 1);
+    % Fte = zeros(ndofE_mech, 1);
     
     % initialize element traction force vector
-    Ffe = zeros(ndofE_sca, 1);
+    % Ffe = zeros(ndofE_sca, 1);
     %
     %----  Saving code for possible future adaption to edge element
     %integration-----
@@ -224,9 +219,125 @@ for e = 1:Mesh.ne
     %     	end
     
     %% Assemble element forces
-    F(dofE_mech) = F(dofE_mech) + Fbe + Fte;
-    F(dofE_sca) = F(dofE_sca) + Fse + Ffe; 
+    F(dofE_mech) = F(dofE_mech) + Fbe;% + Fte;
+    F(dofE_sca) = F(dofE_sca) + Fse;% + Ffe; 
 
+end
+
+%% Loop through boundary elements 
+
+%--------------------------------------------------------------------------------------------------
+% Note: this algorithm works only for straight boundary elements. If
+% curvature edges were included the integration along the curvature line
+% would have to be implemented
+%--------------------------------------------------------------------------------------------------
+
+if (isa(BC.c_N_t_f,'cell')) && ( strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T3') )
+
+    % Shape functions and derivatives in parent coordinates
+    W = Quad_edge.W;
+    Q = Quad_edge.Q;
+    nq = Quad_edge.nq;
+
+    % Auxiliary variables to account for the cases of a equilibrium or a
+    % diffusion problem in a single code
+        temp_1 = cell(1,2);
+        temp_1{1} = [0,0];
+        temp_1{2} = 1;
+        temp_2 = cell(1,2);
+        temp_2{1} = 1;
+        temp_2{2} = zeros(2,2);
+    
+    % Loop through all sets
+    for set_i = 1:length(Mesh.c_BC_N_t)
+        
+        t_f = BC.c_N_t_f{set_i};
+        set_BC_N_t = Mesh.c_BC_N_t{set_i}; 
+        set_BC_N_t_n_m = Mesh.c_BC_N_t_n_m{set_i}; % Normals
+        set_BC_N_t_t_m = Mesh.c_BC_N_t_t_m{set_i}; % Tangents
+        
+        % Define if this set_i is applied on 
+        BC_case = BC.c_N_t_flag_case{set_i}; 
+        if (BC_case-1)
+            DOF_set = Mesh.DOF_mech;
+        else
+            DOF_set = Mesh.DOF_sca;
+        end
+
+        % Loop through all edge elements
+        for e_t = 1:length(Mesh.c_BC_N_t{set_i})
+
+            % nodal ids of the element's nodes
+            enodes = set_BC_N_t(e_t,:);    
+            % global coordinates of the element's nodes
+            xI = Mesh.x(enodes,:);  
+            % local coordinates in the tangental direction
+            l = ((xI(1,1)-xI(2,1))^2 + (xI(1,2)-xI(2,2))^2)^0.5;
+            % local coordinates in the tangental direction
+            sI = [0; l];
+            % degrees of freedom
+            dofE = DOF_set(enodes,:);
+            dofE = reshape(dofE',BC_case*2,[]);
+            % number of degrees of freedom
+            ndofE = length(dofE);
+            % Initialize force vector
+            Fte_n = zeros(ndofE,1);
+            
+            %--------------------
+            % Get normal vector
+            n_e = set_BC_N_t_n_m(e_t,:);
+            % Get transversal vector
+            t_e = set_BC_N_t_t_m(e_t,:);
+            
+            % Loop through all quadrature points
+            for q = 1:nq
+
+                % Shape functions and derivatives in parent coordinates
+                N = Quad_edge.Nq{q};
+                dNdxi = Quad_edge.dNdxiq{q};
+
+                Nv = getNv(N, Mesh.nDOFn);
+                
+                % quadrature point in physical coordinates in the
+                % global coordinate system
+                Xi = xI'*N;
+                
+                % quadrature point in physical coordinates in the
+                % local system of the element 
+                Si = sI'*N;
+
+                % Jacobian of the transformation between parent and global 
+                % coordinates
+                Je = dNdxi'*sI;
+
+                % determinant of the Jacobian
+                dJe = det(Je);
+
+                % Get tractions evaluated at gauss point
+                t_f_g = [(t_f(Xi,t))'*n_e'; (t_f(Xi,t))'*t_e'].*...
+                        (1 - BC.c_N_t_flag(set_i)) + ... % when tractions are given in  x and y directions
+                        t_f(Xi,t).*BC.c_N_t_flag(set_i); % when tractions are given in n and s directions               
+                % Account for equilibrium (vector) or diffusion (scalar) problem
+                t_f_g = t_f_g(1:Mesh.nDOFn);
+
+                % Applied traction force in normal and tangential
+                % directions
+                Fte_n = Fte_n + W(q)*Nv*t_f_g*dJe;
+
+            end
+            
+            % Transform local force vector to global system and add to
+            % total force vector
+            % rotation(transformation) matrix
+            r_m = temp_1{Mesh.nDOFn}*[n_e', t_e']*temp_1{Mesh.nDOFn}' + temp_2{Mesh.nDOFn};
+            T = [r_m, zeros(Mesh.nDOFn,Mesh.nDOFn); zeros(Mesh.nDOFn,Mesh.nDOFn), r_m];
+            Fte = T*Fte_n;
+
+            % Assemble tractions
+            F(dofE) = F(dofE) + Fte;
+
+        end
+    end
 end
 
 %% Apply pre-integrated boundary node point forces
