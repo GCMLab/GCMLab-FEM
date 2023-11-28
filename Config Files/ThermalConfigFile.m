@@ -132,6 +132,7 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
         % VE1 - Viscoelaticity with stiffness based damping
         % TH1 - Thermal Diffusion (Steady-State)
         % TH2 - Thermal Diffusion (Transient)
+        % NLTH1 - Nonlinear thermal transient
     Material.Model = 'TH1';
     
     % number of material properties
