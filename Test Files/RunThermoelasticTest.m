@@ -27,7 +27,7 @@
 
         
         % Step 2 - Check results
-        [d_er, reaction_er] = Thermoelasticity_check(d, Fext, Mesh);
+        [d_er, reaction_er] = Thermoelasticity_check(d, Fext, Mesh, Material);
         
         fprintf('\nQ4 Quasi-steady Thermoelastic Test: Disp./Temp. error is %.2e', d_er);
         fprintf('\nQ4 Quasi-steady Thermoelastic Test: Reaction forces error is %.2e', reaction_er);
