@@ -22,15 +22,15 @@
 %% Set Default Values
     [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
 
+%% Set material model
+    [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material);
+
 %% Check for valid inputs
     if progress_on
         fprintf('%.2f: Checking for valid inputs...\n', toc);
     end
     [Mesh, Material, BC, ~] = cleanInput(Mesh, Material, BC, Control);
     
-%% Set material model
-    [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material);
-
 %% Initialize time variables
     t = Control.StartTime;
     dt = Control.TimeStep;
