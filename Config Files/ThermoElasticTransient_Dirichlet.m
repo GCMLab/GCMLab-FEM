@@ -252,22 +252,22 @@ function [Mesh, Material, BC, Control] = ThermoElasticTransient_Dirichlet(config
         
         % Prescribed dispalcement
         BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
-        aux = (unique([Mesh.left_nodes; Mesh.bottom_nodes; Mesh.right_nodes; Mesh.top_nodes]))';
-        BC.fix_disp_value(1:2:end) = BC.UU([Mesh.x(aux,1),Mesh.x(aux,2)]);
-        BC.fix_disp_value(2:2:end) = BC.VV([Mesh.x(aux,1),Mesh.x(aux,2)]);
+        aux1 = (unique([Mesh.left_nodes; Mesh.bottom_nodes; Mesh.right_nodes; Mesh.top_nodes]))';
+        BC.fix_disp_value(1:2:end) = BC.UU([Mesh.x(aux1,1),Mesh.x(aux1,2)]);
+        BC.fix_disp_value(2:2:end) = BC.VV([Mesh.x(aux1,1),Mesh.x(aux1,2)]);
         
         BC.UU_aux = zeros(length(BC.fix_disp_dof),1); 
         BC.UU_aux(1:2:end) = ones(length( BC.UU_aux(1:2:end)),1);
         BC.VV_aux = zeros(length(BC.fix_disp_dof),1); 
         BC.VV_aux(2:2:end) = ones(length( BC.VV_aux(1:2:end)),1);
         
-        BC.fix_disp_value = @(t) BC.fix_disp_value.*BC.UU_aux*sin(2*pi*t) + BC.fix_disp_value.*BC.VV_aux*cos(2*pi*t);
+        BC.fix_disp_value = @(t) BC.fix_disp_value.*BC.UU_aux*sin(pi*t) + BC.fix_disp_value.*BC.VV_aux*cos(2*pi*t);
 
     % Dirichlet boundary conditions (essential) - thermal
     % -----------------------------------------------------------------
     
     % Manufacture solution
-    % T:= (x1,x2) → sin(pi*x1)*sin(pi*x2)*sin(2*pi*t)/1000
+    % T:= (x1,x2) → sin(pi*x1)*sin(pi*x2)*sin(2*pi*t)/1000 - T0
         
         BC.T = @(x) sin(pi.*x(:,1)).*sin(pi.*x(:,2))./1000;
         
@@ -275,10 +275,10 @@ function [Mesh, Material, BC, Control] = ThermoElasticTransient_Dirichlet(config
         BC.fix_temp_dof = unique([Mesh.left_dof_t; Mesh.right_dof_t; Mesh.bottom_dof_t; Mesh.top_dof_t]);
         
         % Prescribed temperature
-        BC.fix_temp_value = BC.T([Mesh.x(aux,1),Mesh.x(aux,2)]);
+        BC.fix_temp_value = BC.T([Mesh.x(aux1,1),Mesh.x(aux1,2)]);
 
         % prescribed temperature for each dof [t1; t2; ...] 
-        BC.fix_temp_value = @(t) BC.fix_temp_value*sin(2*pi*t);  
+        BC.fix_temp_value = @(t) BC.fix_temp_value*sin(pi*t) - Material.Prop(1).T0;  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -314,31 +314,40 @@ function [Mesh, Material, BC, Control] = ThermoElasticTransient_Dirichlet(config
         k1 = Material.Prop(1).k1;
         k2 = Material.Prop(1).k2;
         beta = Material.Prop(1).beta;
+        C = Material.Prop(1).C;
+        T0 = Material.Prop(1).T0;
         
         % magnitude of distributed body force [N/m] [bx;by]
-        BC.b = @(x,t)[(pi*sin(pi*x(2)/2)*((-4*nu + 3)*sin(2*pi*t) +...
-            cos(2*pi*t))*E0*sin(pi*x(1)/2) - 16*(-1/2 + nu)*beta*sin(2*pi*t)...
-            *(1 + nu)*sin(pi*x(2))*cos(pi*x(1)))*pi/(16000*nu^2 + 8000*nu - 8000); 
+        BC.b = @(x,t)[(pi*sin(pi*x(2)/2)*((-4*nu + 3)*sin(pi*t) + ...
+            cos(2*pi*t))*E0*sin(pi*x(1)/2) + 16*(-1/2 + nu)*beta*sin(pi*t)*...
+            (1 + nu)*sin(pi*x(2))*cos(pi*x(1)))*pi/(16000*nu^2 + 8000*nu - 8000); 
                        %
-                       4*pi*(pi*cos(pi*x(2)/2)*(-sin(2*pi*t)/4 + ...
-            (nu - 3/4)*cos(2*pi*t))*E0*cos(pi*x(1)/2) - 4*(-1/2 + nu)*beta*...
-            sin(2*pi*t)*(1 + nu)*sin(pi*x(1))*cos(pi*x(2)))/(16000*nu^2 + 8000*nu - 8000)];  
+                       4*pi*(pi*cos(pi*x(2)/2)*(-sin(pi*t)/4 + (nu - 3/4)*...
+            cos(2*pi*t))*E0*cos(pi*x(1)/2) + 4*(-1/2 + nu)*beta*sin(pi*t)*...
+            (1 + nu)*sin(pi*x(1))*cos(pi*x(2)))/(16000*nu^2 + 8000*nu - 8000)];  
         
         % magnitude of distributed flux source 
-        BC.s = @(x,t) pi^2*sin(pi*x(1))*sin(pi*x(2))*sin(2*pi*t)*(k1 + k2)/1000;  
+        BC.s = @(x,t) (-beta*T0*pi*sin(pi*x(2)/2)*(cos(pi*t)-2*sin(2*pi*t))*cos(pi*x(1)/2)/2+...
+            sin(pi*x(1))* sin(pi*x(2)) * (C*cos(pi*t) + sin(pi*t)*pi*(k1+k2)) )*pi/1000;  
 
-%% Initial Conditions
-        xdof_left = 2*Mesh.left_nodes-1;
-        xdof_right = 2*Mesh.right_nodes-1;
-        ydof_bottom = 2*Mesh.bottom_nodes;
-        ydof_top = 2*Mesh.top_nodes;
-        
-        IC_left = 
-        edge_nodes = unique([Mesh.left_nodes; Mesh.right_nodes; Mesh.bottom_nodes; Mesh.top_nodes]);
-        xdofs_edges = 2*edge_nodes - 1;
-        ydofs_edges = 2*edge_nodes;
-        
-        BC.IC = @(t) [];
+%% Initial Conditions  
+        % left DOF y
+        aux1 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux1(Mesh.left_dof_uy) = cos(pi*Mesh.x(Mesh.left_nodes,2)./2)./1000;
+        % bottom DOF y
+        aux2 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux2(Mesh.bottom_dof_uy) = cos(pi*Mesh.x(Mesh.bottom_nodes,1)./2)/1000;
+        % right DOF y
+        aux3 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux3(Mesh.right_dof_uy) = cos(pi/2)*cos(pi*Mesh.x(Mesh.right_nodes,2)./2)./1000;
+        % top DOF y
+        aux4 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux4(Mesh.top_dof_uy) = cos(pi*Mesh.x(Mesh.top_nodes,1)./2)*cos(pi/2)./1000;
+        % DOF T
+        aux5 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux5(Mesh.dofs_t) = -T0;
+        % assemble IC
+        BC.IC = @(t) aux1 + aux2 + aux3 + aux4 + aux5;
         
 %% Computation controls
 
