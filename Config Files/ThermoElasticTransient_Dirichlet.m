@@ -1,4 +1,4 @@
-function [Mesh, Material, BC, Control] = ThermElas_Transient(config_dir, progress_on)
+function [Mesh, Material, BC, Control] = ThermoElasticTransient_Dirichlet(config_dir, progress_on)
 %THERMALCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
 %   Mesh = THERMALCONFIGFILE() is a structure array with the
@@ -205,7 +205,7 @@ function [Mesh, Material, BC, Control] = ThermElas_Transient(config_dir, progres
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'CircularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
@@ -241,8 +241,8 @@ function [Mesh, Material, BC, Control] = ThermElas_Transient(config_dir, progres
     % -----------------------------------------------------------------
     
     % Manufacture solution
-    % u:= (x1,x2) → -sin(pi*x1/2)*sin(pi*x2/2)
-    % v:= (x1,x2) → cos(pi*x1/2)*cos(pi*x2/2)
+    % u:= (x1,x2) → -sin(pi*x1/2)*sin(pi*x2/2)*sin(2*pi*t)/1000
+    % v:= (x1,x2) → cos(pi*x1/2)*cos(pi*x2/2)*cos(2*pi*t)/1000
         
         BC.UU = @(x) - sin(pi.*x(:,1)./2).*sin(pi.*x(:,2)./2)./1000;
         BC.VV = @(x)   cos(pi.*x(:,1)./2).*cos(pi.*x(:,2)./2)./1000;
@@ -261,13 +261,13 @@ function [Mesh, Material, BC, Control] = ThermElas_Transient(config_dir, progres
         BC.VV_aux = zeros(length(BC.fix_disp_dof),1); 
         BC.VV_aux(2:2:end) = ones(length( BC.VV_aux(1:2:end)),1);
         
-        BC.fix_disp_value = @(t) BC.fix_disp_value.*BC.UU_aux + BC.fix_disp_value.*BC.VV_aux;
+        BC.fix_disp_value = @(t) BC.fix_disp_value.*BC.UU_aux*sin(2*pi*t) + BC.fix_disp_value.*BC.VV_aux*cos(2*pi*t);
 
     % Dirichlet boundary conditions (essential) - thermal
     % -----------------------------------------------------------------
     
     % Manufacture solution
-    % T:= (x1,x2) → sin(pi*x1)*sin(pi*x2)
+    % T:= (x1,x2) → sin(pi*x1)*sin(pi*x2)*sin(2*pi*t)/1000
         
         BC.T = @(x) sin(pi.*x(:,1)).*sin(pi.*x(:,2))./1000;
         
@@ -278,7 +278,7 @@ function [Mesh, Material, BC, Control] = ThermElas_Transient(config_dir, progres
         BC.fix_temp_value = BC.T([Mesh.x(aux,1),Mesh.x(aux,2)]);
 
         % prescribed temperature for each dof [t1; t2; ...] 
-        BC.fix_temp_value = @(t) BC.fix_temp_value;  
+        BC.fix_temp_value = @(t) BC.fix_temp_value*sin(2*pi*t);  
 
     %% Neumann BC
     % -----------------------------------------------------------------
@@ -316,19 +316,29 @@ function [Mesh, Material, BC, Control] = ThermElas_Transient(config_dir, progres
         beta = Material.Prop(1).beta;
         
         % magnitude of distributed body force [N/m] [bx;by]
-        BC.b = @(x,t)[-(E0*sin(pi*x(2)/2)*pi*(-1 + nu)*sin(pi*x(1)/2) + ...
-            4*sin(pi*x(2))*(1 + nu)*cos(pi*x(1))*(-1/2 + nu)*beta)*pi/...
-            (4*nu^2 + 2*nu - 2); 
+        BC.b = @(x,t)[(pi*sin(pi*x(2)/2)*((-4*nu + 3)*sin(2*pi*t) +...
+            cos(2*pi*t))*E0*sin(pi*x(1)/2) - 16*(-1/2 + nu)*beta*sin(2*pi*t)...
+            *(1 + nu)*sin(pi*x(2))*cos(pi*x(1)))*pi/(16000*nu^2 + 8000*nu - 8000); 
                        %
-                       (E0*cos(pi*x(2)/2)*pi*(-1 + nu)*cos(pi*x(1)/2) - ...
-                       4*sin(pi*x(1))*(1 + nu)*cos(pi*x(2))*(-1/2 + nu)*beta)*pi/...
-                       (4*nu^2 + 2*nu - 2)]./1000;  
+                       4*pi*(pi*cos(pi*x(2)/2)*(-sin(2*pi*t)/4 + ...
+            (nu - 3/4)*cos(2*pi*t))*E0*cos(pi*x(1)/2) - 4*(-1/2 + nu)*beta*...
+            sin(2*pi*t)*(1 + nu)*sin(pi*x(1))*cos(pi*x(2)))/(16000*nu^2 + 8000*nu - 8000)];  
         
         % magnitude of distributed flux source 
-        BC.s = @(x,t) (sin(pi*x(2))*sin(pi*x(1))*pi^2*(k1 + k2))./1000;  
+        BC.s = @(x,t) pi^2*sin(pi*x(1))*sin(pi*x(2))*sin(2*pi*t)*(k1 + k2)/1000;  
 
 %% Initial Conditions
-        BC.IC = @(t) 50*ones(Mesh.nn,1);
+        xdof_left = 2*Mesh.left_nodes-1;
+        xdof_right = 2*Mesh.right_nodes-1;
+        ydof_bottom = 2*Mesh.bottom_nodes;
+        ydof_top = 2*Mesh.top_nodes;
+        
+        IC_left = 
+        edge_nodes = unique([Mesh.left_nodes; Mesh.right_nodes; Mesh.bottom_nodes; Mesh.top_nodes]);
+        xdofs_edges = 2*edge_nodes - 1;
+        ydofs_edges = 2*edge_nodes;
+        
+        BC.IC = @(t) [];
         
 %% Computation controls
 
