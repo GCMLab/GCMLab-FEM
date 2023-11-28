@@ -251,6 +251,10 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
                 end
             end
         elseif Material.ProblemType == 3 %Coupled problem
+            if nnz((BC.c_N_t_flag_case<1) + (BC.c_N_t_flag_case>2))
+                err_count = err_count+1;
+                err_BC = sprintf('%s\t\t\tError #%d\t:\t BC.c_N_t_flag_case must have values as 1 or 2 only. Values greater than 2 and smaller than 1 were found.\n',err_BC,err_count);
+            end
             for i = 1:length(BC.c_B_t_flag)
                 if ~BC.c_N_T_flag(i) && (BC.c_N_T_flag_case(i) == 1)
                     err_count = err_count+1;
