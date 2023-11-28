@@ -216,6 +216,27 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
             err_BC = sprintf('%s\t\t\tError #%d\t:\t Number of elements in BC.c_N_t_flag is not compatible with the number of functions defined in Mesh.c_BC_N_t.\n',err_BC,err_count);
         end
 
+        if Material.ProblemType == 2 %Diffusion problem 
+            for i = 1:length(BC.c_B_t_flag)
+                if ~BC.c_N_T_flag
+                    err_count = err_count+1;
+                    err_BC = sprintf('%s\t\t\tError #%d\t:\t For diffusion problem → Function Mesh.c_BC_N_t{%d} should have BC.c_N_t_flag[%d] = 1 .\n',err_BC,err_count,i,i);
+                end
+            end
+            for i = 1:length(BC.c_B_t_flag)
+                tf = BC.c_N_t_f{i};
+                % Evaluate function. For diffusion problem, the second term
+                % of the function must always be zero. Only the normal
+                % component will be used.
+                if ~tf([rand(1),rand(1)], rand(1))
+                    war_count = war_count+1;
+                    war_BC = sprintf('%s\t\t\tWarning #%d\t:\t For diffusion problem → The second term from Mesh.c_BC_N_t{%d} should be zero. This term will not be considered in computations.\n',err_BC,war_count,i);
+                end
+            end
+        elseif Material.ProblemType == 3 %Coupled problem
+
+        end
+
     end
     
     
@@ -233,6 +254,7 @@ err_message = sprintf('%s %s %s %s %s', err_message, err_mesh, err_mat, err_BC, 
 
 if war_count > 0
     warning('\n%s', war_message)
+    pause(3)
 end
 
 if err_count > 0 
