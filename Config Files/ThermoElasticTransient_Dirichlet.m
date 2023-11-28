@@ -140,14 +140,14 @@ function [Mesh, Material, BC, Control] = ThermoElasticTransient_Dirichlet(config
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E0 = 2e2; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
-    Material.Prop(1).k1 = 50; % Conductivity in the x-direction [W/mK]
-    Material.Prop(1).k2 = 25; % Conductivity in the y-direction [W/mK]
-    Material.Prop(1).alpha = 140e-6; % Thermal expansion [1/K]
-    Material.Prop(1).C = 5000;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
+    Material.Prop(1).E0 = 200e9; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.29; % Poisson's ratio
+    Material.Prop(1).k1 = 16.2; % Conductivity in the x-direction [W/mK]
+    Material.Prop(1).k2 = 16.2; % Conductivity in the y-direction [W/mK]
+    Material.Prop(1).alpha = 16e-6; % Thermal expansion [1/K]
+    Material.Prop(1).C = 500*7500;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
     Material.Prop(1).beta = Material.Prop(1).alpha*Material.Prop(1).E0/(1-2*Material.Prop(1).nu);
-    Material.Prop(1).T0 = 290; % reference temperature [K]
+    Material.Prop(1).T0 = 0; % reference temperature [K]
 
     % Constitutive law mechanic problem: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype_mech = 'PlaneStrain'; 
