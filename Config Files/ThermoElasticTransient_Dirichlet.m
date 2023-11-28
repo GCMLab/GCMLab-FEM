@@ -185,7 +185,7 @@ function [Mesh, Material, BC, Control] = ThermoElasticTransient_Dirichlet(config
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2]*1;
+            nex = [1;1]*10;
             % element type ('Q4')
             type = 'Q4';
             
