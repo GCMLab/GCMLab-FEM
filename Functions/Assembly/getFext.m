@@ -144,7 +144,7 @@ if ~strcmp(func2str(BC.b),'@(x)[]')
 
         %% Calculate element traction force vector
             % initialize element traction force vector
-            Fte = zeros(ndofE, 1);   
+            % Fte = zeros(ndofE, 1);   
     %         
     %----  Saving code for possible future adaption to edge element
     %integration-----
@@ -171,7 +171,7 @@ if ~strcmp(func2str(BC.b),'@(x)[]')
     %     	end
 
         %% Assemble element forces
-            F(dofE) = F(dofE) + Fbe + Fte;
+            F(dofE) = F(dofE) + Fbe; %+ Fte;
     end
 end
 
