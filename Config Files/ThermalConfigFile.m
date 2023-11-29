@@ -280,12 +280,24 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
         % tangential components are not defined in a diffusive problem.
         % Moreover, BC.c_N_t_flag{i} must be set as 1, and
         % BC.c_N_t_flag_case{i} must be set as 1.
+        %
+        % --------------------------------------------------------------
+        % Example:
+        % BC.c_N_t_f = cell(1,3);
+        %     BC.c_N_t_f{1} = @(x,t) [x*t ;  y*t]; % → x and y → flag: 0 ; mechanical flag_case: 2
+        %     BC.c_N_t_f{2} = @(x,t) [10^5 ;  0]; % → n and s → flag: 1 ; mechanical flag_case: 2
+        %     BC.c_N_t_f{3} = @(x,t) [10^2 ;  0]; % → n and s → flag: 1 ; thermal flag_case: 1
+        % 
+        % BC.c_N_t_flag = [0, 1, 1];
+        % 
+        % BC.c_N_t_flag_case = [2, 2, 1];
         % -------------------------------------------------------------
         BC.c_N_t_f = cell(1,1); % change to cell(1,number of sets) or
         % set as @(x,t) []  if no tractions of this type are applied
         BC.c_N_t_f{1} = @(x,t) []; % call BC.c_N_t_f{1.. number of stes} and define all sets
         BC.c_N_t_flag = []; %change to row vector if required. Example → [0,0,1]
         BC.c_N_t_flag_case = []; %change to row vector if required. Example → [1,1,2]
+
 
         %--------------------------------------------------------------
         % Method 3:
