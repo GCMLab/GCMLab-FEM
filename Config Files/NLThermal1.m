@@ -10,6 +10,8 @@ function [Mesh, Material, BC, Control] = NLThermal1(config_dir, progress_on)
         % VE1 - Viscoelaticity with stiffness based damping
         % TH1 - Thermal Conduction (Steady-State)
         % TH2 - Thermal Conduction (Transient)
+        % THLE1 - Thermoelasticity (Steady-State)
+        % THLE2 - Thermoelasticity (Transient)
         % NLTH1 - Nonlinear thermal transient
     Material.Model = 'NLTH1';
     
