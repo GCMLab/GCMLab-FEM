@@ -1,4 +1,4 @@
-function [K, R, Fint] = getK_TH1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d, dt, ~, C, alpha)
+function [K, R, Fint] = getK_TH1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d_m, dt, ~, C, alpha)
 %GETK_TH1 Conductivity matrix for diffusion case
 %   K = GETK_TH1(Mesh, Quad, Material) returns the stiffness
 %   matrix K for the iterative solver where the problem uses a linear elastic material
@@ -16,7 +16,7 @@ function [K, R, Fint] = getK_TH1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d, dt, ~, C
 %   --------------------------------------------------------------------
 %   Accepted Inputs (in order)
 %   --------------------------------------------------------------------
-%   getK_TH1(~, ~, ~, Fext, Fextnm1, Klin, ~, d, dnm1, ~, dt, ~, C, alpha)
+%   getK_TH1(~, ~, ~, Fext, Fextnm1, Klin, ~, d_m, dt, ~, C, alpha)
 %
 %   Fext:       External flux vector at timestep n
 %   Fextnm1:    External flux vector at timestep n-1
@@ -26,9 +26,16 @@ function [K, R, Fint] = getK_TH1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d, dt, ~, C
 %   dt:         timestep size between timesteps n-1 and n
 %   alpha:      time intagration parameter
 
+dnm1 = d_m.dnm1;
+d = d_m.d;
 
-K = 1/dt*C + alpha*Klin ;
-Fint = 1/dt*C*(d.d - d.dnm1) + (1-alpha)*Klin*d.dnm1 + alpha*Klin*d.d;
+% stiffness matrix in transient case
+K = alpha*Klin + C./dt;
+
+% internal forces
+Fint = C*(d-dnm1)./dt + (1-alpha)*Klin*dnm1 + alpha*Klin*d;
+
+% residual
 R = alpha*Fext + (1-alpha)*Fextnm1 - Fint;
 
 end

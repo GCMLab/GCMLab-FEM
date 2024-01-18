@@ -40,7 +40,8 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
     Material.Prop(1).alpha = 140e-6; % Thermal expansion [1/K]
     Material.Prop(1).C = 5000;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
     Material.Prop(1).beta = Material.Prop(1).alpha*Material.Prop(1).E0/(1-2*Material.Prop(1).nu);
-    
+    Material.Prop(1).T0 = 0; % reference temperature [K]
+
     % Constitutive law mechanic problem: 'PlaneStrain' or 'PlaneStress' 
     Material.Dtype_mech = 'PlaneStrain'; 
 
@@ -140,7 +141,7 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
         BC.fix_temp_value = BC.T([Mesh.x(aux,1),Mesh.x(aux,2)]);
 
         % prescribed temperature for each dof [t1; t2; ...] 
-        BC.fix_temp_value = @(t) BC.fix_temp_value;  
+        BC.fix_temp_value = @(t) BC.fix_temp_value - Material.Prop(1).T0;  
         
     %% Neumann BC
     % Neumann boundary conditions (natural) - mechanical
@@ -177,11 +178,11 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
         beta = Material.Prop(1).beta;
         
         % magnitude of distributed body force [N/m] [bx;by]
-        BC.b = @(x,t)[-(E0*sin(pi*x(2)/2)*pi*(-1 + nu)*sin(pi*x(1)/2) + ...
+        BC.b = @(x,t)[-(E0*sin(pi*x(2)/2)*pi*(-1 + nu)*sin(pi*x(1)/2) - ...
             4*sin(pi*x(2))*(1 + nu)*cos(pi*x(1))*(-1/2 + nu)*beta)*pi/...
             (4*nu^2 + 2*nu - 2); 
                        %
-                       (E0*cos(pi*x(2)/2)*pi*(-1 + nu)*cos(pi*x(1)/2) - ...
+                       (E0*cos(pi*x(2)/2)*pi*(-1 + nu)*cos(pi*x(1)/2) + ...
                        4*sin(pi*x(1))*(1 + nu)*cos(pi*x(2))*(-1/2 + nu)*beta)*pi/...
                        (4*nu^2 + 2*nu - 2)]./1000;  
         
@@ -189,7 +190,10 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
         BC.s = @(x,t) (sin(pi*x(2))*sin(pi*x(1))*pi^2*(k1 + k2))./1000;  
 
 %% Initial Conditions
-        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
+        % DOF T
+        aux5 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux5(Mesh.dofs_t) = -Material.Prop(1).T0;
+        BC.IC = @(t) aux5;
         
 %% Computation controls
 

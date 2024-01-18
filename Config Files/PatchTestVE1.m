@@ -133,6 +133,8 @@ function [Mesh, Material, BC, Control] = PatchTestVE1(config_dir, progress_on)
         % VE1 - Viscoelaticity with stiffness based damping
         % TH1 - Thermal Diffusion (Steady-State)
         % TH2 - Thermal Diffusion (Transient)
+        % THLE1 - Thermoelasticity (Steady-State)
+        % THLE2 - Thermoelasticity (Transient)
         % NLTH1 - Nonlinear thermal transient
     Material.Model = 'VE1';
         

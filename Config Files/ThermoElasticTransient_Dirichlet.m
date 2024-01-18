@@ -1,7 +1,7 @@
-function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_on)
-%NLELASTIC_2DPLATE Mesh, material parameters, boundary conditions, 
+function [Mesh, Material, BC, Control] = ThermoElasticTransient_Dirichlet(config_dir, progress_on)
+%THERMALCONFIGFILE Mesh, material parameters, boundary conditions, 
 %and control parameters
-%   Mesh = NLELASTIC_2DPLATE() is a structure array with the
+%   Mesh = THERMALCONFIGFILE() is a structure array with the
 %   following fields: 
 %       .type:          the topological class of finite element; it is in 
 %                       the general form 'topology-#of nodes' ie a three 
@@ -60,10 +60,10 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %       .top_dofz       DOFs on the top face in the z-direction
 %       .bottom_dofz    DOFs on the bottom face in the z-direction
 %       
-%   Mesh = NLELASTIC_2DPLATE(config_dir) defines the mesh using GMSH file 
+%   Mesh = MASTERCONFIGFILE(config_dir) defines the mesh using GMSH file 
 %   import located in the directory config_dir
 %
-%   [Mesh, Material] = NLELASTIC_2DPLATE() also returns a
+%   [Mesh, Material] = MASTERCONFIGFILE() also returns a
 %   structure array with the following fields: 
 %       .nmp:           number of material properties
 %       .Prop:          Material properties
@@ -72,7 +72,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %       .Prop.Dtype:    2D approximation ('PlaneStrain' or 'PlainStress')
 %       .Prop.t:        Material thickness
 % 
-%   [Mesh, Material, BC] = NLELASTIC_2DPLATE() also returns a structure
+%   [Mesh, Material, BC] = MASTERCONFIGFILE() also returns a structure
 %   array with the following fields: 
 %       .fix_disp_dof:              Column vector of degrees of freedom 
 %                                   with prescribed displacements
@@ -90,7 +90,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %       .b                          Anonymous function of distributed
 %                                   body force (size 1 x nsd)
 % 
-%   [Mesh, Material, BC, Control] = NLELASTIC_2DPLATE() also returns a 
+%   [Mesh, Material, BC, Control] = MASTERCONFIGFILE() also returns a 
 %   structure array with the following fields: 
 %       .qo:            Quadrature order
 %       .stress_calc    Calculation of values for discontinous variables
@@ -107,8 +107,8 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
 %   config_dir:     (OPTIONAL) File path for the directory where 
 %                   unstructured mesh is stored
 
-%% Material Properties (Solid)
 
+%% Material Properties (Solid)
     % NOTES-------------------------------------------------------------
                                 
         % NOTE: anonymous functions are defined with respect to the variable x,
@@ -121,7 +121,6 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % for different materials are saved in Material.Prop.
         % For example, Young's modulus and Poisson's ratio of ith material will be saved in
         % Material.Prop(i).E and Material.Prop(i).nu, respectively.
-        
         
     % Specify Material Model
         % LE1 - Linear elasticity
@@ -136,30 +135,37 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % THLE1 - Thermoelasticity (Steady-State)
         % THLE2 - Thermoelasticity (Transient)
         % NLTH1 - Nonlinear thermal transient
-    Material.Model = 'ST1';
+    Material.Model = 'THLE2';
     
     % number of material properties
     Material.nmp = 1;
 
     % Properties material 1
-    Material.Prop(1).E0 = 2e11; % Young's modulus [Pa]
-    Material.Prop(1).E1 = 1e20; % Young's modulus [Pa]
-    Material.Prop(1).nu = 0.3; % Poisson's ratio
-   
+    Material.Prop(1).E0 = 200e9; % Young's modulus [Pa]
+    Material.Prop(1).nu = 0.29; % Poisson's ratio
+    Material.Prop(1).k1 = 16.2; % Conductivity in the x-direction [W/mK]
+    Material.Prop(1).k2 = 16.2; % Conductivity in the y-direction [W/mK]
+    Material.Prop(1).alpha = 16e-6; % Thermal expansion [1/K]
+    Material.Prop(1).C = 500*7500;   % Heat Capacity (specific heat * density) = [J/K kg] * [kg/m^3] = [J/K m^3]
+    Material.Prop(1).beta = Material.Prop(1).alpha*Material.Prop(1).E0/(1-2*Material.Prop(1).nu);
+    Material.Prop(1).T0 = 0; % reference temperature [K]
 
-    % Constitutive law: 'PlaneStrain' or 'PlaneStress' 
-    Material.Dtype = 'PlaneStress'; 
+    % Constitutive law mechanic problem: 'PlaneStrain' or 'PlaneStress' 
+    Material.Dtype_mech = 'PlaneStrain'; 
 
+    % Constitutive law thermal problem: 'ISO' or 'ORTHO'
+    Material.Dtype_therm = 'ORTHO'; 
+    
     % Thickness (set as default to 1)
     % 1D: [m2], 2D: [m]
     Material.t = @(x) 1;
 
     % Alternatively, import a material file
     % Material = Material_shale();
+    
+    [Material, ~, ~] = setMaterialModel(Material);
 
-   [Material, ~, ~] = setMaterialModel(Material);
-    
-    
+
 %% Mesh Properties
     if progress_on
         disp([num2str(toc),': Building Mesh...']);
@@ -180,7 +186,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             % size of domain [m] [Lx;Ly;Lz] 
             L = [1;1];
             % number of elements in each direction [nex; ney; nez] 
-            nex = [2;2];
+            nex = [1;1]*10;
             % element type ('Q4')
             type = 'Q4';
             
@@ -200,7 +206,7 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on, 0, Material.ProblemType);            
 %             Mesh = BuildMesh_imported(meshFileName, nsd, config_dir, progress_on,Q8_reduced);  
         case 'EXCEL'
-            meshFileName = 'CricularInclusion.xlsx';
+            meshFileName = 'CircularInclusion.xlsx';
             % number of space dimensions
             nsd = 2;
             
@@ -214,31 +220,70 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
     % assign material type to elements
     Mesh.MatList(:) = 1;
 
-
 %% Boundary Conditions
     % {TIPS}------------------------------------------------------------
-        % TIP selecting edges:
+        % TIP selecting edges - GMESH file or MANUAL mesh:
         % bottom_nodes = find(Mesh.x(:,2)==0); 
         % top_nodes = find(Mesh.x(:,2)==2);
         % left_nodes = find(Mesh.x(:,1)==0);
         % right_nodes = find(Mesh.x(:,1)==4);
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
+        
+        % TIP for .fem file - HYPERMESH
+        %   Fixed BC
+        %   temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
+        %   BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
+        %
+        %   temp = Mesh.BC_nN_n;
+        %   BC.traction_force_node = temp;
 
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
-        % fixed displacement
-        BC.fix_disp_dof1 = Mesh.left_dof; 
-        % load application (displacement control)
-        BC.fix_disp_dof2 = Mesh.right_dofy;
-        % column vector of prescribed displacement dof  
-        BC.fix_disp_dof = [BC.fix_disp_dof1; BC.fix_disp_dof2];
+    
+    % Manufacture solution
+    % u:= (x1,x2) → -sin(pi*x1/2)*sin(pi*x2/2)*sin(2*pi*t)/1000
+    % v:= (x1,x2) → cos(pi*x1/2)*cos(pi*x2/2)*cos(2*pi*t)/1000
+        
+        BC.UU = @(x) - sin(pi.*x(:,1)./2).*sin(pi.*x(:,2)./2)./1000;
+        BC.VV = @(x)   cos(pi.*x(:,1)./2).*cos(pi.*x(:,2)./2)./1000;
+    
+        % Column vector of dofs where displacements are applied
+        BC.fix_disp_dof = unique([Mesh.left_dof_u; Mesh.right_dof_u; Mesh.bottom_dof_u; Mesh.top_dof_u]);
+        
+        % Prescribed dispalcement
+        BC.fix_disp_value = zeros(length(BC.fix_disp_dof),1);
+        aux1 = (unique([Mesh.left_nodes; Mesh.bottom_nodes; Mesh.right_nodes; Mesh.top_nodes]))';
+        BC.fix_disp_value(1:2:end) = BC.UU([Mesh.x(aux1,1),Mesh.x(aux1,2)]);
+        BC.fix_disp_value(2:2:end) = BC.VV([Mesh.x(aux1,1),Mesh.x(aux1,2)]);
+        
+        BC.UU_aux = zeros(length(BC.fix_disp_dof),1); 
+        BC.UU_aux(1:2:end) = ones(length( BC.UU_aux(1:2:end)),1);
+        BC.VV_aux = zeros(length(BC.fix_disp_dof),1); 
+        BC.VV_aux(2:2:end) = ones(length( BC.VV_aux(1:2:end)),1);
+        
+        BC.fix_disp_value = @(t) BC.fix_disp_value.*BC.UU_aux*sin(pi*t) + BC.fix_disp_value.*BC.VV_aux*cos(2*pi*t);
 
-        % prescribed displacement for each dof [u1; u2; ...] [m]
-        aux = 3e-3;
-        BC.fix_disp_value = @(t) [zeros(length(BC.fix_disp_dof1),1); ones(length(BC.fix_disp_dof2),1)*aux*t];
+    % Dirichlet boundary conditions (essential) - thermal
+    % -----------------------------------------------------------------
+    
+    % Manufacture solution
+    % T:= (x1,x2) → sin(pi*x1)*sin(pi*x2)*sin(2*pi*t)/1000 - T0
+        
+        BC.T = @(x) sin(pi.*x(:,1)).*sin(pi.*x(:,2))./1000;
+        
+        % Column vector of prescribed dofs where temperature is applied
+        BC.fix_temp_dof = unique([Mesh.left_dof_t; Mesh.right_dof_t; Mesh.bottom_dof_t; Mesh.top_dof_t]);
+        
+        % Prescribed temperature
+        BC.fix_temp_value = BC.T([Mesh.x(aux1,1),Mesh.x(aux1,2)]);
+
+        % prescribed temperature for each dof [t1; t2; ...] 
+        BC.fix_temp_value = @(t) BC.fix_temp_value*sin(pi*t) - Material.Prop(1).T0;  
 
     %% Neumann BC
+    % -----------------------------------------------------------------
+    % Neumann boundary conditions (natural) - mechanical
     % -----------------------------------------------------------------
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
@@ -249,24 +294,66 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
         BC.traction_force_node = [];  
-   
+
+    % Neumann boundary conditions (natural) - temperature
+    % -----------------------------------------------------------------
+        % column vector of prescribed traction dofs
+        BC.flux_dof = [];
+
+        % magnitude of prescribed tractions [N]
+        BC.flux_dof_value = [];
+        
+        BC.flux_node = [];
+        
         % NOTE: point loads at any of the element nodes can also be 
-        % added as a traction.
-
+        % added as a traction.x(1
+    
+    % Distributed sources
+    % -----------------------------------------------------------------
+        E0 = Material.Prop(1).E0;
+        nu = Material.Prop(1).nu;
+        k1 = Material.Prop(1).k1;
+        k2 = Material.Prop(1).k2;
+        beta = Material.Prop(1).beta;
+        C = Material.Prop(1).C;
+        T0 = Material.Prop(1).T0;
+        
         % magnitude of distributed body force [N/m] [bx;by]
-            % 1D: [N/m], 2D: [N/m2]
-        	% NOTE: if no body force, use '@(x)[]'
-         	% NOTE: anonymous functions is defined with respect to the 
-            %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t)[];    
+        BC.b = @(x,t)[(pi*sin(pi*x(2)/2)*((-4*nu + 3)*sin(pi*t) + ...
+            cos(2*pi*t))*E0*sin(pi*x(1)/2) + 16*(-1/2 + nu)*beta*sin(pi*t)*...
+            (1 + nu)*sin(pi*x(2))*cos(pi*x(1)))*pi/(16000*nu^2 + 8000*nu - 8000); 
+                       %
+                       4*pi*(pi*cos(pi*x(2)/2)*(-sin(pi*t)/4 + (nu - 3/4)*...
+            cos(2*pi*t))*E0*cos(pi*x(1)/2) + 4*(-1/2 + nu)*beta*sin(pi*t)*...
+            (1 + nu)*sin(pi*x(1))*cos(pi*x(2)))/(16000*nu^2 + 8000*nu - 8000)];  
+        
+        % magnitude of distributed flux source 
+        BC.s = @(x,t) (-beta*T0*pi*sin(pi*x(2)/2)*(cos(pi*t)-2*sin(2*pi*t))*cos(pi*x(1)/2)/2+...
+            sin(pi*x(1))* sin(pi*x(2)) * (C*cos(pi*t) + sin(pi*t)*pi*(k1+k2)) )*pi/1000;  
 
-%% Initial Conditions
-        BC.IC = @(t) zeros(Mesh.nsd*Mesh.nn,1);
+%% Initial Conditions  
+        % left DOF y
+        aux1 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux1(Mesh.left_dof_uy) = cos(pi*Mesh.x(Mesh.left_nodes,2)./2)./1000;
+        % bottom DOF y
+        aux2 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux2(Mesh.bottom_dof_uy) = cos(pi*Mesh.x(Mesh.bottom_nodes,1)./2)/1000;
+        % right DOF y
+        aux3 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux3(Mesh.right_dof_uy) = cos(pi/2)*cos(pi*Mesh.x(Mesh.right_nodes,2)./2)./1000;
+        % top DOF y
+        aux4 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux4(Mesh.top_dof_uy) = cos(pi*Mesh.x(Mesh.top_nodes,1)./2)*cos(pi/2)./1000;
+        % DOF T
+        aux5 = zeros(Mesh.nDOFn*Mesh.nn,1);
+        aux5(Mesh.dofs_t) = -T0;
+        % assemble IC
+        BC.IC = @(t) aux1 + aux2 + aux3 + aux4 + aux5;
         
 %% Computation controls
 
         % quadrature order
-        Control.qo = 2;
+        Control.qo = 3;
 
         % Calculation of values for discontinuous variables 
         % (i.e. stress/strain)
@@ -294,45 +381,33 @@ function [Mesh, Material, BC, Control] = NLElastic_2DPlate(config_dir, progress_
         % 'LinearSolver2': Zeroing DOFs in stiffness matrix 
         %                   corresponding to essential boundaries
         % 'LinearSolver3': Penalty method
-        Control.LinearSolver = 'LinearSolver1';    
+        Control.LinearSolver = 'LinearSolver1';
  
         % time controls
         Control.StartTime = 0;
-        Control.EndTime   = 150;
-        NumberOfSteps     = 0.2*Control.EndTime;
+        Control.EndTime   = 1.5;
+        NumberOfSteps     = 100;
         Control.TimeStep  = (Control.EndTime - Control.StartTime)/(NumberOfSteps);
         % save displacements and stresses at each timestep in matlab 
         % debugging and testing purposes only, vtk files are otherwise
         % recommended
-        Control.dSave     = 1; 
-        % Plot load vs displacement curve
-        Control.plotLoadDispl = 1;
-        % DOF to plot
-        Control.plotAt = Mesh.nDOF; % dof in y at bottom right node
+        Control.dSave     = 0; 
+        % Plot load vs displacement curve (if not included, default is set
+        % to 0)
+        Control.plotLoadDispl = 0;
+        % DOF to plot (only necessary if Control.plotLoadDispl = 1)
+        Control.plotAt = 0; % [add DOF number]
         
         % time integration parameter
         % for 1st order problem (transient diffusion, viscoelastic)
         % 1 = Backward Euler, 0.5 = Crank-Nicolson
         % for 2nd order problem (dynamic)
         % range = [-1/3, 0], use 0 by default
-        Control.alpha = 0.5; 
+        Control.alpha = 1; 
         
         % Newton Raphson controls
         Control.r_tol = 1e-5; % Tolerance on residual forces
         Control.iter_max = 50; % Maximum number of iteration in Newton Raphson algorithm
         
-        % Aitken Relaxation
-        % Turn on Aitken Relxation (off by default if not specified)
-        Control.aitkenON    = 1;
-        % Min and max relaxation parameters
-        Control.aitkenRange = [0.1,2];
-        % Allow negative aitken relaxation (turn off by default, but may be
-        % useful in very stiff problems).
-        Control.aitkenNeg   = 0;
-        % Optional - specify the degrees of freedom to calculate the
-        % relaxation coefficient. These DOFs should not include any fixed
-        % DOFs as they interfere with the calculation of the relaxation
-        % paramter.
-        Control.relaxDOFs   = setdiff(1:Mesh.nDOF,BC.fix_disp_dof);
         
 end

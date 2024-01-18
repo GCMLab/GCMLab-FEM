@@ -1,14 +1,17 @@
-function [K, R, Fint] = getK_THLE1(~, ~, ~, ~, Fext, ~, Klin, ~, d_m, ~, ~,~,~)
-%GETK_THLE1 Stiffness matrix for iterative thermoelastic case
-%   [K, R, Fint] = GETK_THLE1(Mesh, Quad, Material) returns the stiffness
+function [K, R, Fint] = getK_THLE2(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d_m, dt, ~,C,alpha)
+%GETK_THLE2 Stiffness matrix for iterative transient thermoelastic case
+%   [K, R, Fint] = GETK_THLE2(Mesh, Quad, Material) returns the stiffness
 %   matrix K, the residual vector R, and the internal force vector for the 
-%   iterative solver where the problem uses a linear thermoelastic material
+%   iterative solver where the problem uses a linear transient 
+%   thermoelastic material
 %   
 %   Template file for other tangent matrix files 
 %   --------------------------------------------------------------------
 %   Accepted Inputs (in order)
 %   --------------------------------------------------------------------
-%   getK_LET1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d_m, dt, ~,~,~)
+%   Accepted Inputs (in order)
+%   --------------------------------------------------------------------
+%   getK_LET1(~, ~, ~, ~, Fext, Fextnm1, Klin, ~, d_m, dt, ~,C,alpha)
 %   Mesh:       ~
 %   Quad:       ~
 %   Material:   ~
@@ -24,14 +27,19 @@ function [K, R, Fint] = getK_THLE1(~, ~, ~, ~, Fext, ~, Klin, ~, d_m, ~, ~,~,~)
 %               dnm3:       converged degree of freedom vector at timestep n-3
 %   dt:         timestep size between timesteps n-1 and n
 %   dtnm1:      ~
-%   C:          ~
-%   alpha:      ~
+%   C:          Material damping matrix
+%   alpha:      time intagration parameter
 
+dnm1 = d_m.dnm1;
 d = d_m.d;
 
-K = Klin;
-Fint = K*d;
-R = Fext - Fint;
+% stiffness matrix in transient case
+K = alpha*Klin + C./dt;
 
+% internal forces
+Fint = C*(d-dnm1)./dt + (1-alpha)*Klin*dnm1 + alpha*Klin*d;
+
+% residual
+R = alpha*Fext + (1-alpha)*Fextnm1 - Fint;
 
 end
