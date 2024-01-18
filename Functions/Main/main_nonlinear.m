@@ -166,6 +166,7 @@ end
  %% Solve the time-dependent nonlinear problem
  % Set tolerance on the final end time
     t_tol = 1e-10; 
+
  while true   % Timestep loop
     % Output progress
         if progress_on
@@ -204,9 +205,7 @@ end
                 fprintf('%d',iter');
                 msg_len = numel(num2str(iter));
             end
-        
-
-      
+          
         % Compute nonlinear stiffness matrix and internal forces
             [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha); 
 
@@ -219,11 +218,10 @@ end
                 resScale = 1+norm(Fint);
             end
         
-        % Calculate residual
             res = norm(ResForce)/resScale;
             rSave(iter) = res;
-        
-        % Check convergence
+
+            % Check convergence
             if res < Control.r_tol
                 converged = 1;
             else

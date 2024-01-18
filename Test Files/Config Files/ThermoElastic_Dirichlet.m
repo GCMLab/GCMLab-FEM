@@ -26,6 +26,7 @@ function [Mesh, Material, BC, Control] = ThermoElastic_Dirichlet(config_dir, pro
         % TH1 - Thermal Diffusion (Steady-State)
         % TH2 - Thermal Diffusion (Transient)
         % THLE1 - Thermoelasticity (Steady-State)
+        % NLTH1 - Nonlinear thermal transient
     Material.Model = 'THLE1';
     
     % number of material properties

@@ -11,16 +11,16 @@
     % Folder name where config files are stored
     DirFolder = 'Config Files';
     % Config files to run. Choose either 'all' or give the file name.
-    FileList = 'MasterConfigFile';
+    FileList = 'NLThermal1';
 
     % Directory for VTK Files (end with \)
     if ispc
 %         VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
 %         VTKFolder ='C:\Users\GZingaro\Desktop\Results';
-%         VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\Fall 2022\Github\Documents\Matlab Results\';
+        VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\Fall 2022\Github\Documents\Matlab Results\';
 %         VTKFolder = 'C:\Users\bccampos\Downloads\Matlab Results\';
+%        VTKFolder = 'C:\Users\GZingaro\Documents\MATLAB Results';
     else
-        VTKFolder = '/Users/jonathanzingaro/Documents/MATLAB Results';
     end
      
     % output vtk files

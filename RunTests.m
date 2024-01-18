@@ -8,12 +8,12 @@
     tic;
     
     % Test VTK output
-    plot2vtk = 1;
+    plot2vtk = 0;
 %       VTKFolder ='C:\Users\b3gee\Documents\Matlab Results\';
 %       VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\Fall 2022\Github\Documents\Matlab Results\';
 %       VTKFolder = 'C:\Users\shatefia\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results';
 %       VTKFolder = 'C:\Users\knbetanc\OneDrive - University of Waterloo\Documents\UWaterloo\Research\GitHub\Results\';
-%       VTKFolder ='C:\Users\GZingaro\Desktop\Results';
+       VTKFolder ='C:\Users\GZingaro\Desktop\Results';
 %       VTKFolder = 'C:\Users\bccampos\Downloads\Matlab Results\';
 %       VTKFolder = 'C:\Users\bu_ca\Downloads\Matlab Results\';
 
@@ -177,7 +177,7 @@
 %  Pass Condtion: Discrete norm of displacemets vs exact solution and
 %                 stored solution from previous run
       run('Test Files\RunDynamicManufacture')
-
+      
 %% Test 32: Thermoelastic Test - Manufactured solution
 %  Pass Condtion: FEA solution displacements, stresses, and strains are exact
      run('Test Files\RunThermoelasticTest')

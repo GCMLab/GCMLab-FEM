@@ -134,6 +134,7 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % TH2 - Thermal Diffusion (Transient)
         % THLE1 - Thermoelasticity (Steady-State)
         % THLE2 - Thermoelasticity (Transient)
+        % NLTH1 - Nonlinear thermal transient
     Material.Model = 'LE1';
     
     % number of material properties
