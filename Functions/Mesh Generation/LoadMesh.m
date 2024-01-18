@@ -254,8 +254,8 @@ switch Mesh.ext
         n_m = zeros(nt,1);
         t_m = zeros(nt,1);
         
-%         BC_E = zeros(nebc,4); % For rotated DOF case
-        BC_E = zeros(nebc,2);
+%         BC_E = zeros(nebc,6); % For rotated DOF case
+        BC_E = zeros(nebc,3);
         BC_nE = zeros(nebc,1);
         BC_E_set = zeros(nebc,1);
         
@@ -322,9 +322,17 @@ switch Mesh.ext
                 BC_E(i,1) = 1;         
             elseif supp == 2    % constrain on Y
                 BC_E(i,2) = 1;  
+            elseif supp == 3    % constrain on extra field
+                BC_E(i,3) = 1;  
             elseif supp == 12   % constrain on X and Y
                 BC_E(i,1) = 1;  
                 BC_E(i,2) = 1;  
+            elseif supp == 13   % constrain on X and extra field
+                BC_E(i,1) = 1;  
+                BC_E(i,3) = 1;  
+            elseif supp == 23   % constrain on Y and extra field
+                BC_E(i,2) = 1;  
+                BC_E(i,3) = 1;
             % Case for rotated DOF
             elseif supp == 4        % constrain on X'
 %                 BC_E(i,3) = 1;         

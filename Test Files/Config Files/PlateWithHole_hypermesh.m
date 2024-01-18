@@ -208,19 +208,10 @@ function [Mesh, Material, BC, Control] = PlateWithHole_hypermesh(config_dir, pro
 
 
 %% Boundary Conditions
-    % {TIPS}------------------------------------------------------------
-        % TIP selecting edges:
-        % bottom_nodes = find(Mesh.x(:,2)==0); 
-        % top_nodes = find(Mesh.x(:,2)==2);
-        % left_nodes = find(Mesh.x(:,1)==0);
-        % right_nodes = find(Mesh.x(:,1)==4);
-        % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
-        % top_dof = [top_nodes*2 - 1;top_nodes*2];
-
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
-        temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
+        temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E(:,1:2);
         BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
 
         % prescribed displacement for each dof [u1; u2; ...] [m]

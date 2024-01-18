@@ -222,7 +222,11 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % forms of essential BC
         % % column vector of prescribed displacement dof  
         % temp_DOF = [Mesh.DOF(Mesh.c_BC_nE{1},:); Mesh.DOF(Mesh.c_BC_nE{2},:)];
-        % temp_BC_flag = [Mesh.c_BC_E{1}; Mesh.c_BC_E{2}];
+        % temp_BC_flag = [Mesh.c_BC_E{1}; Mesh.c_BC_E{2}]; 
+        %       For coupled problem
+        %           Mesh.c_BC_E{i} 
+        %               → columns 1 to 2 refer to BC applied on mechanical part
+        %               → columns 3 applied to scalar problem
         % temp = temp_DOF.*temp_BC_flag;
         % BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
         % 
