@@ -218,14 +218,21 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         % bottom_dof = [bottom_nodes*2 - 1; bottom_nodes*2];
         % top_dof = [top_nodes*2 - 1;top_nodes*2];
         
-        % TIP for .fem file - HYPERMESH
-        %   Fixed BC
-        %   temp = Mesh.DOF(Mesh.BC_nE,:).*Mesh.BC_E;
-        %   BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
-        %
-        %   temp = Mesh.BC_nN_n;
-        %   BC.traction_force_node = temp;
-
+        % TIP for .fem file - HYPERMESH when using sets to define different
+        % forms of essential BC
+        % % column vector of prescribed displacement dof  
+        % temp_DOF = [Mesh.DOF(Mesh.c_BC_nE{1},:); Mesh.DOF(Mesh.c_BC_nE{2},:)];
+        % temp_BC_flag = [Mesh.c_BC_E{1}; Mesh.c_BC_E{2}]; 
+        %       For coupled problem
+        %           Mesh.c_BC_E{i} 
+        %               → columns 1 to 2 refer to BC applied on mechanical part
+        %               → columns 3 applied to scalar problem
+        % temp = temp_DOF.*temp_BC_flag;
+        % BC.fix_disp_dof = nonzeros(reshape(temp, length(temp)*Mesh.nsd,1));
+        % 
+        % % prescribed displacement for each dof [u1; u2; ...] [m]
+        % BC.fix_disp_value = @(t) zeros(length(BC.fix_disp_dof),1);  
+        
     % Dirichlet boundary conditions (essential)
     % -----------------------------------------------------------------
         % column vector of prescribed displacement dof  
@@ -235,13 +242,56 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
         BC.fix_disp_value = @(t) sin(t)/1e5*ones(length(BC.fix_disp_dof),1);  
 
     %% Neumann BC
-    % -----------------------------------------------------------------
+    % ----------------------------------------------------------------- 
+        %--------------------------------------------------------------
+        % Method 1:
+        %--------------------------------------------------------------
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
 
         % magnitude of prescribed tractions [N]
         BC.traction_force_dof_value = [];
-
+        
+        %--------------------------------------------------------------
+        % Method 2:
+        %--------------------------------------------------------------
+        % Edge elements and normals are obtained from Mesh structure.
+        %
+        % Tractions boundary conditions can be applied as:
+        %    1 → function for vector on x and y 
+        %    2 → function for vector on n and s (normal
+        %           and tangential directions of each point of the boundary)
+        %
+        % These functions are stored in BC.c_N_t_f{i}(Neuman _ traction _ function)
+        % To recognize if the function is case 1 or 2, BC.c_N_t_flag must include
+        % a vector with:
+        %   0 → function for vector on x and y
+        %   1 → function for vector on n and s
+        %
+        % To rectognize if the function is applied on the mechanical or diffusive DOF
+        % Bc.c_N_t_flag_case must include a vector with
+        %   1 → if the set {i} is applied to the diffusive part
+        %   2 → if the set {i} is applied to the mechanical part
+        %
+        % -------------------------------------------------------------
+        % Note: The total number of traction functions must be compatible
+        % with the number of sets defined for edge elements
+        %
+        % Note: BC.c_N_t_f and BC.c_N_t_flag must have the same length 
+        %
+        % Note: If set 'i' is a diffusive problem, in BC.c_N_t_f{i} bust be
+        % defined in normal components, and must be a single term, as
+        % tangential components are not defined in a diffusive problem.
+        % Moreover, BC.c_N_t_flag{i} must be set as 1.
+        % -------------------------------------------------------------
+        BC.c_N_t_f = cell(1,1); % change to cell(1,number of sets) or set as  @(x,t) [] 
+        % directly if no tractions of this type are applied
+        BC.c_N_t_f{1} = @(x,t) []; % call BC.c_N_t_f{1.. number of stes} and define all sets
+        BC.c_N_t_flag = []; %change to row vector if required. Example → [0,0,1]
+        
+        %--------------------------------------------------------------
+        % Method 3:
+        %--------------------------------------------------------------
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
         BC.traction_force_node = Mesh.right_nodes;  
@@ -262,7 +312,10 @@ function [Mesh, Material, BC, Control] = MasterConfigFile(config_dir, progress_o
     
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
-
+        
+        %--------------------------------------------------------------
+        % Body forces
+        %--------------------------------------------------------------
         % magnitude of distributed body force [N/m] [bx;by]
             % 1D: [N/m], 2D: [N/m2]
         	% NOTE: if no body force, use '@(x)[]'

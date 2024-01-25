@@ -249,7 +249,11 @@ function [Mesh, Material, BC, Control] = ManufacturedSolution_DirichletTime(conf
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         BC.traction_force_value = @(t) 0; 
-    
+        
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+        BC.c_N_t_flag = [];
+          
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 

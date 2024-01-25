@@ -245,7 +245,11 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
         
         BC.traction_force_value(toprightnode,1) = BC.traction_force_value(toprightnode,1)/2;
         BC.traction_force_value(botrightnode,1) = BC.traction_force_value(botrightnode,1)/2;
-    
+        
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+        BC.c_N_t_flag = [];
+
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
@@ -255,7 +259,7 @@ function [Mesh, Material, BC, Control] = UnstructuredMeshTest(config_dir, progre
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
         BC.b = @(x)[];    
-
+        
 %% Computation controls
 
         % quadrature order

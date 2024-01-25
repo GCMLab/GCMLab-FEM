@@ -178,10 +178,22 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         BC.traction_force_node = [];  
         BC.traction_force_value = [];
     end
+    
+    if ~isfield(BC, 'c_N_t_f')
+        war_count = war_count+1;
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.c_N_t_f  not defined - has been set as @(x,t)[]\n',war_BC,war_count);
+        BC.c_N_t_f = @(x,t)[];  
+    end
+
+    if ~isfield(BC, 'c_N_t_flag')
+        war_count = war_count+1;
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.c_N_t_flag not defined - has been set as []\n',war_BC,war_count);
+        BC.c_N_t_flag = [];  
+    end
 
     if ~isfield(BC, 'b')    
         war_count = war_count+1;
-        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.b not defined - has been set as @(x)[]\n',war_BC,war_count);
+        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.b not defined - has been set as @(x,t)[]\n',war_BC,war_count);
         BC.b = @(x)[];  
     end  
     
@@ -224,6 +236,12 @@ function [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control
         % define unique set of fixed DOFs
         BC.fix_dof = [BC.fix_disp_dof; BC.fix_temp_dof];
         BC.fix_value = @(t) [BC.fix_disp_value(t); BC.fix_temp_value(t)];
+
+        if ~isfield(BC, 'c_N_t_flag_case')
+            war_count = war_count+1;
+            war_BC = sprintf('%s\t\t\tWarning #%d\t:\t BC.c_N_t_flag_case not defined - has been set as []\n',war_BC,war_count);
+            BC.c_N_t_flag_case = [];  
+        end
 
     else
         BC.fix_dof = BC.fix_disp_dof;
@@ -318,6 +336,7 @@ err_message = sprintf('%s %s %s %s %s', err_message, err_mesh, err_mat, err_BC, 
 
 if war_count > 0
     warning('\n%s', war_message)
+    pause(3)
 end
 
 if err_count > 0 

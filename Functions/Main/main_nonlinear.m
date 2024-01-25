@@ -22,15 +22,15 @@
 %% Set Default Values
     [Mesh, Material, BC, Control] = setDefaults(Mesh, Material, BC, Control);
 
+%% Set material model
+    [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material);
+
 %% Check for valid inputs
     if progress_on
         fprintf('%.2f: Checking for valid inputs...\n', toc);
     end
     [Mesh, Material, BC, ~] = cleanInput(Mesh, Material, BC, Control);
     
-%% Set material model
-    [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMaterialModel(Material);
-
 %% Initialize time variables
     t = Control.StartTime;
     dt = Control.TimeStep;
@@ -45,6 +45,12 @@
     % (Done at beginning of code - this assumes all elements are the 
     % same type and same order of quadrature for all integrals)
     Quad = GlobalQuad(Mesh.nsd, Mesh.type, Control.qo);
+    
+    if (isa(BC.c_N_t_f,'cell'))%If edge elements are used
+        Quad_edge = GlobalQuad(1, 'L2', Control.qo);
+    else
+        Quad_edge = [];
+    end
 
 %% Compute system matrices 
 
@@ -106,9 +112,13 @@
 %% Define initial conditions
 
     d0 = BC.IC(t-dt); % Initial condition for displacement
+% <<<<<<< HEAD
+%     d0(BC.fix_disp_dof) = BC.fix_disp_value(t-dt);
+%     Fext = getFext(Mesh, BC, Quad, t - dt + Dyn_ON*Control.alpha*dt, Quad_edge); % External forces
+% =======
     d0(BC.fix_dof) = BC.fix_value(t-dt);
+    Fext = feval(Material.ExternalForceFile, Mesh, BC, Quad, t - dt + Dyn_ON*Control.alpha*dt, Quad_edge); % External forces
 
-    Fext = feval(Material.ExternalForceFile, Mesh, BC, Quad, t - dt + Dyn_ON*Control.alpha*dt); % External forces
     Fextnm1 = Fext; % Fext at timestep n-1
     d_m.d = d0;     % d at timestep n (trial)
     d_m.dnm1 = d0;  % d at timestep n-1
@@ -186,8 +196,8 @@ end
             disp([num2str(toc),': Compute Force Vector...']);
         end
         
-        Fext = feval(Material.ExternalForceFile, Mesh, BC, Quad, t + Dyn_ON*Control.alpha*dt);
-    
+        Fext = feval(Material.ExternalForceFile, Mesh, BC, Quad, t + Dyn_ON*Control.alpha*dt, Quad_edge);
+
     % Output progress to command window
         if progress_on
             msg_len = 1;

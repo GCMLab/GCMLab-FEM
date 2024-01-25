@@ -13,7 +13,69 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
 %% Mesh
     err_mesh = sprintf('\t\tMesh \n');
     war_mesh = sprintf('\t\tMesh \n');
-
+    
+    if isfield(Mesh, 'c_BC_N_t') && ~isfield(Mesh,'c_BC_N_t_n_m')
+        err_count = err_count+1;
+        err_mesh = sprintf('%s\t\t\tError #%d\t:\t Edge elements have been defined but the normals have not been computed as input. Include Mesh.c_BC_N_t_n_m in input.\n',err_mesh,err_count);
+    end
+    
+    if isfield(Mesh, 'c_BC_N_t') && ~isfield(Mesh,'c_BC_N_t_t_m')
+        err_count = err_count+1;
+        err_mesh = sprintf('%s\t\t\tError #%d\t:\t Edge elements have been defined but the tangents have not been computed as input. Include Mesh.c_BC_N_t_t_m in input.\n',err_mesh,err_count);
+    end
+    
+    if ~isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m')
+        err_count = err_count+1;
+        err_mesh = sprintf('%s\t\t\tError #%d\t:\t Normals for traction computation have been defined, but edge elements are not included in input. Include Mesh.c_BC_N_t in input.\n',err_mesh,err_count);
+    end
+    
+    if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m')
+        if length(Mesh.c_BC_N_t) ~= length(Mesh.c_BC_N_t_n_m)
+            err_count = err_count+1;
+            err_mesh = sprintf('%s\t\t\tError #%d\t:\t The number of sets of edge elements is not compatible with the number of sets given for the normal vectors. Review Mesh.BC_N_t and Mesh.c_BC_N_t_n_m.\n',err_mesh,err_count);
+        end
+    end
+    
+    if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_t_m')
+        if length(Mesh.c_BC_N_t) ~= length(Mesh.c_BC_N_t_t_m)
+            err_count = err_count+1;
+            err_mesh = sprintf('%s\t\t\tError #%d\t:\t The number of sets of edge elements is not compatible with the number of sets given for the tangent vectors. Review Mesh.BC_N_t and Mesh.c_BC_N_t_t_m.\n',err_mesh,err_count);
+        end
+    end
+    
+    if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m')  && isfield(Mesh,'c_BC_N_t_t_m')
+        if length(Mesh.c_BC_N_t) == length(Mesh.c_BC_N_t_n_m)
+            for i = 1:length(Mesh.c_BC_N_t_n_m)
+                BC_N_t_temp = Mesh.c_BC_N_t{i};
+                BC_N_t_n_m_temp = Mesh.c_BC_N_t_n_m{i};
+                if length(BC_N_t_temp) ~= length(BC_N_t_n_m_temp)
+                    err_count = err_count+1;
+                    err_mesh = sprintf('%s\t\t\tError #%d\t:\t The number of edge elements and normals in set %d is not compatible. Check size of Mesh.c_BC_N_t{%d} and Mesh.c_BC_N_t_n_m{%d}.\n',err_mesh,err_count, i, i , i);    
+                end
+            end
+        end
+        
+        if length(Mesh.c_BC_N_t) == length(Mesh.c_BC_N_t_t_m)
+            for i = 1:length(Mesh.c_BC_N_t_t_m)
+                BC_N_t_temp = Mesh.c_BC_N_t{i};
+                BC_N_t_t_m_temp = Mesh.c_BC_N_t_n_m{i};
+                if length(BC_N_t_temp) ~= length(BC_N_t_t_m_temp)
+                    err_count = err_count+1;
+                    err_mesh = sprintf('%s\t\t\tError #%d\t:\t The number of edge elements and tangents in set %d is not compatible. Check size of Mesh.c_BC_N_t{%d} and Mesh.c_BC_N_t_t_m{%d}.\n',err_mesh,err_count, i, i , i);    
+                end
+            end
+        end
+    end
+    
+    if ~strcmp(Mesh.type, 'Q4')
+        if ~strcmp(Mesh.type, 'T3')
+            if isfield(Mesh, 'c_BC_N_t')
+                err_count = err_count+1;
+                err_mesh = sprintf('%s\t\t\tError #%d\t:\tThe computation of tractions using edge elements only works for Q4 and T3 elements.\n',err_mesh,err_count);
+            end
+        end
+    end
+    
 %% Material
     err_mat = sprintf('\t\tMat \n');
     war_mat = sprintf('\t\tMat \n');
@@ -127,6 +189,99 @@ function [Mesh, Material, BC, Control] = cleanInput(Mesh, Material, BC, Control)
         err_count = err_count+1;
         err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions are prescribed at nodes which exceed the total number of nodes\n',err_BC,err_count);
     end
+    
+    if isfield(Mesh, 'c_BC_N_t') && isfield(Mesh,'c_BC_N_t_n_m') && ~isempty(cell2mat(Mesh.c_BC_N_t)) && ~isempty(cell2mat(Mesh.c_BC_N_t_n_m))
+        if ~isfield(BC, 'c_N_t_f') 
+            err_count = err_count+1;
+            err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions functions compatible with the use of edge elements for integration have not been applied. Include BC.c_N_t_f in input.\n',err_BC,err_count);
+        end
+
+        if ~isa(BC.c_N_t_f,'cell')
+            err_count = err_count+1;
+            err_BC = sprintf('%s\t\t\tError #%d\t:\t Tractions functions compatible with the use of edge elements for integration have not been applied. Include BC.c_N_t_f in input.\n',err_BC,err_count);
+        end
+        
+        if ~isfield(BC, 'c_N_t_flag') 
+            err_count = err_count+1;
+            err_BC = sprintf('%s\t\t\tError #%d\t:\t Vector related to orientation of traction application has not been defined. Include BC.c_N_t_flag in input.\n',err_BC,err_count);
+        end
+       
+        if length(BC.c_N_t_f) ~= length(Mesh.c_BC_N_t)
+            err_count = err_count+1;
+            err_BC = sprintf('%s\t\t\tError #%d\t:\t Number of functions BC.c_N_t_f is not compatible with the number of sets of edge elements.\n',err_BC,err_count);
+        end
+       
+        if length(BC.c_N_t_flag) ~= length(Mesh.c_BC_N_t)
+            err_count = err_count+1;
+            err_BC = sprintf('%s\t\t\tError #%d\t:\t Number of elements in BC.c_N_t_flag is not compatible with the number of functions defined in Mesh.c_BC_N_t.\n',err_BC,err_count);
+        end
+
+        for i = 1:length(BC.c_N_t_f)
+            tf = BC.c_N_t_f{i};
+            temp = tf([rand(1),rand(1)], rand(1));
+            if length(temp)~=2
+                err_count = err_count+1;
+                err_BC = sprintf('%s\t\t\tError #%d\t:\t Function Mesh.c_BC_N_t{%d} should be a vector of size [2;1]  .\n',err_BC,err_count,i);
+            end
+        end
+
+        if nnz((BC.c_N_t_flag<0) + (BC.c_N_t_flag>1))
+            err_count = err_count+1;
+            err_BC = sprintf('%s\t\t\tError #%d\t:\t BC.c_N_t_flag must have values as 0 or 1 only. Values greater than 1 and smaller than 0 were found.\n',err_BC,err_count);
+        end
+
+        if Material.ProblemType == 2 %Diffusion problem 
+            for i = 1:length(BC.c_B_t_flag)
+                if ~BC.c_N_T_flag(i)
+                    err_count = err_count+1;
+                    err_BC = sprintf('%s\t\t\tError #%d\t:\t For diffusion problem → Function Mesh.c_BC_N_t{%d} should have BC.c_N_t_flag[%d] = 1 .\n',err_BC,err_count,i,i);
+                end
+            end
+            for i = 1:length(BC.c_B_t_flag)
+                tf = BC.c_N_t_f{i};
+                % Evaluate function. For diffusion problem, the second term
+                % of the function must always be zero. Only the normal
+                % component will be used.
+                temp = tf([rand(1),rand(1)], rand(1));
+                if length(temp) == 2
+                    if temp(2)
+                        war_count = war_count+1;
+                        war_BC = sprintf('%s\t\t\tWarning #%d\t:\t For diffusion problem → The second term from Mesh.c_BC_N_t{%d} should be zero. This term will not be considered in computations.\n',err_BC,war_count,i);
+                    end
+                end
+            end
+        elseif Material.ProblemType == 3 %Coupled problem
+            if nnz((BC.c_N_t_flag_case<1) + (BC.c_N_t_flag_case>2))
+                err_count = err_count+1;
+                err_BC = sprintf('%s\t\t\tError #%d\t:\t BC.c_N_t_flag_case must have values as 1 or 2 only. Values greater than 2 and smaller than 1 were found.\n',err_BC,err_count);
+            end
+            for i = 1:length(BC.c_B_t_flag)
+                if ~BC.c_N_T_flag(i) && (BC.c_N_T_flag_case(i) == 1)
+                    err_count = err_count+1;
+                    err_BC = sprintf('%s\t\t\tError #%d\t:\t For diffusion problem → Function Mesh.c_BC_N_t{%d} should have BC.c_N_t_flag[%d] = 1 .\n',err_BC,err_count,i,i);
+                end
+            end
+            for i = 1:length(BC.c_B_t_flag)
+                if BC.c_B_t_flag_case == 1
+                    tf = BC.c_N_t_f{i};
+                    % Evaluate function. For diffusion part of problem problem, the second term
+                    % of the function must always be zero. Only the normal
+                    % component will be used.
+                    temp = tf([rand(1),rand(1)], rand(1));
+                    if length(temp) == 2
+                        if temp(2)
+                            war_count = war_count+1;
+                            war_BC = sprintf('%s\t\t\tWarning #%d\t:\t For diffusion problem → The second term from Mesh.c_BC_N_t{%d} should be zero. This term will not be considered in computations.\n',err_BC,war_count,i);
+                        end
+                    end
+                end
+            end
+        end
+
+    end
+    
+    
+     
 %% Control parameters
     err_control = sprintf('\t\tControl Parameters \n');
     war_control = sprintf('\t\tControl Parameters \n');
@@ -140,6 +295,7 @@ err_message = sprintf('%s %s %s %s %s', err_message, err_mesh, err_mat, err_BC, 
 
 if war_count > 0
     warning('\n%s', war_message)
+    pause(3)
 end
 
 if err_count > 0 

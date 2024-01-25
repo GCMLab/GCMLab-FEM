@@ -1,8 +1,12 @@
-function F = getFext(Mesh, BC, Quad, t)
+function F = getFext(Mesh, BC, Quad, t, Quad_edge)
 %GETFEXT External forces
 %   F = GETFEXT(Mesh, BC, Quad) is a column vector of external forces 
 %   acting on each degree of freedom (size ndof x 1 in which ndof is the
 %   number of degrees of freedom)
+%
+%   Note: this Algorithm works only for the case where the equilibrium
+%   (vector) or diffusion (scalar) problem are treated separately. Refer to
+%   getFext_coupled.m for coupled vector-scalar algorithm.
 %   
 %   --------------------------------------------------------------------
 %   Input
@@ -43,6 +47,10 @@ function F = getFext(Mesh, BC, Quad, t)
 %           .dNdxiq:    Cell array (size nq x 1) with derivative of shape 
 %                       functions w.r.t. parent coordinates evaluated at 
 %                       each quadrature point
+%
+%   Quad_edge: Structure array with same fields as Quad
+%               Used computation of tractions with edge elements
+
 
 % Acknowledgements: Chris Ladubec
 
@@ -72,96 +80,207 @@ function F = getFext(Mesh, BC, Quad, t)
 %% return zeros if there is no applied force
 	if isempty(BC.traction_force_node) ...
 	    && strcmp(func2str(BC.b),'@(x)[]') ...
-	    && isempty(BC.traction_force_dof)
+	    && isempty(BC.traction_force_dof) ...
+        && ~isa(BC.c_N_t_f,'cell')
 	    return
 	end
 
 %% loop through all elements
 
-for e = 1:Mesh.ne
-
-    %% Element variables
-	    % nodal ids of the element's nodes
-	    enodes = Mesh.conn(e,:);    
-	    % global coordinates of the element's nodes
-	    xI = Mesh.x(enodes,:);  
-	    % DOFs of element nodes
-        dofE = Mesh.DOF(enodes,:);
-        dofE = reshape(dofE',Mesh.nDOFe,[]);
-        % number of degrees of freedom
-        ndofE = length(dofE);
-
+if ~strcmp(func2str(BC.b),'@(x)[]')
     %% Shape functions and derivatives in parent coordinates
-        W = Quad.W;
-        Q = Quad.Q;
-        nq = Quad.nq;
+    W = Quad.W;
+    Q = Quad.Q;
+    nq = Quad.nq;
 
-    %% Calculate element body force
+    for e = 1:Mesh.ne
 
-	    % initialize element body force vector
-	    Fbe = zeros(ndofE, 1);
+        %% Element variables
+            % nodal ids of the element's nodes
+            enodes = Mesh.conn(e,:);    
+            % global coordinates of the element's nodes
+            xI = Mesh.x(enodes,:);  
+            % DOFs of element nodes
+            dofE = Mesh.DOF(enodes,:);
+            dofE = reshape(dofE',Mesh.nDOFe,[]);
+            % number of degrees of freedom
+            ndofE = length(dofE);
 
-        % length of element. used to check that quadrature points and weights 
-        % are correct. A = Sum Wi*Ji
-        A = 0;
+        %% Calculate element body force
 
-	    % if there is a body force run through the quadrature loop
-	    if ~strcmp(func2str(BC.b),'@(x,t)[]') && ~strcmp(func2str(BC.b),'@(x)[]')
+            % initialize element body force vector
+            Fbe = zeros(ndofE, 1);
+
+            % length of element. used to check that quadrature points and weights 
+            % are correct. A = Sum Wi*Ji
+            A = 0;
+
+            % if there is a body force run through the quadrature loop
+            if ~strcmp(func2str(BC.b),'@(x,t)[]') && ~strcmp(func2str(BC.b),'@(x)[]')
+                for q = 1:nq
+
+                    % Shape functions and derivatives in parent coordinates
+                    N = Quad.Nq{q};
+                    dNdxi = Quad.dNdxiq{q};
+                    Nv = getNv(N, Mesh.nDOFn);
+
+                    % quadrature point in physical coordinates
+                    Xi = xI'*N;
+
+                    % Jacobian of the transformation between parent and global 
+                    % coordinates
+                    Je = dNdxi'*xI;
+
+                    % determinant of the Jacobian
+                    dJe = det(Je);
+
+                    % Applied body force
+                    Fbe = Fbe + W(q)*Nv*BC.b(Xi,t)*dJe;
+
+                    % quadrature debug tool
+                    A = A + W(q)*dJe; 
+                end
+            end
+
+        %% Calculate element traction force vector
+            % initialize element traction force vector
+            % Fte = zeros(ndofE, 1);   
+    %         
+    %----  Saving code for possible future adaption to edge element
+    %integration-----
+    %
+    % 	    % loop through all tractions
+    %         for i = 1:length(traction_force_node)  
+    % 
+    % 	        % check whether traction is applied to the element
+    % 	        if ~isempty(find(enodes == BC.traction_force_node(i), 1)) ...
+    % 	                && t_count(i) == 0 
+    % 
+    % 	            % local node number at traction location
+    % 	            t_node = find(enodes == BC.traction_force_node(i),1); 
+    % 	            % parent coordinates of traction location
+    % 	            xi = getXI(t_node,Mesh.type);
+    % 	            % Shape function at traction location
+    %                 [N,dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
+    %                 Nv = getNv(N, Mesh.nsd);
+    % 
+    % 	            Fte = Fte + Nv*traction_value(i,:)';
+    % 
+    % 	            t_count(i) = 1;
+    % 	        end
+    %     	end
+
+        %% Assemble element forces
+            F(dofE) = F(dofE) + Fbe; %+ Fte;
+    end
+end
+
+
+%% Loop through boundary elements 
+
+%--------------------------------------------------------------------------------------------------
+% Note: this algorithm works only for straight boundary elements. If
+% curvature edges were included the integration along the curvature line
+% would have to be implemented
+%--------------------------------------------------------------------------------------------------
+
+if (isa(BC.c_N_t_f,'cell')) && ( strcmp(Mesh.type, 'Q4') || strcmp(Mesh.type, 'T3') )
+
+    % Shape functions and derivatives in parent coordinates
+    W = Quad_edge.W;
+    Q = Quad_edge.Q;
+    nq = Quad_edge.nq;
+
+    % Auxiliary variables to account for the cases of a equilibrium or a
+    % diffusion problem in a single code
+        temp_1 = cell(1,2);
+        temp_1{1} = [0,0];
+        temp_1{2} = 1;
+        temp_2 = cell(1,2);
+        temp_2{1} = 1;
+        temp_2{2} = zeros(2,2);
+    
+    % Loop through all sets
+    for set_i = 1:length(Mesh.c_BC_N_t)
+        
+        t_f = BC.c_N_t_f{set_i};
+        set_BC_N_t = Mesh.c_BC_N_t{set_i}; 
+        set_BC_N_t_n_m = Mesh.c_BC_N_t_n_m{set_i}; % Normals
+        set_BC_N_t_t_m = Mesh.c_BC_N_t_t_m{set_i}; % Tangents
+        
+        % Loop through all edge elements
+        for e_t = 1:length(Mesh.c_BC_N_t{set_i})
+
+            % nodal ids of the element's nodes
+            enodes = set_BC_N_t(e_t,:);    
+            % global coordinates of the element's nodes
+            xI = Mesh.x(enodes,:);  
+            % local coordinates in the tangental direction
+            l = ((xI(1,1)-xI(2,1))^2 + (xI(1,2)-xI(2,2))^2)^0.5;
+            % local coordinates in the tangental direction
+            sI = [0; l];
+            % degrees of freedom
+            dofE = Mesh.DOF(enodes,:);
+            dofE = reshape(dofE',Mesh.nDOFn*2,[]);
+            % number of degrees of freedom
+            ndofE = length(dofE);
+            % Initialize force vector
+            Fte_n = zeros(ndofE,1);
+            
+            % Get normal vector
+            n_e = set_BC_N_t_n_m(e_t,:);
+            % Get transversal vector
+            t_e = set_BC_N_t_t_m(e_t,:);
+            
+            % Loop through all quadrature points
             for q = 1:nq
 
                 % Shape functions and derivatives in parent coordinates
-                N = Quad.Nq{q};
-                dNdxi = Quad.dNdxiq{q};
+                N = Quad_edge.Nq{q};
+                dNdxi = Quad_edge.dNdxiq{q};
+
                 Nv = getNv(N, Mesh.nDOFn);
                 
-                % quadrature point in physical coordinates
+                % quadrature point in physical coordinates in the
+                % global coordinate system
                 Xi = xI'*N;
+                
+                % quadrature point in physical coordinates in the
+                % local system of the element 
+                Si = sI'*N;
 
                 % Jacobian of the transformation between parent and global 
                 % coordinates
-                Je = dNdxi'*xI;
-               
+                Je = dNdxi'*sI;
+
                 % determinant of the Jacobian
                 dJe = det(Je);
 
-                % Applied body force
-                Fbe = Fbe + W(q)*Nv*BC.b(Xi,t)*dJe;
+                % Get tractions evaluated at gauss point
+                t_f_g = [(t_f(Xi,t))'*n_e'; (t_f(Xi,t))'*t_e'].*...
+                        (1 - BC.c_N_t_flag(set_i)) + ... % when tractions are given in  x and y directions
+                        t_f(Xi,t).*BC.c_N_t_flag(set_i); % when tractions are given in n and s directions               
+                % Account for equilibrium (vector) or diffusion (scalar) problem
+                t_f_g = t_f_g(1:Mesh.nDOFn);
 
-                % quadrature debug tool
-                A = A + W(q)*dJe; 
+                % Applied traction force in normal and tangential
+                % directions
+                Fte_n = Fte_n + W(q)*Nv*t_f_g*dJe;
+
             end
-	    end
-    
-    %% Calculate element traction force vector
-	    % initialize element traction force vector
-	    Fte = zeros(ndofE, 1);   
-%         
-%----  Saving code for possible future adaption to edge element
-%integration-----
-%
-% 	    % loop through all tractions
-%         for i = 1:length(traction_force_node)  
-% 
-% 	        % check whether traction is applied to the element
-% 	        if ~isempty(find(enodes == BC.traction_force_node(i), 1)) ...
-% 	                && t_count(i) == 0 
-% 
-% 	            % local node number at traction location
-% 	            t_node = find(enodes == BC.traction_force_node(i),1); 
-% 	            % parent coordinates of traction location
-% 	            xi = getXI(t_node,Mesh.type);
-% 	            % Shape function at traction location
-%                 [N,dNdxi] = lagrange_basis(Mesh.type, xi, Mesh.nsd);
-%                 Nv = getNv(N, Mesh.nsd);
-% 
-% 	            Fte = Fte + Nv*traction_value(i,:)';
-% 
-% 	            t_count(i) = 1;
-% 	        end
-%     	end
+            
+            % Transform local force vector to global system and add to
+            % total force vector
+            % rotation(transformation) matrix
+            r_m = temp_1{Mesh.nDOFn}*[n_e', t_e']*temp_1{Mesh.nDOFn}' + temp_2{Mesh.nDOFn};
+            T = [r_m, zeros(Mesh.nDOFn,Mesh.nDOFn); zeros(Mesh.nDOFn,Mesh.nDOFn), r_m];
+            Fte = T*Fte_n;
 
-    %% Assemble element forces
-    	F(dofE) = F(dofE) + Fbe + Fte;
+            % Assemble tractions
+            F(dofE) = F(dofE) + Fte;
+
+        end
+    end
 end
 
 %% Apply pre-integrated boundary node point forces

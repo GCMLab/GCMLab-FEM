@@ -238,12 +238,70 @@ function [Mesh, Material, BC, Control] = ThermalConfigFile(config_dir, progress_
 
     %% Neumann BC
     % -----------------------------------------------------------------
+        %--------------------------------------------------------------
+        % Method 1:
+        %--------------------------------------------------------------
         % column vector of prescribed traction dofs
         BC.traction_force_dof = [];
 
         % magnitude of prescribed tractions [N]
         BC.traction_force_dof_value = [];
+        
+        %--------------------------------------------------------------
+        % Method 2:
+        %--------------------------------------------------------------
+        % Edge elements and normals are obtained from Mesh structure.
+        %
+        % Tractions boundary conditions can be applied as:
+        %   1 → function for vector on x and y (2 by 1 vector)
+        %   2 → function for vector on n and s (normal
+        %           and tangential directions of each point of the boundary)
+        %           (2 by 1 vector)
+        % These functions are stored in BC.c_N_t_f{i} (Neuman _ traction _ function)
+        %
+        % To recognize if the function is case 1 or 2, BC.c_N_t_flag must include
+        % a vector with:
+        %   0 → function for vector on x and y
+        %   1 → function for vector on n and s
+        %
+        % To rectognize if the function is applied on the mechanical or diffusive DOF
+        % BC.c_N_t_flag_case must include a vector with
+        %   1 → if the set {i} is applied to the diffusive part
+        %   2 → if the set {i} is applied to the mechanical part
+        %
+        % -------------------------------------------------------------
+        % Note: The total number of traction functions must be compatible
+        % with the number of sets defined for edge elements
+        %
+        % Note: BC.c_N_t_f, BC.c_N_t_flag, and BC.c_N_t_flag_case must have the same length 
+        %
+        % Note: If set 'i' is applied in the diffusive part, in BC.c_N_t_f{i} bust be
+        % defined in normal components, and must be a single term, as
+        % tangential components are not defined in a diffusive problem.
+        % Moreover, BC.c_N_t_flag{i} must be set as 1, and
+        % BC.c_N_t_flag_case{i} must be set as 1.
+        %
+        % --------------------------------------------------------------
+        % Example:
+        % BC.c_N_t_f = cell(1,3);
+        %     BC.c_N_t_f{1} = @(x,t) [x*t ;  y*t]; % → x and y → flag: 0 ; mechanical flag_case: 2
+        %     BC.c_N_t_f{2} = @(x,t) [10^5 ;  0]; % → n and s → flag: 1 ; mechanical flag_case: 2
+        %     BC.c_N_t_f{3} = @(x,t) [10^2 ;  0]; % → n and s → flag: 1 ; thermal flag_case: 1
+        % 
+        % BC.c_N_t_flag = [0, 1, 1];
+        % 
+        % BC.c_N_t_flag_case = [2, 2, 1];
+        % -------------------------------------------------------------
+        BC.c_N_t_f = cell(1,1); % change to cell(1,number of sets) or
+        % set as @(x,t) []  if no tractions of this type are applied
+        BC.c_N_t_f{1} = @(x,t) []; % call BC.c_N_t_f{1.. number of stes} and define all sets
+        BC.c_N_t_flag = []; %change to row vector if required. Example → [0,0,1]
+        BC.c_N_t_flag_case = []; %change to row vector if required. Example → [1,1,2]
 
+
+        %--------------------------------------------------------------
+        % Method 3:
+        %--------------------------------------------------------------
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
         BC.traction_force_node = Mesh.right_nodes;  

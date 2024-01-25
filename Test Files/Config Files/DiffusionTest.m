@@ -251,7 +251,11 @@ function [Mesh, Material, BC, Control] = DiffusionTest(config_dir, progress_on)
         
         % Make the vector into an anonymous function in time
         BC.traction_force_value = @(t) BC.traction_force_value; 
-    
+        
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+        BC.c_N_t_flag = [];
+          
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 

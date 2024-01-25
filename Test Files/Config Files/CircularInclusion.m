@@ -255,7 +255,11 @@ function [Mesh, Material, BC, Control] = CircularInclusion(config_dir, progress_
 
         BC.traction_force_node = [];
 %         BC.traction_force_value = [0 0];
-    
+        
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+        BC.c_N_t_flag = [];
+          
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 

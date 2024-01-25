@@ -274,7 +274,11 @@ function [Mesh, Material, BC, Control] = ManufacturedSolution_Dynamic(config_dir
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         BC.traction_force_value = @(t) [];
-    
+        
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+        BC.c_N_t_flag = [];
+          
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
@@ -283,22 +287,16 @@ function [Mesh, Material, BC, Control] = ManufacturedSolution_Dynamic(config_dir
         	% NOTE: if no body force, use '@(x)[]'
          	% NOTE: anonymous functions is defined with respect to the 
             %      variable x,  which is a vector [x(1) x(2)] = [x y]
-        BC.b = @(x,t) [ - Material.Prop(1).E0*pi^2/(4*(-Material.Prop(1).nu^2 + 1))             *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t)...
-                        - Material.Prop(1).E0*Material.Prop(1).nu*pi^2/(4*(-Material.Prop(1).nu^2 + 1))          *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * cos(2*pi*t)...
-                        - Material.Prop(1).E0*(1/2 - Material.Prop(1).nu/2)*pi^2/(-Material.Prop(1).nu^2 + 1)/8  *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t)...
-                        - Material.Prop(1).E0*(1/2 - Material.Prop(1).nu/2)*pi^2/(-Material.Prop(1).nu^2 + 1)/8  *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * cos(2*pi*t)...
-                        + 4*Material.Prop(1).rho*pi^2                         *   sin(pi*x(1)/2)  *   sin(pi*x(2)/2) * sin(2*pi*t);...
-                        %
-                          Material.Prop(1).E0*(1/2 - Material.Prop(1).nu/2)*pi^2/(-Material.Prop(1).nu^2 + 1)/8  *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * sin(2*pi*t)...
-                        + Material.Prop(1).E0*(1/2 - Material.Prop(1).nu/2)*pi^2/(-Material.Prop(1).nu^2 + 1)/8  *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)...
-                        + Material.Prop(1).E0*Material.Prop(1).nu*pi^2/(4*(-Material.Prop(1).nu^2 + 1))          *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * sin(2*pi*t)...
-                        + Material.Prop(1).E0*pi^2/(4*(-Material.Prop(1).nu^2 + 1))             *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)...
-                        - 4*pi^2*Material.Prop(1).rho                         *  cos(pi*x(1)/2)   *   cos(pi*x(2)/2) * cos(2*pi*t)]./1000;
+        nu = Material.Prop(1).nu;
+        rho = Material.Prop(1).rho;
+        E = Material.Prop(1).E0;
+        BC.b = @(x,t) [((32*nu^2*rho - E*nu + 3*E - 32*rho)*sin(2*pi*t) + E*cos(2*pi*t)*(nu + 1))*sin(pi*x(1)/2)*sin(pi*x(2)/2)*pi^2/(8*nu^2 - 8); ...
+            cos(pi*x(1)/2)*((-32*nu^2*rho + E*nu - 3*E + 32*rho)*cos(2*pi*t) - E*sin(2*pi*t)*(nu + 1))*cos(pi*x(2)/2)*pi^2/(8*nu^2 - 8)]./1000;
 
 %% Initial Conditions
         BC.IC_temp = zeros(Mesh.nDOF,1);
 %         BC.IC_temp(BC.fix_disp_dof) = ones(length(BC.fix_disp_dof),1);
-%         BC.IC = @(t) BC.IC_temp.*   BC.fix_disp_value(t);
+        % BC.IC = @(t) BC.IC_temp.*   BC.fix_disp_value(t);
         
 %% Computation controls
 

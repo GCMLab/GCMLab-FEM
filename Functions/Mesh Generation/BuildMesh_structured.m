@@ -269,13 +269,13 @@ end
                 L1 = 2*(ny-1)*nnx(1) + 2*(nx-1) + 1;
                 
                 Mesh.conn(e,1) = L1;
-                Mesh.conn(e,2) = L1 + 2;
+                Mesh.conn(e,2) = L1 + 2*nnx(1);
                 Mesh.conn(e,3) = L1 + 2 + 2*nnx(1);
-                Mesh.conn(e,4) = L1 + 2*nnx(1);
-                Mesh.conn(e,5) = L1 + 1;
-                Mesh.conn(e,6) = L1 + 2 + nnx(1);
-                Mesh.conn(e,7) = L1 + 1 + 2*nnx(1);
-                Mesh.conn(e,8) = L1 + nnx(1);
+                Mesh.conn(e,4) = L1 + 2;
+                Mesh.conn(e,5) = L1 + nnx(1);
+                Mesh.conn(e,6) = L1 + 1 + 2*nnx(1);
+                Mesh.conn(e,7) = L1 + 2 + nnx(1);
+                Mesh.conn(e,8) = L1 + 1;
                 Mesh.conn(e,9) = L1 + 1 + nnx(1);
                 
                 Mesh.eneighbours(e,1) = e - nex(1);

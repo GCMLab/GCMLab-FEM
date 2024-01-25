@@ -24,14 +24,14 @@ function [m_L2, m_e] = ManufacturedSolution_Dynamic_check(d1, d2, d3, s1, s2, s3
 %   1 - coarsest mesh, 2 - medium mesh, 3 - finest mesh
 
 % Manufactured solution
-% u := (x1, x2, t) -> -sin(2*pi*x1)*cos(2*pi*x2)*sin(2*pi*t)
-% v := (x1, x2, t) -> cos(2*pi*x1)*sin(2*pi*x2)*cos(2*pi*t)
+% u := (x1, x2, t) -> -sin(2*pi*x1)*cos(2*pi*x2)*sin(2*pi*t)/1000
+% v := (x1, x2, t) -> cos(2*pi*x1)*sin(2*pi*x2)*cos(2*pi*t)/1000
 
 % Acknowledgements: Bruce Gee
 
 global quadorder E nu tf
 
-plot_on = 0; % turn plots on/off - debugging tool
+plot_on = 1; % turn plots on/off - debugging tool
 
 % Step 1 - Loop through each element and calculate the L2 and e-norms
 eL2 = zeros(3,1);
@@ -73,12 +73,12 @@ for sim = 1:3
     
     e_exact(1,:) = round(-pi.*cos(pi.*x./2).*sin(pi.*y./2).*sin(2.*pi.*tf)./2./1000,15);
     e_exact(2,:) = round(-cos(pi.*x./2).*pi.*sin(pi.*y./2).*cos(2.*pi.*tf)./2./1000,15);
-    e_exact(3,:) = round(-sin(pi.*x./2).*pi.*cos(pi.*y./2).*sin(2.*pi.*tf)./4 - pi.*sin(pi.*x./2).*cos(pi.*y./2).*cos(2.*pi.*tf)./4./1000,15);
-    
+    e_exact(3,:) = round(-sin(pi.*x./2).*pi.*cos(pi.*y./2).*sin(2.*pi.*tf)./2 - pi.*sin(pi.*x./2).*cos(pi.*y./2).*cos(2.*pi.*tf)./2./1000,15);
+
     s_exact(1,:) = round(-E.*pi.*cos(pi.*x./2).*sin(pi.*y./2).*sin(2.*pi.*tf)./(2.*(-nu^2 + 1)) - E.*nu.*cos(pi.*x./2).*pi.*sin(pi.*y./2).*cos(2.*pi.*tf)./(2.*(-nu^2 + 1))./1000,15);
     s_exact(2,:) = round(-E.*nu.*pi.*cos(pi.*x./2).*sin(pi.*y./2).*sin(2.*pi.*tf)./(2.*(-nu^2 + 1)) - E.*cos(pi.*x./2).*pi.*sin(pi.*y./2).*cos(2.*pi.*tf)./(2.*(-nu^2 + 1))./1000,15);
-    s_exact(3,:) = round(E.*(1./2 - nu./2).*(-sin(pi.*x./2).*pi.*cos(pi.*y./2).*sin(2.*pi.*tf)./4 - pi.*sin(pi.*x./2).*cos(pi.*y./2).*cos(2.*pi.*tf)./4)./(-nu^2 + 1)./1000,15);
-    
+    s_exact(3,:) = round(E.*(1./2 - nu./2).*(-sin(pi.*x./2).*pi.*cos(pi.*y./2).*sin(2.*pi.*tf)./2 - pi.*sin(pi.*x./2).*cos(pi.*y./2).*cos(2.*pi.*tf)./2)./(-nu^2 + 1)./1000,15);
+
     % Calculate error norms
     Quad = GlobalQuad(Mesh.nsd, Mesh.type, quadorder);
     nq = Quad.nq;

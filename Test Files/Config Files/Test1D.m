@@ -236,12 +236,18 @@ function [Mesh, Material, BC, Control] = Test1D(config_dir, progress_on)
         % NOTE: this is slower than prescribing tractions at dofs
         % column vector of prescribed traction nodes 
         BC.traction_force_node = Mesh.right_nodes;  
+        
+
+        % Empty function for application of tractions using edge elements
+        BC.c_N_t_f = @(x,t)[];
+        BC.c_N_t_flag = [];
 
         % prescribed traction [t1x t1y;t2x t2y;...] [N]
         % tensile force applied to right edge
+
         BC.traction = 6e9; % applied traction [N]
         BC.traction_force_value = @(t) BC.traction;
-            
+        
         % NOTE: point loads at any of the element nodes can also be 
         % added as a traction.
 
