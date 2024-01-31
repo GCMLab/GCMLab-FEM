@@ -207,7 +207,7 @@ end
             end
           
         % Compute nonlinear stiffness matrix and internal forces
-            [K, ResForce, Fint] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha); 
+            [K, ResForce, Fint, stress, strain, strain_els, acc_plastic] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha, strain_e, acc_plastic); 
 
             ResForce(BC.fix_dof) = 0;
         
@@ -288,7 +288,7 @@ end
         
         if Control.dSave
             dSave(:,step_count+1) = d_m.d;      %store displacement
-            sSave(:,:,step_count + 1) = stress;
+% % %             sSave(:,:,step_count + 1) = stress;
             loadSave(:,step_count+1) = Fext;
             iSave(step_count) = iter;
         end
