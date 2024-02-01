@@ -114,7 +114,10 @@
     d_m.dnm1 = d0;  % d at timestep n-1
     d_m.dnm2 = d0;  % d at timestep n-2
     d_m.dnm3 = d0;  % d at timestep n-3
-    d_m.dnm4 = d0;  % d at timestep n-4            
+    d_m.dnm4 = d0;  % d at timestep n-4   
+    
+    strain_e = zeros(Mesh.ne, Quad.nq, 3); % Initialize elastic strain at gauss points
+    acc_plastic = zeros(Mesh.ne, Quad.nq); % Initialize accumulated plastic strain at gauss points
     
     % Export initial conditions
         switch Material.ProblemType
@@ -207,7 +210,7 @@ end
             end
           
         % Compute nonlinear stiffness matrix and internal forces
-            [K, ResForce, Fint, stress, strain, strain_els, acc_plastic] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha, strain_e, acc_plastic); 
+            [K, ResForce, Fint, stress, strain, strain_e, acc_plastic] = feval(stiffnessmatrixfile_name, Mesh, Quad, Material, Fintnm1, Fext, Fextnm1, Klin, M, d_m, dt, dtnm1, C, Control.alpha, strain_e, acc_plastic); 
 
             ResForce(BC.fix_dof) = 0;
         
