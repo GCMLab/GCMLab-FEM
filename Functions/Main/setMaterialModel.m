@@ -83,7 +83,7 @@ function [Material, stiffnessmatrixfile_name, stressstrainfile_name] = setMateri
             % von Mises plane strain plasticity model
             case 'vMPLS1' 
                 Material.ConstitutiveLawFile    = 'getD';
-                Material.StiffnessMatrixFile    = 'getK_LE1';
+                Material.StiffnessMatrixFile    = 'getK_vMPlst';
                 Material.StressStrainFile       = 'getStrain';
                 Material.PostProcessor          = 'write2vtk_eqbm';
                 Material.ProblemType            = 1;
