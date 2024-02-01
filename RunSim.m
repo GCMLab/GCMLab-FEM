@@ -11,7 +11,7 @@
     % Folder name where config files are stored
     DirFolder = 'Config Files';
     % Config files to run. Choose either 'all' or give the file name.
-    FileList = 'NLThermal1';
+    FileList = 'Plastic_2DPlate';
 
     % Directory for VTK Files (end with \)
     if ispc
@@ -77,7 +77,7 @@
         
         % run and time the simulation
         start_time = toc;
-        run('Functions/Main/main_nonlinear')
+        run('Functions/Main/main_nonlinearPlasticity')
         end_time = toc;
 
         disp(['run time: ' num2str(end_time - start_time)])

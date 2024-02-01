@@ -129,13 +129,13 @@ function [Mesh, Material, BC, Control] = Plastic_2DPlate(config_dir, progress_on
         % LED1 - Dynamic linear elasticity
         % ST1 - Stiffening model with 1st invariant of strain
         % ST2 - Softening model with 1st invariant of strain
-        % vMPLS1 - von Mises plane strain model
+        % vMPLS1 - von Mises plane strain plasticity model
         % TR2 - Stiffening model with mass based damping with 1st invariant of strain
         % VE1 - Viscoelaticity with stiffness based damping
         % TH1 - Thermal Diffusion (Steady-State)
         % TH2 - Thermal Diffusion (Transient)
         % NLTH1 - Nonlinear thermal transient
-    Material.Model = 'LE1';
+    Material.Model = 'vMPLS1';
     
     % number of material properties
     Material.nmp = 1;
